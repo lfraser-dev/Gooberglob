@@ -292,6 +292,7 @@ const tanks = {
             damage: 18,
             reload: 430,
             size: 24,
+            armor: 0.82,
             model: "tetrarch"
         },
 
@@ -303,6 +304,7 @@ const tanks = {
             damage: 27,
             reload: 560,
             size: 29,
+            armor: 0.70,
             model: "cromwell"
         },
 
@@ -314,6 +316,7 @@ const tanks = {
             damage: 40,
             reload: 760,
             size: 35,
+            armor: 0.55,
             model: "churchill"
         }
 
@@ -329,6 +332,7 @@ const tanks = {
             damage: 17,
             reload: 410,
             size: 24,
+            armor: 0.84,
             model: "panzer2"
         },
 
@@ -340,6 +344,7 @@ const tanks = {
             damage: 28,
             reload: 570,
             size: 30,
+            armor: 0.69,
             model: "panzer4"
         },
 
@@ -351,6 +356,7 @@ const tanks = {
             damage: 44,
             reload: 820,
             size: 36,
+            armor: 0.48,
             model: "tiger"
         }
 
@@ -366,6 +372,7 @@ const tanks = {
             damage: 19,
             reload: 430,
             size: 24,
+            armor: 0.80,
             model: "t70"
         },
 
@@ -377,6 +384,7 @@ const tanks = {
             damage: 30,
             reload: 550,
             size: 30,
+            armor: 0.64,
             model: "t34"
         },
 
@@ -388,6 +396,7 @@ const tanks = {
             damage: 48,
             reload: 850,
             size: 36,
+            armor: 0.43,
             model: "is2"
         }
 
@@ -406,14 +415,25 @@ let selectedMap = null;
 
 let player = null;
 let enemies = [];
+
 let shells = [];
 let impacts = [];
+let explosions = [];
+let smokeParticles = [];
+let fireParticles = [];
+let muzzleFlashes = [];
+let trackMarks = [];
+let wrecks = [];
+
 let obstacles = [];
 
 let keys = {};
 
 let gameRunning = false;
+
 let lastShot = 0;
+
+let screenShake = 0;
 
 let mouse = {
     x: 550,
@@ -462,7 +482,7 @@ function chooseFaction(faction) {
 
 
 /* =====================================================
-   CREATE TANK BUTTONS
+   TANK BUTTONS
 ===================================================== */
 
 function createTankButtons() {
@@ -482,7 +502,8 @@ function createTankButtons() {
         const button =
             document.createElement("button");
 
-        button.className = "tankCard";
+        button.className =
+            "tankCard";
 
         button.innerHTML =
             tank.name +
@@ -495,18 +516,26 @@ function createTankButtons() {
 
         button.onclick = function() {
 
-            selectedTankClass = type;
+            selectedTankClass =
+                type;
 
             document
                 .querySelectorAll(".tankCard")
-                .forEach(function(button) {
-                    button.classList.remove("selected");
-                });
+                .forEach(
+                    function(button) {
+                        button.classList
+                            .remove("selected");
+                    }
+                );
 
-            button.classList.add("selected");
+            button.classList.add(
+                "selected"
+            );
         };
 
-        container.appendChild(button);
+        container.appendChild(
+            button
+        );
     }
 }
 
@@ -531,20 +560,22 @@ function chooseMap(map) {
         .getElementById("snowButton")
         .classList.remove("selected");
 
-    let buttonId;
+    let id;
 
     if (map === "trenches") {
-        buttonId = "trenchButton";
+        id = "trenchButton";
     }
+
     else if (map === "town") {
-        buttonId = "townButton";
+        id = "townButton";
     }
+
     else {
-        buttonId = "snowButton";
+        id = "snowButton";
     }
 
     document
-        .getElementById(buttonId)
+        .getElementById(id)
         .classList.add("selected");
 }
 
@@ -582,7 +613,9 @@ function startGame() {
 
     gameRunning = true;
 
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(
+        gameLoop
+    );
 }
 
 
@@ -593,7 +626,8 @@ function startGame() {
 function createBattle() {
 
     const data =
-        tanks[selectedFaction][selectedTankClass];
+        tanks[selectedFaction]
+        [selectedTankClass];
 
     player = {
 
@@ -612,19 +646,41 @@ function createBattle() {
 
         size: data.size,
 
+        armor: data.armor,
+
         name: data.name,
         model: data.model,
-        faction: selectedFaction
+
+        faction:
+            selectedFaction,
+
+        className:
+            data.className,
+
+        trackTimer: 0,
+
+        fireSmoke: 0,
+        burning: false
     };
 
     document
         .getElementById("tankName")
-        .textContent = player.name;
+        .textContent =
+        player.name;
 
     shells = [];
     impacts = [];
+    explosions = [];
+    smokeParticles = [];
+    fireParticles = [];
+    muzzleFlashes = [];
+    trackMarks = [];
+    wrecks = [];
+
+    screenShake = 0;
 
     createMap();
+
     createEnemies();
 
     updateUI();
@@ -632,7 +688,7 @@ function createBattle() {
 
 
 /* =====================================================
-   ADD OBSTACLE
+   MAP CREATION
 ===================================================== */
 
 function addObstacle(
@@ -644,54 +700,36 @@ function addObstacle(
 ) {
 
     obstacles.push({
-        x: x,
-        y: y,
-        width: width,
-        height: height,
-        type: type
+        x,
+        y,
+        width,
+        height,
+        type
     });
 }
 
-
-/* =====================================================
-   CREATE MAP
-===================================================== */
 
 function createMap() {
 
     obstacles = [];
 
-    if (selectedMap === "town") {
+    if (
+        selectedMap === "town"
+    ) {
+
         createTownMap();
     }
 
-    else if (selectedMap === "snow") {
+    else if (
+        selectedMap === "snow"
+    ) {
+
         createSnowMap();
     }
 
     else {
+
         createTrenchMap();
-    }
-}
-
-
-/* =====================================================
-   IMPORTANT FIX:
-   DRAW MAP SELECTOR
-===================================================== */
-
-function drawMap() {
-
-    if (selectedMap === "town") {
-        drawTown();
-    }
-
-    else if (selectedMap === "snow") {
-        drawSnow();
-    }
-
-    else {
-        drawTrenches();
     }
 }
 
@@ -702,26 +740,75 @@ function drawMap() {
 
 function createTownMap() {
 
-    addObstacle(40, 40, 210, 150, "building");
-    addObstacle(290, 45, 150, 115, "building");
+    addObstacle(
+        40, 40, 210, 150,
+        "building"
+    );
 
-    addObstacle(690, 35, 190, 150, "building");
-    addObstacle(920, 60, 130, 180, "building");
+    addObstacle(
+        290, 45, 150, 115,
+        "building"
+    );
 
-    addObstacle(35, 470, 190, 170, "building");
-    addObstacle(285, 500, 145, 130, "building");
+    addObstacle(
+        690, 35, 190, 150,
+        "building"
+    );
 
-    addObstacle(675, 485, 190, 150, "building");
-    addObstacle(925, 430, 140, 190, "building");
+    addObstacle(
+        920, 60, 130, 180,
+        "building"
+    );
 
-    addObstacle(480, 70, 100, 75, "rubble");
-    addObstacle(570, 510, 80, 75, "rubble");
+    addObstacle(
+        35, 470, 190, 170,
+        "building"
+    );
 
-    addObstacle(250, 250, 140, 18, "wall");
-    addObstacle(710, 275, 150, 18, "wall");
+    addObstacle(
+        285, 500, 145, 130,
+        "building"
+    );
 
-    addObstacle(460, 315, 75, 35, "wreck");
-    addObstacle(600, 380, 70, 32, "wreck");
+    addObstacle(
+        675, 485, 190, 150,
+        "building"
+    );
+
+    addObstacle(
+        925, 430, 140, 190,
+        "building"
+    );
+
+    addObstacle(
+        480, 70, 100, 75,
+        "rubble"
+    );
+
+    addObstacle(
+        570, 510, 80, 75,
+        "rubble"
+    );
+
+    addObstacle(
+        250, 250, 140, 18,
+        "wall"
+    );
+
+    addObstacle(
+        710, 275, 150, 18,
+        "wall"
+    );
+
+    addObstacle(
+        460, 315, 75, 35,
+        "wreck"
+    );
+
+    addObstacle(
+        600, 380, 70, 32,
+        "wreck"
+    );
 }
 
 
@@ -731,22 +818,65 @@ function createTownMap() {
 
 function createTrenchMap() {
 
-    addObstacle(0, 120, 300, 55, "trench");
-    addObstacle(360, 100, 280, 55, "trench");
-    addObstacle(700, 125, 400, 55, "trench");
+    addObstacle(
+        0, 120, 300, 55,
+        "trench"
+    );
 
-    addObstacle(0, 520, 260, 55, "trench");
-    addObstacle(320, 545, 310, 55, "trench");
-    addObstacle(700, 515, 400, 55, "trench");
+    addObstacle(
+        360, 100, 280, 55,
+        "trench"
+    );
 
-    addObstacle(350, 220, 115, 70, "bunker");
-    addObstacle(690, 360, 125, 75, "bunker");
+    addObstacle(
+        700, 125, 400, 55,
+        "trench"
+    );
 
-    addObstacle(120, 315, 170, 22, "wire");
-    addObstacle(820, 300, 180, 22, "wire");
+    addObstacle(
+        0, 520, 260, 55,
+        "trench"
+    );
 
-    addObstacle(430, 400, 70, 50, "crater");
-    addObstacle(570, 230, 65, 45, "crater");
+    addObstacle(
+        320, 545, 310, 55,
+        "trench"
+    );
+
+    addObstacle(
+        700, 515, 400, 55,
+        "trench"
+    );
+
+    addObstacle(
+        350, 220, 115, 70,
+        "bunker"
+    );
+
+    addObstacle(
+        690, 360, 125, 75,
+        "bunker"
+    );
+
+    addObstacle(
+        120, 315, 170, 22,
+        "wire"
+    );
+
+    addObstacle(
+        820, 300, 180, 22,
+        "wire"
+    );
+
+    addObstacle(
+        430, 400, 70, 50,
+        "crater"
+    );
+
+    addObstacle(
+        570, 230, 65, 45,
+        "crater"
+    );
 }
 
 
@@ -757,68 +887,49 @@ function createTrenchMap() {
 function createSnowMap() {
 
     addObstacle(
-        260,
-        95,
-        120,
-        70,
+        260, 95, 120, 70,
         "snowCabin"
     );
 
     addObstacle(
-        760,
-        85,
-        135,
-        75,
+        760, 85, 135, 75,
         "snowCabin"
     );
 
     addObstacle(
-        430,
-        515,
-        125,
-        70,
+        430, 515, 125, 70,
         "snowCabin"
     );
 
     addObstacle(
-        865,
-        500,
-        115,
-        70,
+        865, 500, 115, 70,
         "snowCabin"
     );
 
     addObstacle(
-        500,
-        250,
-        90,
-        60,
+        500, 250, 90, 60,
         "rock"
     );
 
     addObstacle(
-        700,
-        330,
-        105,
-        55,
+        700, 330, 105, 55,
         "rock"
     );
 
     addObstacle(
-        240,
-        390,
-        90,
-        50,
+        240, 390, 90, 50,
         "rock"
     );
 }
 
 
 /* =====================================================
-   SOLID OBSTACLES
+   OBSTACLE COLLISION
 ===================================================== */
 
-function isSolidObstacle(obstacle) {
+function isSolidObstacle(
+    obstacle
+) {
 
     return [
         "building",
@@ -827,13 +938,11 @@ function isSolidObstacle(obstacle) {
         "wreck",
         "snowCabin",
         "rock"
-    ].includes(obstacle.type);
+    ].includes(
+        obstacle.type
+    );
 }
 
-
-/* =====================================================
-   TANK COLLISION
-===================================================== */
 
 function tankHitsObstacle(
     tank,
@@ -845,7 +954,11 @@ function tankHitsObstacle(
         const obstacle of obstacles
     ) {
 
-        if (!isSolidObstacle(obstacle)) {
+        if (
+            !isSolidObstacle(
+                obstacle
+            )
+        ) {
             continue;
         }
 
@@ -870,10 +983,12 @@ function tankHitsObstacle(
             );
 
         const dx =
-            newX - closestX;
+            newX -
+            closestX;
 
         const dy =
-            newY - closestY;
+            newY -
+            closestY;
 
         if (
             dx * dx +
@@ -891,7 +1006,7 @@ function tankHitsObstacle(
 
 
 /* =====================================================
-   SAFE SPAWN
+   SAFE SPAWNS
 ===================================================== */
 
 function validSpawnPoint(
@@ -906,7 +1021,6 @@ function validSpawnPoint(
         canvas.width -
         size -
         10 ||
-
         y < size + 10 ||
         y >
         canvas.height -
@@ -918,9 +1032,9 @@ function validSpawnPoint(
     }
 
     const fakeTank = {
-        x: x,
-        y: y,
-        size: size
+        x,
+        y,
+        size
     };
 
     if (
@@ -936,19 +1050,16 @@ function validSpawnPoint(
 
     if (player) {
 
-        const dx =
-            x - player.x;
-
-        const dy =
-            y - player.y;
-
         const distance =
-            Math.sqrt(
-                dx * dx +
-                dy * dy
+            Math.hypot(
+                x - player.x,
+                y - player.y
             );
 
-        if (distance < 220) {
+        if (
+            distance < 220
+        ) {
+
             return false;
         }
     }
@@ -957,16 +1068,10 @@ function validSpawnPoint(
         const enemy of enemies
     ) {
 
-        const dx =
-            x - enemy.x;
-
-        const dy =
-            y - enemy.y;
-
         const distance =
-            Math.sqrt(
-                dx * dx +
-                dy * dy
+            Math.hypot(
+                x - enemy.x,
+                y - enemy.y
             );
 
         if (
@@ -983,10 +1088,6 @@ function validSpawnPoint(
     return true;
 }
 
-
-/* =====================================================
-   FIND SPAWN
-===================================================== */
 
 function findSpawnPoint(
     preferred,
@@ -1028,8 +1129,8 @@ function findSpawnPoint(
             ) {
 
                 return {
-                    x: x,
-                    y: y
+                    x,
+                    y
                 };
             }
         }
@@ -1057,16 +1158,28 @@ function createEnemies() {
 
     let enemyFaction;
 
-    if (selectedFaction === "british") {
-        enemyFaction = "german";
+    if (
+        selectedFaction ===
+        "british"
+    ) {
+
+        enemyFaction =
+            "german";
     }
 
-    else if (selectedFaction === "german") {
-        enemyFaction = "soviet";
+    else if (
+        selectedFaction ===
+        "german"
+    ) {
+
+        enemyFaction =
+            "soviet";
     }
 
     else {
-        enemyFaction = "british";
+
+        enemyFaction =
+            "british";
     }
 
     const types = [
@@ -1077,24 +1190,26 @@ function createEnemies() {
 
     let preferred;
 
-    if (selectedMap === "town") {
+    if (
+        selectedMap === "town"
+    ) {
 
         preferred = [
             [560, 90],
             [560, 350],
             [560, 620]
         ];
-
     }
 
-    else if (selectedMap === "snow") {
+    else if (
+        selectedMap === "snow"
+    ) {
 
         preferred = [
             [1000, 120],
             [930, 350],
             [1000, 620]
         ];
-
     }
 
     else {
@@ -1113,7 +1228,8 @@ function createEnemies() {
     ) {
 
         const data =
-            tanks[enemyFaction][types[i]];
+            tanks[enemyFaction]
+            [types[i]];
 
         const spawn =
             findSpawnPoint(
@@ -1135,18 +1251,36 @@ function createEnemies() {
             speed:
                 data.speed * 0.55,
 
-            damage: data.damage,
+            damage:
+                data.damage,
 
             reload:
                 data.reload + 500,
 
-            size: data.size,
+            size:
+                data.size,
 
-            name: data.name,
-            model: data.model,
-            faction: enemyFaction,
+            armor:
+                data.armor,
 
-            lastShot: 0
+            name:
+                data.name,
+
+            model:
+                data.model,
+
+            faction:
+                enemyFaction,
+
+            className:
+                data.className,
+
+            lastShot: 0,
+
+            trackTimer: 0,
+
+            fireSmoke: 0,
+            burning: false
         });
     }
 }
@@ -1169,6 +1303,7 @@ window.addEventListener(
         ) {
 
             event.preventDefault();
+
             shoot();
         }
     }
@@ -1219,6 +1354,7 @@ canvas.addEventListener(
 canvas.addEventListener(
     "mousedown",
     function() {
+
         shoot();
     }
 );
@@ -1242,13 +1378,14 @@ function movePlayer() {
         dx === 0 &&
         dy === 0
     ) {
+
         return;
     }
 
     const length =
-        Math.sqrt(
-            dx * dx +
-            dy * dy
+        Math.hypot(
+            dx,
+            dy
         );
 
     dx /= length;
@@ -1307,6 +1444,10 @@ function movePlayer() {
                 player.y
             )
         );
+
+    addTrackMarks(
+        player
+    );
 }
 
 
@@ -1337,6 +1478,7 @@ function shoot() {
         !gameRunning ||
         !player
     ) {
+
         return;
     }
 
@@ -1348,6 +1490,7 @@ function shoot() {
         lastShot <
         player.reload
     ) {
+
         return;
     }
 
@@ -1357,6 +1500,12 @@ function shoot() {
         player,
         false
     );
+
+    createMuzzleFlash(
+        player
+    );
+
+    player.fireSmoke = 12;
 }
 
 
@@ -1399,9 +1548,11 @@ function createShell(
         vy:
             Math.sin(angle) * 10,
 
-        damage: tank.damage,
+        damage:
+            tank.damage,
 
-        enemy: enemyShell,
+        enemy:
+            enemyShell,
 
         life: 120
     });
@@ -1409,7 +1560,136 @@ function createShell(
 
 
 /* =====================================================
-   LINE COLLISION
+   MUZZLE FLASH
+===================================================== */
+
+function createMuzzleFlash(
+    tank
+) {
+
+    const angle =
+        tank.turretAngle;
+
+    muzzleFlashes.push({
+
+        x:
+            tank.x +
+            Math.cos(angle) *
+            tank.size *
+            1.75,
+
+        y:
+            tank.y +
+            Math.sin(angle) *
+            tank.size *
+            1.75,
+
+        angle,
+
+        life: 7,
+        maxLife: 7
+    });
+}
+
+
+function updateMuzzleFlashes() {
+
+    for (
+        let i =
+            muzzleFlashes.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        muzzleFlashes[i].life--;
+
+        if (
+            muzzleFlashes[i].life <= 0
+        ) {
+
+            muzzleFlashes.splice(
+                i,
+                1
+            );
+        }
+    }
+}
+
+
+function drawMuzzleFlashes() {
+
+    muzzleFlashes.forEach(
+        function(flash) {
+
+            const size =
+                10 +
+                flash.life;
+
+            ctx.save();
+
+            ctx.translate(
+                flash.x,
+                flash.y
+            );
+
+            ctx.rotate(
+                flash.angle
+            );
+
+            ctx.fillStyle =
+                "#fff0a0";
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                0,
+                0
+            );
+
+            ctx.lineTo(
+                size * 2.2,
+                -size * 0.65
+            );
+
+            ctx.lineTo(
+                size * 1.4,
+                0
+            );
+
+            ctx.lineTo(
+                size * 2.2,
+                size * 0.65
+            );
+
+            ctx.closePath();
+
+            ctx.fill();
+
+            ctx.fillStyle =
+                "#e38a2d";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                0,
+                0,
+                size * 0.65,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.restore();
+        }
+    );
+}
+
+
+/* =====================================================
+   SHELL COLLISION
 ===================================================== */
 
 function lineHitsRectangle(
@@ -1441,9 +1721,13 @@ function lineHitsRectangle(
 
         if (
             x >= rect.x &&
-            x <= rect.x + rect.width &&
+            x <=
+                rect.x +
+                rect.width &&
             y >= rect.y &&
-            y <= rect.y + rect.height
+            y <=
+                rect.y +
+                rect.height
         ) {
 
             return true;
@@ -1453,10 +1737,6 @@ function lineHitsRectangle(
     return false;
 }
 
-
-/* =====================================================
-   SHELL OBSTACLE COLLISION
-===================================================== */
 
 function shellHitsObstacle(
     x1,
@@ -1474,6 +1754,7 @@ function shellHitsObstacle(
                 obstacle
             )
         ) {
+
             continue;
         }
 
@@ -1496,154 +1777,167 @@ function shellHitsObstacle(
 
 
 /* =====================================================
-   AI
+   DAMAGE CALCULATION
 ===================================================== */
 
-function updateEnemies() {
+function calculateDamage(
+    shell,
+    target
+) {
 
-    if (!player) {
-        return;
+    /*
+       Basic armour reduction.
+    */
+
+    let damage =
+        shell.damage *
+        target.armor;
+
+
+    /*
+       HIT LOCATION
+
+       Centre hits do normal damage.
+       Edge hits do reduced damage.
+       Rear/side effects can be added
+       later with the AI upgrade.
+    */
+
+    const distance =
+        Math.hypot(
+            shell.x - target.x,
+            shell.y - target.y
+        );
+
+    const edgeRatio =
+        distance /
+        target.size;
+
+    if (
+        edgeRatio > 0.75
+    ) {
+
+        damage *= 0.72;
+
+        createHitText(
+            shell.x,
+            shell.y,
+            "GLANCING HIT"
+        );
     }
 
-    enemies.forEach(
-        function(enemy) {
+    else if (
+        edgeRatio < 0.35
+    ) {
 
-            const dx =
-                player.x -
-                enemy.x;
+        damage *= 1.20;
 
-            const dy =
-                player.y -
-                enemy.y;
+        createHitText(
+            shell.x,
+            shell.y,
+            "DIRECT HIT!"
+        );
+    }
 
-            const distance =
-                Math.sqrt(
-                    dx * dx +
-                    dy * dy
-                );
+    else {
 
-            enemy.turretAngle =
-                Math.atan2(
-                    dy,
-                    dx
-                );
+        createHitText(
+            shell.x,
+            shell.y,
+            "HIT"
+        );
+    }
 
-            if (
-                distance > 260
-            ) {
-
-                const moveAngle =
-                    Math.atan2(
-                        dy,
-                        dx
-                    );
-
-                enemy.angle =
-                    moveAngle;
-
-                const moveX =
-                    Math.cos(
-                        moveAngle
-                    ) *
-                    enemy.speed;
-
-                const moveY =
-                    Math.sin(
-                        moveAngle
-                    ) *
-                    enemy.speed;
-
-                if (
-                    !tankHitsObstacle(
-                        enemy,
-                        enemy.x + moveX,
-                        enemy.y
-                    )
-                ) {
-
-                    enemy.x += moveX;
-                }
-
-                if (
-                    !tankHitsObstacle(
-                        enemy,
-                        enemy.x,
-                        enemy.y + moveY
-                    )
-                ) {
-
-                    enemy.y += moveY;
-                }
-            }
-
-            enemy.x =
-                Math.max(
-                    enemy.size,
-                    Math.min(
-                        canvas.width -
-                        enemy.size,
-                        enemy.x
-                    )
-                );
-
-            enemy.y =
-                Math.max(
-                    enemy.size,
-                    Math.min(
-                        canvas.height -
-                        enemy.size,
-                        enemy.y
-                    )
-                );
-
-            const now =
-                Date.now();
-
-            if (
-                distance < 700 &&
-                now -
-                enemy.lastShot >=
-                enemy.reload
-            ) {
-
-                if (
-                    !shotBlocked(
-                        enemy.x,
-                        enemy.y,
-                        player.x,
-                        player.y
-                    )
-                ) {
-
-                    enemy.lastShot = now;
-
-                    createShell(
-                        enemy,
-                        true
-                    );
-                }
-            }
-        }
+    return Math.max(
+        3,
+        Math.round(damage)
     );
 }
 
 
 /* =====================================================
-   SHOT BLOCKED
+   HIT TEXT
 ===================================================== */
 
-function shotBlocked(
-    x1,
-    y1,
-    x2,
-    y2
+let hitTexts = [];
+
+
+function createHitText(
+    x,
+    y,
+    text
 ) {
 
-    return !!shellHitsObstacle(
-        x1,
-        y1,
-        x2,
-        y2
+    hitTexts.push({
+
+        x,
+        y,
+
+        text,
+
+        life: 32,
+        maxLife: 32
+    });
+}
+
+
+function updateHitTexts() {
+
+    for (
+        let i =
+            hitTexts.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        const hit =
+            hitTexts[i];
+
+        hit.life--;
+
+        hit.y -= 0.5;
+
+        if (
+            hit.life <= 0
+        ) {
+
+            hitTexts.splice(
+                i,
+                1
+            );
+        }
+    }
+}
+
+
+function drawHitTexts() {
+
+    hitTexts.forEach(
+        function(hit) {
+
+            ctx.globalAlpha =
+                hit.life /
+                hit.maxLife;
+
+            ctx.fillStyle =
+                "#fff0b0";
+
+            ctx.font =
+                "bold 14px Arial";
+
+            ctx.textAlign =
+                "center";
+
+            ctx.fillText(
+                hit.text,
+                hit.x,
+                hit.y
+            );
+
+            ctx.globalAlpha = 1;
+        }
     );
 }
 
@@ -1680,6 +1974,10 @@ function updateShells() {
 
         shell.life--;
 
+        /*
+           BUILDING HIT
+        */
+
         if (
             shellHitsObstacle(
                 shell.oldX,
@@ -1689,9 +1987,10 @@ function updateShells() {
             )
         ) {
 
-            createImpact(
+            createExplosion(
                 shell.x,
-                shell.y
+                shell.y,
+                0.65
             );
 
             shells.splice(
@@ -1702,11 +2001,18 @@ function updateShells() {
             continue;
         }
 
+
+        /*
+           OUT OF BOUNDS
+        */
+
         if (
             shell.x < 0 ||
-            shell.x > canvas.width ||
+            shell.x >
+                canvas.width ||
             shell.y < 0 ||
-            shell.y > canvas.height ||
+            shell.y >
+                canvas.height ||
             shell.life <= 0
         ) {
 
@@ -1718,11 +2024,17 @@ function updateShells() {
             continue;
         }
 
-        /* PLAYER SHELL */
 
-        if (!shell.enemy) {
+        /*
+           PLAYER SHELL
+        */
 
-            let hit = false;
+        if (
+            !shell.enemy
+        ) {
+
+            let hit =
+                false;
 
             for (
                 let j =
@@ -1736,18 +2048,12 @@ function updateShells() {
                 const enemy =
                     enemies[j];
 
-                const dx =
-                    shell.x -
-                    enemy.x;
-
-                const dy =
-                    shell.y -
-                    enemy.y;
-
                 const distance =
-                    Math.sqrt(
-                        dx * dx +
-                        dy * dy
+                    Math.hypot(
+                        shell.x -
+                            enemy.x,
+                        shell.y -
+                            enemy.y
                     );
 
                 if (
@@ -1755,13 +2061,31 @@ function updateShells() {
                     enemy.size
                 ) {
 
+                    const damage =
+                        calculateDamage(
+                            shell,
+                            enemy
+                        );
+
                     enemy.health -=
-                        shell.damage;
+                        damage;
 
                     createImpact(
                         shell.x,
                         shell.y
                     );
+
+                    createHitSparks(
+                        shell.x,
+                        shell.y
+                    );
+
+                    enemy.fireSmoke =
+                        Math.min(
+                            25,
+                            enemy.fireSmoke +
+                            6
+                        );
 
                     shells.splice(
                         i,
@@ -1770,9 +2094,18 @@ function updateShells() {
 
                     hit = true;
 
+
+                    /*
+                       DESTROYED
+                    */
+
                     if (
                         enemy.health <= 0
                     ) {
+
+                        destroyTank(
+                            enemy
+                        );
 
                         enemies.splice(
                             j,
@@ -1789,22 +2122,19 @@ function updateShells() {
             }
         }
 
-        /* ENEMY SHELL */
+
+        /*
+           ENEMY SHELL
+        */
 
         else {
 
-            const dx =
-                shell.x -
-                player.x;
-
-            const dy =
-                shell.y -
-                player.y;
-
             const distance =
-                Math.sqrt(
-                    dx * dx +
-                    dy * dy
+                Math.hypot(
+                    shell.x -
+                        player.x,
+                    shell.y -
+                        player.y
                 );
 
             if (
@@ -1812,10 +2142,28 @@ function updateShells() {
                 player.size
             ) {
 
+                const damage =
+                    calculateDamage(
+                        shell,
+                        player
+                    );
+
                 player.health -=
-                    shell.damage;
+                    damage;
+
+                player.fireSmoke =
+                    Math.min(
+                        25,
+                        player.fireSmoke +
+                        6
+                    );
 
                 createImpact(
+                    shell.x,
+                    shell.y
+                );
+
+                createHitSparks(
                     shell.x,
                     shell.y
                 );
@@ -1824,6 +2172,15 @@ function updateShells() {
                     i,
                     1
                 );
+
+                if (
+                    player.health <= 0
+                ) {
+
+                    destroyTank(
+                        player
+                    );
+                }
             }
         }
     }
@@ -1840,10 +2197,15 @@ function createImpact(
 ) {
 
     impacts.push({
-        x: x,
-        y: y,
+
+        x,
+        y,
+
         life: 18,
-        maxLife: 18
+
+        maxLife: 18,
+
+        radius: 10
     });
 }
 
@@ -1874,8 +2236,1106 @@ function updateImpacts() {
 }
 
 
+function drawImpacts() {
+
+    impacts.forEach(
+        function(impact) {
+
+            const progress =
+                1 -
+                impact.life /
+                impact.maxLife;
+
+            const radius =
+                8 +
+                progress * 24;
+
+            ctx.globalAlpha =
+                1 - progress;
+
+            ctx.fillStyle =
+                "#e8c66d";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                impact.x,
+                impact.y,
+                radius,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.fillStyle =
+                "#342b1b";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                impact.x,
+                impact.y,
+                radius * 0.35,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.globalAlpha = 1;
+        }
+    );
+}
+
+
 /* =====================================================
-   DRAW TOWN
+   HIT SPARKS
+===================================================== */
+
+function createHitSparks(
+    x,
+    y
+) {
+
+    for (
+        let i = 0;
+        i < 8;
+        i++
+    ) {
+
+        const angle =
+            Math.random() *
+            Math.PI *
+            2;
+
+        const speed =
+            1 +
+            Math.random() * 3;
+
+        fireParticles.push({
+
+            x,
+            y,
+
+            vx:
+                Math.cos(angle) *
+                speed,
+
+            vy:
+                Math.sin(angle) *
+                speed,
+
+            life:
+                12 +
+                Math.random() * 10,
+
+            size:
+                2 +
+                Math.random() * 2,
+
+            type:
+                "spark"
+        });
+    }
+}
+
+
+/* =====================================================
+   EXPLOSIONS
+===================================================== */
+
+function createExplosion(
+    x,
+    y,
+    strength = 1
+) {
+
+    explosions.push({
+
+        x,
+        y,
+
+        life:
+            34 * strength,
+
+        maxLife:
+            34 * strength,
+
+        strength
+    });
+
+    screenShake =
+        Math.max(
+            screenShake,
+            9 * strength
+        );
+
+    for (
+        let i = 0;
+        i < 18 * strength;
+        i++
+    ) {
+
+        const angle =
+            Math.random() *
+            Math.PI *
+            2;
+
+        const speed =
+            1 +
+            Math.random() *
+            4 *
+            strength;
+
+        fireParticles.push({
+
+            x,
+            y,
+
+            vx:
+                Math.cos(angle) *
+                speed,
+
+            vy:
+                Math.sin(angle) *
+                speed,
+
+            life:
+                18 +
+                Math.random() * 25,
+
+            size:
+                3 +
+                Math.random() * 5,
+
+            type:
+                "fire"
+        });
+    }
+
+    for (
+        let i = 0;
+        i < 10 * strength;
+        i++
+    ) {
+
+        const angle =
+            Math.random() *
+            Math.PI *
+            2;
+
+        const speed =
+            0.5 +
+            Math.random() * 2;
+
+        smokeParticles.push({
+
+            x,
+            y,
+
+            vx:
+                Math.cos(angle) *
+                speed,
+
+            vy:
+                Math.sin(angle) *
+                speed -
+
+                0.5,
+
+            life:
+                35 +
+                Math.random() * 35,
+
+            size:
+                8 +
+                Math.random() * 12
+        });
+    }
+}
+
+
+function updateExplosions() {
+
+    for (
+        let i =
+            explosions.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        explosions[i].life--;
+
+        if (
+            explosions[i].life <= 0
+        ) {
+
+            explosions.splice(
+                i,
+                1
+            );
+        }
+    }
+}
+
+
+function drawExplosions() {
+
+    explosions.forEach(
+        function(explosion) {
+
+            const progress =
+                1 -
+                explosion.life /
+                explosion.maxLife;
+
+            const radius =
+                10 +
+                progress *
+                60 *
+                explosion.strength;
+
+            ctx.globalAlpha =
+                1 -
+                progress;
+
+            ctx.fillStyle =
+                "#e7c45e";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                explosion.x,
+                explosion.y,
+                radius,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.fillStyle =
+                "#d75c24";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                explosion.x,
+                explosion.y,
+                radius * 0.65,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.fillStyle =
+                "#29251b";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                explosion.x,
+                explosion.y,
+                radius * 0.3,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.globalAlpha = 1;
+        }
+    );
+}
+
+
+/* =====================================================
+   DESTROY TANK
+===================================================== */
+
+function destroyTank(
+    tank
+) {
+
+    if (
+        tank.destroyed
+    ) {
+
+        return;
+    }
+
+    tank.destroyed =
+        true;
+
+    createExplosion(
+        tank.x,
+        tank.y,
+        1.5
+    );
+
+    createExplosion(
+        tank.x +
+        (Math.random() - 0.5) *
+        30,
+
+        tank.y +
+        (Math.random() - 0.5) *
+        30,
+
+        0.8
+    );
+
+    createWreck(
+        tank
+    );
+
+    for (
+        let i = 0;
+        i < 20;
+        i++
+    ) {
+
+        smokeParticles.push({
+
+            x:
+                tank.x +
+                (Math.random() - 0.5) *
+                30,
+
+            y:
+                tank.y +
+                (Math.random() - 0.5) *
+                30,
+
+            vx:
+                (Math.random() - 0.5) *
+                1.5,
+
+            vy:
+                -Math.random() *
+                2,
+
+            life:
+                45 +
+                Math.random() *
+                60,
+
+            size:
+                10 +
+                Math.random() *
+                15
+        });
+    }
+}
+
+
+/* =====================================================
+   WRECKS
+===================================================== */
+
+function createWreck(
+    tank
+) {
+
+    wrecks.push({
+
+        x:
+            tank.x,
+
+        y:
+            tank.y,
+
+        angle:
+            tank.angle,
+
+        size:
+            tank.size,
+
+        faction:
+            tank.faction,
+
+        model:
+            tank.model,
+
+        turretAngle:
+            tank.turretAngle
+    });
+}
+
+
+function drawWrecks() {
+
+    wrecks.forEach(
+        function(wreck) {
+
+            ctx.save();
+
+            ctx.translate(
+                wreck.x,
+                wreck.y
+            );
+
+            ctx.rotate(
+                wreck.angle
+            );
+
+            ctx.globalAlpha =
+                0.9;
+
+            ctx.fillStyle =
+                "#171914";
+
+            ctx.fillRect(
+                -wreck.size,
+                -wreck.size * 0.55,
+                wreck.size * 2,
+                wreck.size * 1.1
+            );
+
+            ctx.fillStyle =
+                "#34372d";
+
+            ctx.fillRect(
+                -wreck.size * 0.7,
+                -wreck.size * 0.4,
+                wreck.size * 1.4,
+                wreck.size * 0.8
+            );
+
+            ctx.fillStyle =
+                "#11120f";
+
+            ctx.fillRect(
+                -wreck.size,
+                -wreck.size * 0.75,
+                wreck.size * 2,
+                7
+            );
+
+            ctx.fillRect(
+                -wreck.size,
+                wreck.size * 0.68,
+                wreck.size * 2,
+                7
+            );
+
+            ctx.restore();
+
+
+            /*
+               Destroyed turret
+            */
+
+            ctx.save();
+
+            ctx.translate(
+                wreck.x,
+                wreck.y
+            );
+
+            ctx.rotate(
+                wreck.turretAngle
+            );
+
+            ctx.fillStyle =
+                "#24261f";
+
+            ctx.fillRect(
+                -wreck.size * 0.4,
+                -wreck.size * 0.35,
+                wreck.size * 0.8,
+                wreck.size * 0.7
+            );
+
+            ctx.fillStyle =
+                "#151610";
+
+            ctx.fillRect(
+                0,
+                -3,
+                wreck.size * 1.1,
+                6
+            );
+
+            ctx.restore();
+        }
+    );
+}
+
+
+/* =====================================================
+   SMOKE
+===================================================== */
+
+function updateSmoke() {
+
+    for (
+        let i =
+            smokeParticles.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        const smoke =
+            smokeParticles[i];
+
+        smoke.x +=
+            smoke.vx;
+
+        smoke.y +=
+            smoke.vy;
+
+        smoke.vy *= 0.98;
+
+        smoke.size *=
+            1.012;
+
+        smoke.life--;
+
+        if (
+            smoke.life <= 0
+        ) {
+
+            smokeParticles.splice(
+                i,
+                1
+            );
+        }
+    }
+}
+
+
+function drawSmoke() {
+
+    smokeParticles.forEach(
+        function(smoke) {
+
+            ctx.globalAlpha =
+                Math.min(
+                    0.5,
+                    smoke.life / 80
+                );
+
+            ctx.fillStyle =
+                "#292b27";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                smoke.x,
+                smoke.y,
+                smoke.size,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.globalAlpha = 1;
+        }
+    );
+}
+
+
+/* =====================================================
+   FIRE PARTICLES
+===================================================== */
+
+function updateFireParticles() {
+
+    for (
+        let i =
+            fireParticles.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        const particle =
+            fireParticles[i];
+
+        particle.x +=
+            particle.vx;
+
+        particle.y +=
+            particle.vy;
+
+        particle.vx *=
+            0.97;
+
+        particle.vy *=
+            0.97;
+
+        particle.life--;
+
+        if (
+            particle.life <= 0
+        ) {
+
+            fireParticles.splice(
+                i,
+                1
+            );
+        }
+    }
+}
+
+
+function drawFireParticles() {
+
+    fireParticles.forEach(
+        function(particle) {
+
+            ctx.globalAlpha =
+                Math.min(
+                    1,
+                    particle.life / 15
+                );
+
+            if (
+                particle.type ===
+                "spark"
+            ) {
+
+                ctx.fillStyle =
+                    "#fff0a0";
+
+                ctx.fillRect(
+                    particle.x,
+                    particle.y,
+                    particle.size,
+                    particle.size
+                );
+            }
+
+            else {
+
+                ctx.fillStyle =
+                    particle.life % 2 === 0
+                    ? "#e87c22"
+                    : "#ffd34e";
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    particle.x,
+                    particle.y,
+                    particle.size,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fill();
+            }
+
+            ctx.globalAlpha = 1;
+        }
+    );
+}
+
+
+/* =====================================================
+   DAMAGED TANK SMOKE
+===================================================== */
+
+function createTankSmoke(
+    tank
+) {
+
+    if (
+        tank.fireSmoke <= 0
+    ) {
+
+        return;
+    }
+
+    if (
+        Math.random() > 0.25
+    ) {
+
+        return;
+    }
+
+    smokeParticles.push({
+
+        x:
+            tank.x +
+            (Math.random() - 0.5) *
+            tank.size,
+
+        y:
+            tank.y -
+            tank.size * 0.5,
+
+        vx:
+            (Math.random() - 0.5) *
+            0.5,
+
+        vy:
+            -0.5 -
+            Math.random() * 0.7,
+
+        life:
+            25 +
+            Math.random() * 25,
+
+        size:
+            5 +
+            Math.random() * 7
+    });
+}
+
+
+/* =====================================================
+   TRACK MARKS
+===================================================== */
+
+function addTrackMarks(
+    tank
+) {
+
+    tank.trackTimer++;
+
+    if (
+        tank.trackTimer < 5
+    ) {
+
+        return;
+    }
+
+    tank.trackTimer = 0;
+
+    const cos =
+        Math.cos(
+            tank.angle
+        );
+
+    const sin =
+        Math.sin(
+            tank.angle
+        );
+
+    const sideX =
+        -sin *
+        tank.size *
+        0.65;
+
+    const sideY =
+        cos *
+        tank.size *
+        0.65;
+
+    const backX =
+        -cos *
+        tank.size *
+        0.5;
+
+    const backY =
+        -sin *
+        tank.size *
+        0.5;
+
+    trackMarks.push({
+
+        x1:
+            tank.x +
+            sideX +
+            backX,
+
+        y1:
+            tank.y +
+            sideY +
+            backY,
+
+        x2:
+            tank.x -
+            sideX +
+            backX,
+
+        y2:
+            tank.y -
+            sideY +
+            backY,
+
+        life: 260
+    });
+}
+
+
+function updateTrackMarks() {
+
+    for (
+        let i =
+            trackMarks.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        trackMarks[i].life--;
+
+        if (
+            trackMarks[i].life <= 0
+        ) {
+
+            trackMarks.splice(
+                i,
+                1
+            );
+        }
+    }
+}
+
+
+function drawTrackMarks() {
+
+    ctx.strokeStyle =
+        "rgba(35,35,30,0.35)";
+
+    ctx.lineWidth = 4;
+
+    trackMarks.forEach(
+        function(mark) {
+
+            ctx.globalAlpha =
+                mark.life / 260;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                mark.x1,
+                mark.y1
+            );
+
+            ctx.lineTo(
+                mark.x2,
+                mark.y2
+            );
+
+            ctx.stroke();
+        }
+    );
+
+    ctx.globalAlpha = 1;
+}
+
+
+/* =====================================================
+   ENEMY AI
+   STAGE 2 WILL UPGRADE THIS
+===================================================== */
+
+function updateEnemies() {
+
+    if (!player) {
+        return;
+    }
+
+    enemies.forEach(
+        function(enemy) {
+
+            const dx =
+                player.x -
+                enemy.x;
+
+            const dy =
+                player.y -
+                enemy.y;
+
+            const distance =
+                Math.hypot(
+                    dx,
+                    dy
+                );
+
+            enemy.turretAngle =
+                Math.atan2(
+                    dy,
+                    dx
+                );
+
+            /*
+               For now all tanks use
+               the simple AI.
+
+               STAGE 2 will make
+               light / medium / heavy
+               behave differently.
+            */
+
+            if (
+                distance > 260
+            ) {
+
+                const moveAngle =
+                    Math.atan2(
+                        dy,
+                        dx
+                    );
+
+                enemy.angle =
+                    moveAngle;
+
+                const moveX =
+                    Math.cos(
+                        moveAngle
+                    ) *
+                    enemy.speed;
+
+                const moveY =
+                    Math.sin(
+                        moveAngle
+                    ) *
+                    enemy.speed;
+
+                if (
+                    !tankHitsObstacle(
+                        enemy,
+                        enemy.x + moveX,
+                        enemy.y
+                    )
+                ) {
+
+                    enemy.x +=
+                        moveX;
+                }
+
+                if (
+                    !tankHitsObstacle(
+                        enemy,
+                        enemy.x,
+                        enemy.y + moveY
+                    )
+                ) {
+
+                    enemy.y +=
+                        moveY;
+                }
+
+                addTrackMarks(
+                    enemy
+                );
+            }
+
+
+            enemy.x =
+                Math.max(
+                    enemy.size,
+                    Math.min(
+                        canvas.width -
+                        enemy.size,
+                        enemy.x
+                    )
+                );
+
+            enemy.y =
+                Math.max(
+                    enemy.size,
+                    Math.min(
+                        canvas.height -
+                        enemy.size,
+                        enemy.y
+                    )
+                );
+
+
+            const now =
+                Date.now();
+
+            if (
+                distance < 700 &&
+                now -
+                enemy.lastShot >=
+                enemy.reload
+            ) {
+
+                if (
+                    !shotBlocked(
+                        enemy.x,
+                        enemy.y,
+                        player.x,
+                        player.y
+                    )
+                ) {
+
+                    enemy.lastShot =
+                        now;
+
+                    createShell(
+                        enemy,
+                        true
+                    );
+
+                    createMuzzleFlash(
+                        enemy
+                    );
+
+                    enemy.fireSmoke =
+                        12;
+                }
+            }
+        }
+    );
+}
+
+
+/* =====================================================
+   SHOT BLOCKED
+===================================================== */
+
+function shotBlocked(
+    x1,
+    y1,
+    x2,
+    y2
+) {
+
+    return !!shellHitsObstacle(
+        x1,
+        y1,
+        x2,
+        y2
+    );
+}
+
+
+/* =====================================================
+   DRAW MAP
+===================================================== */
+
+function drawMap() {
+
+    if (
+        selectedMap === "town"
+    ) {
+
+        drawTown();
+    }
+
+    else if (
+        selectedMap === "snow"
+    ) {
+
+        drawSnow();
+    }
+
+    else {
+
+        drawTrenches();
+    }
+}
+
+
+/* =====================================================
+   TOWN DRAWING
 ===================================================== */
 
 function drawTown() {
@@ -1978,34 +3438,66 @@ function drawTown() {
 
     ctx.setLineDash([]);
 
-    obstacles
-        .filter(
-            o => o.type === "building"
-        )
-        .forEach(drawBuilding);
 
     obstacles
         .filter(
-            o => o.type === "rubble"
+            o =>
+                o.type ===
+                "building"
         )
-        .forEach(drawRubble);
+        .forEach(
+            drawBuilding
+        );
 
     obstacles
         .filter(
-            o => o.type === "wall"
+            o =>
+                o.type ===
+                "rubble"
         )
-        .forEach(drawWall);
+        .forEach(
+            drawRubble
+        );
 
     obstacles
         .filter(
-            o => o.type === "wreck"
+            o =>
+                o.type ===
+                "wall"
         )
-        .forEach(drawWreck);
+        .forEach(
+            drawWall
+        );
 
-    drawTree(370, 380);
-    drawTree(630, 180);
-    drawTree(865, 350);
-    drawTree(250, 370);
+    obstacles
+        .filter(
+            o =>
+                o.type ===
+                "wreck"
+        )
+        .forEach(
+            drawWreckObstacle
+        );
+
+    drawTree(
+        370,
+        380
+    );
+
+    drawTree(
+        630,
+        180
+    );
+
+    drawTree(
+        865,
+        350
+    );
+
+    drawTree(
+        250,
+        370
+    );
 }
 
 
@@ -2049,14 +3541,26 @@ function drawBuilding(o) {
         "#a79a68";
 
     for (
-        let x = o.x + 25;
-        x < o.x + o.width - 15;
+        let x =
+            o.x + 25;
+
+        x <
+            o.x +
+            o.width -
+            15;
+
         x += 45
     ) {
 
         for (
-            let y = o.y + 35;
-            y < o.y + o.height - 15;
+            let y =
+                o.y + 35;
+
+            y <
+                o.y +
+                o.height -
+                15;
+
             y += 45
         ) {
 
@@ -2107,8 +3611,14 @@ function drawRubble(o) {
         "#292923";
 
     for (
-        let x = o.x + 8;
-        x < o.x + o.width - 5;
+        let x =
+            o.x + 8;
+
+        x <
+            o.x +
+            o.width -
+            5;
+
         x += 20
     ) {
 
@@ -2116,7 +3626,8 @@ function drawRubble(o) {
             x,
             o.y + 8,
             10,
-            5 + ((x * 7) % 9)
+            5 +
+            ((x * 7) % 9)
         );
     }
 
@@ -2124,8 +3635,14 @@ function drawRubble(o) {
         "#777366";
 
     for (
-        let x = o.x + 15;
-        x < o.x + o.width - 5;
+        let x =
+            o.x + 15;
+
+        x <
+            o.x +
+            o.width -
+            5;
+
         x += 27
     ) {
 
@@ -2161,8 +3678,13 @@ function drawWall(o) {
     ctx.lineWidth = 2;
 
     for (
-        let x = o.x;
-        x < o.x + o.width;
+        let x =
+            o.x;
+
+        x <
+            o.x +
+            o.width;
+
         x += 18
     ) {
 
@@ -2175,7 +3697,8 @@ function drawWall(o) {
 
         ctx.lineTo(
             x,
-            o.y + o.height
+            o.y +
+            o.height
         );
 
         ctx.stroke();
@@ -2184,19 +3707,24 @@ function drawWall(o) {
 
 
 /* =====================================================
-   WRECK
+   MAP WRECK
 ===================================================== */
 
-function drawWreck(o) {
+function drawWreckObstacle(o) {
 
     ctx.save();
 
     ctx.translate(
-        o.x + o.width / 2,
-        o.y + o.height / 2
+        o.x +
+        o.width / 2,
+
+        o.y +
+        o.height / 2
     );
 
-    ctx.rotate(-0.35);
+    ctx.rotate(
+        -0.35
+    );
 
     ctx.fillStyle =
         "#292b25";
@@ -2293,7 +3821,7 @@ function drawTree(
 
 
 /* =====================================================
-   DRAW TRENCHES
+   TRENCH DRAWING
 ===================================================== */
 
 function drawTrenches() {
@@ -2335,27 +3863,43 @@ function drawTrenches() {
 
     obstacles
         .filter(
-            o => o.type === "trench"
+            o =>
+                o.type ===
+                "trench"
         )
-        .forEach(drawTrench);
+        .forEach(
+            drawTrench
+        );
 
     obstacles
         .filter(
-            o => o.type === "bunker"
+            o =>
+                o.type ===
+                "bunker"
         )
-        .forEach(drawBunker);
+        .forEach(
+            drawBunker
+        );
 
     obstacles
         .filter(
-            o => o.type === "wire"
+            o =>
+                o.type ===
+                "wire"
         )
-        .forEach(drawWire);
+        .forEach(
+            drawWire
+        );
 
     obstacles
         .filter(
-            o => o.type === "crater"
+            o =>
+                o.type ===
+                "crater"
         )
-        .forEach(drawCrater);
+        .forEach(
+            drawCrater
+        );
 
     drawLog(
         230,
@@ -2370,10 +3914,6 @@ function drawTrenches() {
     );
 }
 
-
-/* =====================================================
-   TRENCH
-===================================================== */
 
 function drawTrench(o) {
 
@@ -2398,8 +3938,14 @@ function drawTrench(o) {
     );
 
     for (
-        let x = o.x + 8;
-        x < o.x + o.width - 15;
+        let x =
+            o.x + 8;
+
+        x <
+            o.x +
+            o.width -
+            15;
+
         x += 27
     ) {
 
@@ -2415,17 +3961,15 @@ function drawTrench(o) {
 
         ctx.fillRect(
             x,
-            o.y + o.height - 8,
+            o.y +
+            o.height -
+            8,
             22,
             13
         );
     }
 }
 
-
-/* =====================================================
-   BUNKER
-===================================================== */
 
 function drawBunker(o) {
 
@@ -2461,10 +4005,6 @@ function drawBunker(o) {
 }
 
 
-/* =====================================================
-   WIRE
-===================================================== */
-
 function drawWire(o) {
 
     ctx.strokeStyle =
@@ -2480,8 +4020,10 @@ function drawWire(o) {
     );
 
     ctx.lineTo(
-        o.x + o.width,
-        o.y + o.height
+        o.x +
+        o.width,
+        o.y +
+        o.height
     );
 
     ctx.stroke();
@@ -2489,41 +4031,20 @@ function drawWire(o) {
     ctx.beginPath();
 
     ctx.moveTo(
-        o.x + o.width,
+        o.x +
+        o.width,
         o.y
     );
 
     ctx.lineTo(
         o.x,
-        o.y + o.height
+        o.y +
+        o.height
     );
 
     ctx.stroke();
-
-    for (
-        let x = o.x + 10;
-        x < o.x + o.width;
-        x += 30
-    ) {
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            o.y + 10,
-            7,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.stroke();
-    }
 }
 
-
-/* =====================================================
-   CRATER
-===================================================== */
 
 function drawCrater(o) {
 
@@ -2533,10 +4054,16 @@ function drawCrater(o) {
     ctx.beginPath();
 
     ctx.ellipse(
-        o.x + o.width / 2,
-        o.y + o.height / 2,
+        o.x +
         o.width / 2,
+
+        o.y +
         o.height / 2,
+
+        o.width / 2,
+
+        o.height / 2,
+
         0,
         0,
         Math.PI * 2
@@ -2550,10 +4077,16 @@ function drawCrater(o) {
     ctx.beginPath();
 
     ctx.ellipse(
-        o.x + o.width / 2,
-        o.y + o.height / 2,
+        o.x +
+        o.width / 2,
+
+        o.y +
+        o.height / 2,
+
         o.width / 3,
+
         o.height / 3,
+
         0,
         0,
         Math.PI * 2
@@ -2562,10 +4095,6 @@ function drawCrater(o) {
     ctx.fill();
 }
 
-
-/* =====================================================
-   LOG
-===================================================== */
 
 function drawLog(
     x,
@@ -2580,7 +4109,9 @@ function drawLog(
         y
     );
 
-    ctx.rotate(-0.15);
+    ctx.rotate(
+        -0.15
+    );
 
     ctx.fillStyle =
         "#4b3321";
@@ -2612,7 +4143,7 @@ function drawLog(
 
 
 /* =====================================================
-   DRAW SNOW
+   SNOW DRAWING
 ===================================================== */
 
 function drawSnow() {
@@ -2644,10 +4175,6 @@ function drawSnow() {
         );
     }
 
-    /*
-       FROZEN ROAD
-    */
-
     ctx.fillStyle =
         "#b8c7c9";
 
@@ -2670,15 +4197,23 @@ function drawSnow() {
 
     obstacles
         .filter(
-            o => o.type === "snowCabin"
+            o =>
+                o.type ===
+                "snowCabin"
         )
-        .forEach(drawSnowCabin);
+        .forEach(
+            drawSnowCabin
+        );
 
     obstacles
         .filter(
-            o => o.type === "rock"
+            o =>
+                o.type ===
+                "rock"
         )
-        .forEach(drawSnowRock);
+        .forEach(
+            drawSnowRock
+        );
 
     const trees = [
 
@@ -2703,20 +4238,17 @@ function drawSnow() {
 
     ];
 
-    trees.forEach(function(point) {
+    trees.forEach(
+        function(point) {
 
-        drawSnowTree(
-            point[0],
-            point[1]
-        );
-
-    });
+            drawSnowTree(
+                point[0],
+                point[1]
+            );
+        }
+    );
 }
 
-
-/* =====================================================
-   SNOW TREE
-===================================================== */
 
 function drawSnowTree(
     x,
@@ -2825,10 +4357,6 @@ function drawSnowTree(
 }
 
 
-/* =====================================================
-   SNOW CABIN
-===================================================== */
-
 function drawSnowCabin(o) {
 
     ctx.fillStyle =
@@ -2862,12 +4390,14 @@ function drawSnowCabin(o) {
     );
 
     ctx.lineTo(
-        o.x + o.width / 2,
+        o.x +
+        o.width / 2,
         o.y - 18
     );
 
     ctx.lineTo(
-        o.x + o.width + 8,
+        o.x +
+        o.width + 8,
         o.y + 10
     );
 
@@ -2886,22 +4416,26 @@ function drawSnowCabin(o) {
     );
 
     ctx.lineTo(
-        o.x + o.width / 2,
+        o.x +
+        o.width / 2,
         o.y - 25
     );
 
     ctx.lineTo(
-        o.x + o.width + 8,
+        o.x +
+        o.width + 8,
         o.y + 10
     );
 
     ctx.lineTo(
-        o.x + o.width,
+        o.x +
+        o.width,
         o.y + 5
     );
 
     ctx.lineTo(
-        o.x + o.width / 2,
+        o.x +
+        o.width / 2,
         o.y - 14
     );
 
@@ -2925,7 +4459,9 @@ function drawSnowCabin(o) {
     );
 
     ctx.fillRect(
-        o.x + o.width - 44,
+        o.x +
+        o.width -
+        44,
         o.y + 30,
         24,
         20
@@ -2949,10 +4485,6 @@ function drawSnowCabin(o) {
 }
 
 
-/* =====================================================
-   SNOW ROCK
-===================================================== */
-
 function drawSnowRock(o) {
 
     ctx.fillStyle =
@@ -2961,10 +4493,16 @@ function drawSnowRock(o) {
     ctx.beginPath();
 
     ctx.ellipse(
-        o.x + o.width / 2,
-        o.y + o.height / 2,
+        o.x +
         o.width / 2,
+
+        o.y +
         o.height / 2,
+
+        o.width / 2,
+
+        o.height / 2,
+
         0,
         0,
         Math.PI * 2
@@ -2978,10 +4516,16 @@ function drawSnowRock(o) {
     ctx.beginPath();
 
     ctx.ellipse(
-        o.x + o.width * 0.42,
-        o.y + o.height * 0.32,
+        o.x +
+        o.width * 0.42,
+
+        o.y +
+        o.height * 0.32,
+
         o.width * 0.3,
+
         o.height * 0.18,
+
         0,
         0,
         Math.PI * 2
@@ -2992,14 +4536,19 @@ function drawSnowRock(o) {
 
 
 /* =====================================================
-   DRAW TANK
+   TANK DRAWING
 ===================================================== */
 
-function drawTank(tank) {
+function drawTank(
+    tank
+) {
 
-    /*
-       HULL ROTATES SEPARATELY
-    */
+    if (
+        tank.destroyed
+    ) {
+
+        return;
+    }
 
     ctx.save();
 
@@ -3012,14 +4561,12 @@ function drawTank(tank) {
         tank.angle
     );
 
-    drawTankHull(tank);
+    drawTankHull(
+        tank
+    );
 
     ctx.restore();
 
-
-    /*
-       TURRET ROTATES SEPARATELY
-    */
 
     ctx.save();
 
@@ -3032,7 +4579,9 @@ function drawTank(tank) {
         tank.turretAngle
     );
 
-    drawTurret(tank);
+    drawTurret(
+        tank
+    );
 
     ctx.restore();
 
@@ -3048,24 +4597,39 @@ function drawTank(tank) {
         "#201f18";
 
     ctx.fillRect(
-        tank.x - barWidth / 2,
-        tank.y - tank.size - 15,
+        tank.x -
+        barWidth / 2,
+
+        tank.y -
+        tank.size -
+        15,
+
         barWidth,
         7
     );
 
     ctx.fillStyle =
-        "#d5c45e";
+        tank.health <
+        tank.maxHealth *
+        0.25
+        ? "#c94b32"
+        : "#d5c45e";
 
     ctx.fillRect(
-        tank.x - barWidth / 2,
-        tank.y - tank.size - 15,
+        tank.x -
+        barWidth / 2,
+
+        tank.y -
+        tank.size -
+        15,
+
         barWidth *
         Math.max(
             0,
             tank.health /
             tank.maxHealth
         ),
+
         7
     );
 }
@@ -3075,7 +4639,9 @@ function drawTank(tank) {
    TANK HULL
 ===================================================== */
 
-function drawTankHull(tank) {
+function drawTankHull(
+    tank
+) {
 
     const s =
         tank.size;
@@ -3145,15 +4711,18 @@ function drawTankHull(tank) {
 
 
     /*
-       WHEELS
+       TRACK WHEELS
     */
 
     ctx.fillStyle =
         "#77745d";
 
     for (
-        let x = -s + 7;
+        let x =
+            -s + 7;
+
         x < s;
+
         x += 11
     ) {
 
@@ -3184,13 +4753,15 @@ function drawTankHull(tank) {
 
 
     /*
-       HULL SHAPES
+       HULL
     */
 
     ctx.fillStyle =
         colour;
 
-    switch (tank.model) {
+    switch (
+        tank.model
+    ) {
 
         case "tetrarch":
 
@@ -3374,7 +4945,9 @@ function drawTankHull(tank) {
    TURRET
 ===================================================== */
 
-function drawTurret(tank) {
+function drawTurret(
+    tank
+) {
 
     const s =
         tank.size;
@@ -3405,22 +4978,13 @@ function drawTurret(tank) {
             "#5d7845";
     }
 
-
-    /*
-       CANNON
-    */
-
-    drawCannon(tank);
-
-
-    /*
-       TURRET
-    */
-
     ctx.fillStyle =
         colour;
 
-    switch (tank.model) {
+
+    switch (
+        tank.model
+    ) {
 
         case "tetrarch":
 
@@ -3562,7 +5126,7 @@ function drawTurret(tank) {
 
 
     /*
-       TURRET CENTER
+       TURRET CENTRE
     */
 
     ctx.fillStyle =
@@ -3581,7 +5145,13 @@ function drawTurret(tank) {
     ctx.fill();
 
 
-    drawTankMarkings(tank);
+    drawCannon(
+        tank
+    );
+
+    drawTankMarkings(
+        tank
+    );
 }
 
 
@@ -3589,7 +5159,9 @@ function drawTurret(tank) {
    CANNON
 ===================================================== */
 
-function drawCannon(tank) {
+function drawCannon(
+    tank
+) {
 
     const s =
         tank.size;
@@ -3599,7 +5171,9 @@ function drawCannon(tank) {
 
     let width = 6;
 
-    switch (tank.model) {
+    switch (
+        tank.model
+    ) {
 
         case "tetrarch":
             length = s * 1.15;
@@ -3667,10 +5241,12 @@ function drawCannon(tank) {
 
 
 /* =====================================================
-   TANK MARKINGS
+   MARKINGS
 ===================================================== */
 
-function drawTankMarkings(tank) {
+function drawTankMarkings(
+    tank
+) {
 
     const s =
         tank.size;
@@ -3744,13 +5320,17 @@ function drawTankMarkings(tank) {
 
 
 /* =====================================================
-   DRAW SHELLS
+   SHELL DRAWING
 ===================================================== */
 
 function drawShells() {
 
     shells.forEach(
         function(shell) {
+
+            /*
+               SHELL TRAIL
+            */
 
             ctx.strokeStyle =
                 "#d6b65c";
@@ -3761,10 +5341,10 @@ function drawShells() {
 
             ctx.moveTo(
                 shell.x -
-                shell.vx * 1.2,
+                shell.vx * 1.5,
 
                 shell.y -
-                shell.vy * 1.2
+                shell.vy * 1.5
             );
 
             ctx.lineTo(
@@ -3774,6 +5354,10 @@ function drawShells() {
 
             ctx.stroke();
 
+
+            /*
+               SHELL
+            */
 
             ctx.save();
 
@@ -3831,77 +5415,21 @@ function drawShells() {
             );
 
             ctx.restore();
-
         }
     );
 }
 
 
 /* =====================================================
-   DRAW IMPACTS
-===================================================== */
-
-function drawImpacts() {
-
-    impacts.forEach(
-        function(impact) {
-
-            const progress =
-                1 -
-                impact.life /
-                impact.maxLife;
-
-            const radius =
-                8 +
-                progress * 24;
-
-            ctx.globalAlpha =
-                1 - progress;
-
-            ctx.fillStyle =
-                "#e8c66d";
-
-            ctx.beginPath();
-
-            ctx.arc(
-                impact.x,
-                impact.y,
-                radius,
-                0,
-                Math.PI * 2
-            );
-
-            ctx.fill();
-
-            ctx.fillStyle =
-                "#342b1b";
-
-            ctx.beginPath();
-
-            ctx.arc(
-                impact.x,
-                impact.y,
-                radius * 0.35,
-                0,
-                Math.PI * 2
-            );
-
-            ctx.fill();
-
-            ctx.globalAlpha = 1;
-        }
-    );
-}
-
-
-/* =====================================================
-   UPDATE UI
+   UI
 ===================================================== */
 
 function updateUI() {
 
     document
-        .getElementById("playerHealth")
+        .getElementById(
+            "playerHealth"
+        )
         .textContent =
         Math.max(
             0,
@@ -3911,7 +5439,9 @@ function updateUI() {
         );
 
     document
-        .getElementById("enemyCount")
+        .getElementById(
+            "enemyCount"
+        )
         .textContent =
         enemies.length;
 }
@@ -3930,12 +5460,16 @@ function checkGameState() {
         gameRunning = false;
 
         document
-            .getElementById("battleMessage")
+            .getElementById(
+                "battleMessage"
+            )
             .textContent =
             "💀 YOUR TANK HAS BEEN DESTROYED";
 
         document
-            .getElementById("restartButton")
+            .getElementById(
+                "restartButton"
+            )
             .style.display =
             "block";
 
@@ -3950,12 +5484,16 @@ function checkGameState() {
         gameRunning = false;
 
         document
-            .getElementById("battleMessage")
+            .getElementById(
+                "battleMessage"
+            )
             .textContent =
             "🏆 VICTORY! ENEMY FORCES DESTROYED";
 
         document
-            .getElementById("restartButton")
+            .getElementById(
+                "restartButton"
+            )
             .style.display =
             "block";
     }
@@ -3963,14 +5501,40 @@ function checkGameState() {
 
 
 /* =====================================================
-   MAIN GAME LOOP
+   SCREEN SHAKE
+===================================================== */
+
+function updateScreenShake() {
+
+    screenShake *= 0.88;
+
+    if (
+        screenShake < 0.1
+    ) {
+
+        screenShake = 0;
+    }
+}
+
+
+/* =====================================================
+   GAME LOOP
 ===================================================== */
 
 function gameLoop() {
 
     if (!gameRunning) {
+
+        /*
+           We still draw the final
+           explosion/wreck state.
+        */
+
+        drawEverything();
+
         return;
     }
+
 
     movePlayer();
 
@@ -3982,31 +5546,40 @@ function gameLoop() {
 
     updateImpacts();
 
+    updateExplosions();
 
-    /*
-       THIS NOW WORKS BECAUSE
-       drawMap() EXISTS ABOVE.
-    */
+    updateSmoke();
 
-    drawMap();
+    updateFireParticles();
 
-    drawShells();
+    updateMuzzleFlashes();
 
-    drawImpacts();
+    updateTrackMarks();
 
+    updateHitTexts();
+
+
+    createTankSmoke(
+        player
+    );
 
     enemies.forEach(
         function(enemy) {
-            drawTank(enemy);
+
+            createTankSmoke(
+                enemy
+            );
         }
     );
 
 
-    drawTank(player);
+    drawEverything();
 
     updateUI();
 
     checkGameState();
+
+    updateScreenShake();
 
 
     if (gameRunning) {
@@ -4015,6 +5588,132 @@ function gameLoop() {
             gameLoop
         );
     }
+}
+
+
+/* =====================================================
+   DRAW EVERYTHING
+===================================================== */
+
+function drawEverything() {
+
+    ctx.save();
+
+
+    /*
+       SCREEN SHAKE
+    */
+
+    if (
+        screenShake > 0
+    ) {
+
+        ctx.translate(
+            (Math.random() - 0.5) *
+            screenShake,
+
+            (Math.random() - 0.5) *
+            screenShake
+        );
+    }
+
+
+    /*
+       MAP
+    */
+
+    drawMap();
+
+
+    /*
+       TRACKS
+    */
+
+    drawTrackMarks();
+
+
+    /*
+       WRECKS
+    */
+
+    drawWrecks();
+
+
+    /*
+       SHELLS
+    */
+
+    drawShells();
+
+
+    /*
+       IMPACTS
+    */
+
+    drawImpacts();
+
+
+    /*
+       TANKS
+    */
+
+    enemies.forEach(
+        function(enemy) {
+
+            drawTank(
+                enemy
+            );
+        }
+    );
+
+
+    if (
+        player &&
+        !player.destroyed
+    ) {
+
+        drawTank(
+            player
+        );
+    }
+
+
+    /*
+       FIRE
+    */
+
+    drawFireParticles();
+
+
+    /*
+       SMOKE
+    */
+
+    drawSmoke();
+
+
+    /*
+       EXPLOSIONS
+    */
+
+    drawExplosions();
+
+
+    /*
+       MUZZLE FLASH
+    */
+
+    drawMuzzleFlashes();
+
+
+    /*
+       HIT TEXT
+    */
+
+    drawHitTexts();
+
+
+    ctx.restore();
 }
 
 </script>

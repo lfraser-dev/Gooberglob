@@ -179,21 +179,15 @@ button.selected {
 
     </div>
 
-
     <div class="section">
 
         <h2>2. Choose Your Tank</h2>
 
-        <div
-            id="tankChoices"
-            class="choices">
-
+        <div id="tankChoices" class="choices">
             <p>Choose a faction first.</p>
-
         </div>
 
     </div>
-
 
     <div class="section">
 
@@ -222,7 +216,6 @@ button.selected {
         </div>
 
     </div>
-
 
     <button
         id="startButton"
@@ -254,18 +247,15 @@ button.selected {
 
     </div>
 
-
     <div id="battleMessage">
         BATTLE!
     </div>
-
 
     <canvas
         id="gameCanvas"
         width="1100"
         height="700">
     </canvas>
-
 
     <div id="controls">
         W A S D = MOVE
@@ -274,7 +264,6 @@ button.selected {
         &nbsp; | &nbsp;
         CLICK / SPACE = FIRE
     </div>
-
 
     <button
         id="restartButton"
@@ -330,7 +319,6 @@ const tanks = {
 
     },
 
-
     german: {
 
         light: {
@@ -367,7 +355,6 @@ const tanks = {
         }
 
     },
-
 
     soviet: {
 
@@ -426,7 +413,6 @@ let obstacles = [];
 let keys = {};
 
 let gameRunning = false;
-
 let lastShot = 0;
 
 let mouse = {
@@ -447,13 +433,12 @@ const ctx =
 
 
 /* =====================================================
-   FACTION
+   FACTION SELECTION
 ===================================================== */
 
 function chooseFaction(faction) {
 
     selectedFaction = faction;
-
     selectedTankClass = null;
 
     document
@@ -473,12 +458,11 @@ function chooseFaction(faction) {
         .classList.add("selected");
 
     createTankButtons();
-
 }
 
 
 /* =====================================================
-   TANK BUTTONS
+   CREATE TANK BUTTONS
 ===================================================== */
 
 function createTankButtons() {
@@ -489,8 +473,7 @@ function createTankButtons() {
     container.innerHTML = "";
 
     for (
-        const type in
-        tanks[selectedFaction]
+        const type in tanks[selectedFaction]
     ) {
 
         const tank =
@@ -516,19 +499,15 @@ function createTankButtons() {
 
             document
                 .querySelectorAll(".tankCard")
-                .forEach(
-                    b =>
-                    b.classList.remove("selected")
-                );
+                .forEach(function(button) {
+                    button.classList.remove("selected");
+                });
 
             button.classList.add("selected");
-
         };
 
         container.appendChild(button);
-
     }
-
 }
 
 
@@ -552,24 +531,21 @@ function chooseMap(map) {
         .getElementById("snowButton")
         .classList.remove("selected");
 
-    let id;
+    let buttonId;
 
     if (map === "trenches") {
-        id = "trenchButton";
+        buttonId = "trenchButton";
     }
-
     else if (map === "town") {
-        id = "townButton";
+        buttonId = "townButton";
     }
-
     else {
-        id = "snowButton";
+        buttonId = "snowButton";
     }
 
     document
-        .getElementById(id)
+        .getElementById(buttonId)
         .classList.add("selected");
-
 }
 
 
@@ -607,7 +583,6 @@ function startGame() {
     gameRunning = true;
 
     requestAnimationFrame(gameLoop);
-
 }
 
 
@@ -626,7 +601,6 @@ function createBattle() {
         y: 350,
 
         angle: 0,
-
         turretAngle: 0,
 
         health: data.health,
@@ -641,7 +615,6 @@ function createBattle() {
         name: data.name,
         model: data.model,
         faction: selectedFaction
-
     };
 
     document
@@ -652,169 +625,9 @@ function createBattle() {
     impacts = [];
 
     createMap();
-
     createEnemies();
 
-}
-
-
-/* =====================================================
-   MAP CREATION
-===================================================== */
-
-function createMap() {
-
-    obstacles = [];
-
-    if (selectedMap === "town") {
-
-        createTownMap();
-
-    }
-
-    else if (selectedMap === "snow") {
-
-        createSnowMap();
-
-    }
-
-    else {
-
-        createTrenchMap();
-
-    }
-
-}
-
-
-/* =====================================================
-   TOWN MAP
-===================================================== */
-
-function createTownMap() {
-
-    addObstacle(40, 40, 210, 150, "building");
-
-    addObstacle(290, 45, 150, 115, "building");
-
-    addObstacle(690, 35, 190, 150, "building");
-
-    addObstacle(920, 60, 130, 180, "building");
-
-    addObstacle(35, 470, 190, 170, "building");
-
-    addObstacle(285, 500, 145, 130, "building");
-
-    addObstacle(675, 485, 190, 150, "building");
-
-    addObstacle(925, 430, 140, 190, "building");
-
-    addObstacle(480, 70, 100, 75, "rubble");
-
-    addObstacle(570, 510, 80, 75, "rubble");
-
-    addObstacle(250, 250, 140, 18, "wall");
-
-    addObstacle(710, 275, 150, 18, "wall");
-
-    addObstacle(460, 315, 75, 35, "wreck");
-
-    addObstacle(600, 380, 70, 32, "wreck");
-
-}
-
-
-/* =====================================================
-   TRENCH MAP
-===================================================== */
-
-function createTrenchMap() {
-
-    addObstacle(
-        0, 120, 300, 55, "trench"
-    );
-
-    addObstacle(
-        360, 100, 280, 55, "trench"
-    );
-
-    addObstacle(
-        700, 125, 400, 55, "trench"
-    );
-
-    addObstacle(
-        0, 520, 260, 55, "trench"
-    );
-
-    addObstacle(
-        320, 545, 310, 55, "trench"
-    );
-
-    addObstacle(
-        700, 515, 400, 55, "trench"
-    );
-
-    addObstacle(
-        350, 220, 115, 70, "bunker"
-    );
-
-    addObstacle(
-        690, 360, 125, 75, "bunker"
-    );
-
-    addObstacle(
-        120, 315, 170, 22, "wire"
-    );
-
-    addObstacle(
-        820, 300, 180, 22, "wire"
-    );
-
-    addObstacle(
-        430, 400, 70, 50, "crater"
-    );
-
-    addObstacle(
-        570, 230, 65, 45, "crater"
-    );
-
-}
-
-
-/* =====================================================
-   SNOWY FOREST MAP
-===================================================== */
-
-function createSnowMap() {
-
-    addObstacle(
-        260, 95, 120, 70, "snowCabin"
-    );
-
-    addObstacle(
-        760, 85, 135, 75, "snowCabin"
-    );
-
-    addObstacle(
-        430, 515, 125, 70, "snowCabin"
-    );
-
-    addObstacle(
-        865, 500, 115, 70, "snowCabin"
-    );
-
-    addObstacle(
-        500, 250, 90, 60, "rock"
-    );
-
-    addObstacle(
-        700, 330, 105, 55, "rock"
-    );
-
-    addObstacle(
-        240, 390, 90, 50, "rock"
-    );
-
+    updateUI();
 }
 
 
@@ -831,17 +644,173 @@ function addObstacle(
 ) {
 
     obstacles.push({
-
         x: x,
         y: y,
-
         width: width,
         height: height,
-
         type: type
-
     });
+}
 
+
+/* =====================================================
+   CREATE MAP
+===================================================== */
+
+function createMap() {
+
+    obstacles = [];
+
+    if (selectedMap === "town") {
+        createTownMap();
+    }
+
+    else if (selectedMap === "snow") {
+        createSnowMap();
+    }
+
+    else {
+        createTrenchMap();
+    }
+}
+
+
+/* =====================================================
+   IMPORTANT FIX:
+   DRAW MAP SELECTOR
+===================================================== */
+
+function drawMap() {
+
+    if (selectedMap === "town") {
+        drawTown();
+    }
+
+    else if (selectedMap === "snow") {
+        drawSnow();
+    }
+
+    else {
+        drawTrenches();
+    }
+}
+
+
+/* =====================================================
+   TOWN MAP
+===================================================== */
+
+function createTownMap() {
+
+    addObstacle(40, 40, 210, 150, "building");
+    addObstacle(290, 45, 150, 115, "building");
+
+    addObstacle(690, 35, 190, 150, "building");
+    addObstacle(920, 60, 130, 180, "building");
+
+    addObstacle(35, 470, 190, 170, "building");
+    addObstacle(285, 500, 145, 130, "building");
+
+    addObstacle(675, 485, 190, 150, "building");
+    addObstacle(925, 430, 140, 190, "building");
+
+    addObstacle(480, 70, 100, 75, "rubble");
+    addObstacle(570, 510, 80, 75, "rubble");
+
+    addObstacle(250, 250, 140, 18, "wall");
+    addObstacle(710, 275, 150, 18, "wall");
+
+    addObstacle(460, 315, 75, 35, "wreck");
+    addObstacle(600, 380, 70, 32, "wreck");
+}
+
+
+/* =====================================================
+   TRENCH MAP
+===================================================== */
+
+function createTrenchMap() {
+
+    addObstacle(0, 120, 300, 55, "trench");
+    addObstacle(360, 100, 280, 55, "trench");
+    addObstacle(700, 125, 400, 55, "trench");
+
+    addObstacle(0, 520, 260, 55, "trench");
+    addObstacle(320, 545, 310, 55, "trench");
+    addObstacle(700, 515, 400, 55, "trench");
+
+    addObstacle(350, 220, 115, 70, "bunker");
+    addObstacle(690, 360, 125, 75, "bunker");
+
+    addObstacle(120, 315, 170, 22, "wire");
+    addObstacle(820, 300, 180, 22, "wire");
+
+    addObstacle(430, 400, 70, 50, "crater");
+    addObstacle(570, 230, 65, 45, "crater");
+}
+
+
+/* =====================================================
+   SNOW MAP
+===================================================== */
+
+function createSnowMap() {
+
+    addObstacle(
+        260,
+        95,
+        120,
+        70,
+        "snowCabin"
+    );
+
+    addObstacle(
+        760,
+        85,
+        135,
+        75,
+        "snowCabin"
+    );
+
+    addObstacle(
+        430,
+        515,
+        125,
+        70,
+        "snowCabin"
+    );
+
+    addObstacle(
+        865,
+        500,
+        115,
+        70,
+        "snowCabin"
+    );
+
+    addObstacle(
+        500,
+        250,
+        90,
+        60,
+        "rock"
+    );
+
+    addObstacle(
+        700,
+        330,
+        105,
+        55,
+        "rock"
+    );
+
+    addObstacle(
+        240,
+        390,
+        90,
+        50,
+        "rock"
+    );
 }
 
 
@@ -852,16 +821,13 @@ function addObstacle(
 function isSolidObstacle(obstacle) {
 
     return [
-
         "building",
         "wall",
         "bunker",
         "wreck",
         "snowCabin",
         "rock"
-
     ].includes(obstacle.type);
-
 }
 
 
@@ -879,16 +845,13 @@ function tankHitsObstacle(
         const obstacle of obstacles
     ) {
 
-        if (
-            !isSolidObstacle(obstacle)
-        ) {
+        if (!isSolidObstacle(obstacle)) {
             continue;
         }
 
         const closestX =
             Math.max(
                 obstacle.x,
-
                 Math.min(
                     newX,
                     obstacle.x +
@@ -899,7 +862,6 @@ function tankHitsObstacle(
         const closestY =
             Math.max(
                 obstacle.y,
-
                 Math.min(
                     newY,
                     obstacle.y +
@@ -908,12 +870,10 @@ function tankHitsObstacle(
             );
 
         const dx =
-            newX -
-            closestX;
+            newX - closestX;
 
         const dy =
-            newY -
-            closestY;
+            newY - closestY;
 
         if (
             dx * dx +
@@ -923,18 +883,15 @@ function tankHitsObstacle(
         ) {
 
             return true;
-
         }
-
     }
 
     return false;
-
 }
 
 
 /* =====================================================
-   SAFE SPAWN SYSTEM
+   SAFE SPAWN
 ===================================================== */
 
 function validSpawnPoint(
@@ -958,15 +915,12 @@ function validSpawnPoint(
     ) {
 
         return false;
-
     }
 
     const fakeTank = {
-
         x: x,
         y: y,
         size: size
-
     };
 
     if (
@@ -978,23 +932,15 @@ function validSpawnPoint(
     ) {
 
         return false;
-
     }
-
-    /*
-       Don't spawn right next
-       to the player.
-    */
 
     if (player) {
 
         const dx =
-            x -
-            player.x;
+            x - player.x;
 
         const dy =
-            y -
-            player.y;
+            y - player.y;
 
         const distance =
             Math.sqrt(
@@ -1002,32 +948,20 @@ function validSpawnPoint(
                 dy * dy
             );
 
-        if (
-            distance < 220
-        ) {
-
+        if (distance < 220) {
             return false;
-
         }
-
     }
-
-    /*
-       Don't overlap another
-       enemy.
-    */
 
     for (
         const enemy of enemies
     ) {
 
         const dx =
-            x -
-            enemy.x;
+            x - enemy.x;
 
         const dy =
-            y -
-            enemy.y;
+            y - enemy.y;
 
         const distance =
             Math.sqrt(
@@ -1043,18 +977,15 @@ function validSpawnPoint(
         ) {
 
             return false;
-
         }
-
     }
 
     return true;
-
 }
 
 
 /* =====================================================
-   FIND SAFE SPAWN
+   FIND SPAWN
 ===================================================== */
 
 function findSpawnPoint(
@@ -1071,18 +1002,10 @@ function findSpawnPoint(
     ) {
 
         return {
-
             x: preferred[0],
             y: preferred[1]
-
         };
-
     }
-
-    /*
-       Search the entire map
-       if preferred location is blocked.
-    */
 
     for (
         let y = 45;
@@ -1108,19 +1031,11 @@ function findSpawnPoint(
                     x: x,
                     y: y
                 };
-
             }
-
         }
-
     }
 
-    /*
-       Emergency fallback.
-    */
-
     return {
-
         x:
             canvas.width -
             size -
@@ -1128,9 +1043,7 @@ function findSpawnPoint(
 
         y:
             canvas.height / 2
-
     };
-
 }
 
 
@@ -1142,82 +1055,44 @@ function createEnemies() {
 
     enemies = [];
 
-    /*
-       Enemy faction cycle:
-       British -> German
-       German -> Soviet
-       Soviet -> British
-    */
-
     let enemyFaction;
 
-    if (
-        selectedFaction === "british"
-    ) {
-
+    if (selectedFaction === "british") {
         enemyFaction = "german";
-
     }
 
-    else if (
-        selectedFaction === "german"
-    ) {
-
+    else if (selectedFaction === "german") {
         enemyFaction = "soviet";
-
     }
 
     else {
-
         enemyFaction = "british";
-
     }
 
-
     const types = [
-
         "light",
         "medium",
         "heavy"
-
     ];
-
-
-    /*
-       IMPORTANT:
-       The old city spawn points could
-       overlap buildings.
-
-       These are now checked by
-       findSpawnPoint().
-    */
 
     let preferred;
 
-    if (
-        selectedMap === "town"
-    ) {
+    if (selectedMap === "town") {
 
         preferred = [
-
             [560, 90],
             [560, 350],
             [560, 620]
-
         ];
 
     }
 
-    else if (
-        selectedMap === "snow"
-    ) {
+    else if (selectedMap === "snow") {
 
         preferred = [
-
             [1000, 120],
             [930, 350],
             [1000, 620]
-
         ];
 
     }
@@ -1225,15 +1100,11 @@ function createEnemies() {
     else {
 
         preferred = [
-
             [930, 130],
             [870, 350],
             [950, 570]
-
         ];
-
     }
-
 
     for (
         let i = 0;
@@ -1242,9 +1113,7 @@ function createEnemies() {
     ) {
 
         const data =
-            tanks[enemyFaction]
-            [types[i]];
-
+            tanks[enemyFaction][types[i]];
 
         const spawn =
             findSpawnPoint(
@@ -1252,49 +1121,34 @@ function createEnemies() {
                 data.size
             );
 
-
         enemies.push({
 
             x: spawn.x,
             y: spawn.y,
 
             angle: Math.PI,
-
             turretAngle: Math.PI,
 
             health: data.health,
             maxHealth: data.health,
 
             speed:
-                data.speed *
-                0.55,
+                data.speed * 0.55,
 
-            damage:
-                data.damage,
+            damage: data.damage,
 
             reload:
-                data.reload +
-                500,
+                data.reload + 500,
 
-            size:
-                data.size,
+            size: data.size,
 
-            name:
-                data.name,
+            name: data.name,
+            model: data.model,
+            faction: enemyFaction,
 
-            model:
-                data.model,
-
-            faction:
-                enemyFaction,
-
-            lastShot:
-                0
-
+            lastShot: 0
         });
-
     }
-
 }
 
 
@@ -1315,11 +1169,8 @@ window.addEventListener(
         ) {
 
             event.preventDefault();
-
             shoot();
-
         }
-
     }
 );
 
@@ -1331,7 +1182,6 @@ window.addEventListener(
         keys[
             event.key.toLowerCase()
         ] = false;
-
     }
 );
 
@@ -1362,7 +1212,6 @@ canvas.addEventListener(
             ) *
             canvas.height /
             rect.height;
-
     }
 );
 
@@ -1370,9 +1219,7 @@ canvas.addEventListener(
 canvas.addEventListener(
     "mousedown",
     function() {
-
         shoot();
-
     }
 );
 
@@ -1386,29 +1233,16 @@ function movePlayer() {
     let dx = 0;
     let dy = 0;
 
-    if (keys["w"]) {
-        dy--;
-    }
-
-    if (keys["s"]) {
-        dy++;
-    }
-
-    if (keys["a"]) {
-        dx--;
-    }
-
-    if (keys["d"]) {
-        dx++;
-    }
+    if (keys.w) dy--;
+    if (keys.s) dy++;
+    if (keys.a) dx--;
+    if (keys.d) dx++;
 
     if (
         dx === 0 &&
         dy === 0
     ) {
-
         return;
-
     }
 
     const length =
@@ -1420,81 +1254,59 @@ function movePlayer() {
     dx /= length;
     dy /= length;
 
-
-    /*
-       Tank hull rotates
-       with movement.
-    */
-
     player.angle =
         Math.atan2(
             dy,
             dx
         );
 
-
     const moveX =
-        dx *
-        player.speed;
+        dx * player.speed;
 
     const moveY =
-        dy *
-        player.speed;
-
+        dy * player.speed;
 
     if (
         !tankHitsObstacle(
             player,
-            player.x +
-            moveX,
+            player.x + moveX,
             player.y
         )
     ) {
 
         player.x += moveX;
-
     }
-
 
     if (
         !tankHitsObstacle(
             player,
             player.x,
-            player.y +
-            moveY
+            player.y + moveY
         )
     ) {
 
         player.y += moveY;
-
     }
-
 
     player.x =
         Math.max(
             player.size,
-
             Math.min(
                 canvas.width -
                 player.size,
-
                 player.x
             )
         );
 
-
     player.y =
         Math.max(
             player.size,
-
             Math.min(
                 canvas.height -
                 player.size,
-
                 player.y
             )
         );
-
 }
 
 
@@ -1506,20 +1318,17 @@ function aimPlayer() {
 
     player.turretAngle =
         Math.atan2(
-
             mouse.y -
             player.y,
 
             mouse.x -
             player.x
-
         );
-
 }
 
 
 /* =====================================================
-   PLAYER SHOOT
+   SHOOT
 ===================================================== */
 
 function shoot() {
@@ -1528,35 +1337,26 @@ function shoot() {
         !gameRunning ||
         !player
     ) {
-
         return;
-
     }
 
     const now =
         Date.now();
-
 
     if (
         now -
         lastShot <
         player.reload
     ) {
-
         return;
-
     }
 
-
-    lastShot =
-        now;
-
+    lastShot = now;
 
     createShell(
         player,
         false
     );
-
 }
 
 
@@ -1573,9 +1373,7 @@ function createShell(
         tank.turretAngle;
 
     const barrelLength =
-        tank.size *
-        1.7;
-
+        tank.size * 1.7;
 
     const shellX =
         tank.x +
@@ -1587,7 +1385,6 @@ function createShell(
         Math.sin(angle) *
         barrelLength;
 
-
     shells.push({
 
         x: shellX,
@@ -1597,29 +1394,22 @@ function createShell(
         oldY: shellY,
 
         vx:
-            Math.cos(angle) *
-            10,
+            Math.cos(angle) * 10,
 
         vy:
-            Math.sin(angle) *
-            10,
+            Math.sin(angle) * 10,
 
-        damage:
-            tank.damage,
+        damage: tank.damage,
 
-        enemy:
-            enemyShell,
+        enemy: enemyShell,
 
-        life:
-            120
-
+        life: 120
     });
-
 }
 
 
 /* =====================================================
-   LINE / RECTANGLE COLLISION
+   LINE COLLISION
 ===================================================== */
 
 function lineHitsRectangle(
@@ -1643,56 +1433,40 @@ function lineHitsRectangle(
 
         const x =
             x1 +
-            (x2 - x1) *
-            t;
+            (x2 - x1) * t;
 
         const y =
             y1 +
-            (y2 - y1) *
-            t;
-
+            (y2 - y1) * t;
 
         if (
-
             x >= rect.x &&
-
-            x <=
-            rect.x +
-            rect.width &&
-
+            x <= rect.x + rect.width &&
             y >= rect.y &&
-
-            y <=
-            rect.y +
-            rect.height
-
+            y <= rect.y + rect.height
         ) {
 
             return true;
-
         }
-
     }
 
     return false;
-
 }
 
 
 /* =====================================================
-   SHELL OBSTACLE
+   SHELL OBSTACLE COLLISION
 ===================================================== */
 
 function shellHitsObstacle(
-    oldX,
-    oldY,
-    newX,
-    newY
+    x1,
+    y1,
+    x2,
+    y2
 ) {
 
     for (
-        const obstacle of
-        obstacles
+        const obstacle of obstacles
     ) {
 
         if (
@@ -1700,30 +1474,24 @@ function shellHitsObstacle(
                 obstacle
             )
         ) {
-
             continue;
-
         }
-
 
         if (
             lineHitsRectangle(
-                oldX,
-                oldY,
-                newX,
-                newY,
+                x1,
+                y1,
+                x2,
+                y2,
                 obstacle
             )
         ) {
 
             return obstacle;
-
         }
-
     }
 
     return null;
-
 }
 
 
@@ -1736,7 +1504,6 @@ function updateEnemies() {
     if (!player) {
         return;
     }
-
 
     enemies.forEach(
         function(enemy) {
@@ -1755,22 +1522,11 @@ function updateEnemies() {
                     dy * dy
                 );
 
-
-            /*
-               Turret always aims
-               separately from hull.
-            */
-
             enemy.turretAngle =
                 Math.atan2(
                     dy,
                     dx
                 );
-
-
-            /*
-               Move toward player.
-            */
 
             if (
                 distance > 260
@@ -1782,10 +1538,8 @@ function updateEnemies() {
                         dx
                     );
 
-
                 enemy.angle =
                     moveAngle;
-
 
                 const moveX =
                     Math.cos(
@@ -1799,87 +1553,58 @@ function updateEnemies() {
                     ) *
                     enemy.speed;
 
-
                 if (
                     !tankHitsObstacle(
                         enemy,
-                        enemy.x +
-                        moveX,
+                        enemy.x + moveX,
                         enemy.y
                     )
                 ) {
 
-                    enemy.x +=
-                        moveX;
-
+                    enemy.x += moveX;
                 }
-
 
                 if (
                     !tankHitsObstacle(
                         enemy,
                         enemy.x,
-                        enemy.y +
-                        moveY
+                        enemy.y + moveY
                     )
                 ) {
 
-                    enemy.y +=
-                        moveY;
-
+                    enemy.y += moveY;
                 }
-
             }
-
 
             enemy.x =
                 Math.max(
                     enemy.size,
-
                     Math.min(
                         canvas.width -
                         enemy.size,
-
                         enemy.x
                     )
                 );
 
-
             enemy.y =
                 Math.max(
                     enemy.size,
-
                     Math.min(
                         canvas.height -
                         enemy.size,
-
                         enemy.y
                     )
                 );
 
-
-            /*
-               AI SHOOTING
-            */
-
             const now =
                 Date.now();
 
-
             if (
-
                 distance < 700 &&
-
                 now -
                 enemy.lastShot >=
                 enemy.reload
-
             ) {
-
-                /*
-                   Buildings block
-                   line of fire.
-                */
 
                 if (
                     !shotBlocked(
@@ -1890,21 +1615,16 @@ function updateEnemies() {
                     )
                 ) {
 
-                    enemy.lastShot =
-                        now;
+                    enemy.lastShot = now;
 
                     createShell(
                         enemy,
                         true
                     );
-
                 }
-
             }
-
         }
     );
-
 }
 
 
@@ -1925,12 +1645,11 @@ function shotBlocked(
         x2,
         y2
     );
-
 }
 
 
 /* =====================================================
-   SHELL UPDATE
+   UPDATE SHELLS
 ===================================================== */
 
 function updateShells() {
@@ -1947,13 +1666,11 @@ function updateShells() {
         const shell =
             shells[i];
 
-
         shell.oldX =
             shell.x;
 
         shell.oldY =
             shell.y;
-
 
         shell.x +=
             shell.vx;
@@ -1961,13 +1678,7 @@ function updateShells() {
         shell.y +=
             shell.vy;
 
-
         shell.life--;
-
-
-        /*
-           SHELL HITS BUILDING
-        */
 
         if (
             shellHitsObstacle(
@@ -1989,28 +1700,14 @@ function updateShells() {
             );
 
             continue;
-
         }
 
-
-        /*
-           OFF SCREEN
-        */
-
         if (
-
             shell.x < 0 ||
-
-            shell.x >
-            canvas.width ||
-
+            shell.x > canvas.width ||
             shell.y < 0 ||
-
-            shell.y >
-            canvas.height ||
-
+            shell.y > canvas.height ||
             shell.life <= 0
-
         ) {
 
             shells.splice(
@@ -2019,20 +1716,13 @@ function updateShells() {
             );
 
             continue;
-
         }
 
+        /* PLAYER SHELL */
 
-        /*
-           PLAYER SHELL
-        */
-
-        if (
-            !shell.enemy
-        ) {
+        if (!shell.enemy) {
 
             let hit = false;
-
 
             for (
                 let j =
@@ -2045,7 +1735,6 @@ function updateShells() {
 
                 const enemy =
                     enemies[j];
-
 
                 const dx =
                     shell.x -
@@ -2061,7 +1750,6 @@ function updateShells() {
                         dy * dy
                     );
 
-
                 if (
                     distance <
                     enemy.size
@@ -2070,21 +1758,17 @@ function updateShells() {
                     enemy.health -=
                         shell.damage;
 
-
                     createImpact(
                         shell.x,
                         shell.y
                     );
-
 
                     shells.splice(
                         i,
                         1
                     );
 
-
                     hit = true;
-
 
                     if (
                         enemy.health <= 0
@@ -2094,27 +1778,18 @@ function updateShells() {
                             j,
                             1
                         );
-
                     }
 
-
                     break;
-
                 }
-
             }
-
 
             if (hit) {
                 continue;
             }
-
         }
 
-
-        /*
-           ENEMY SHELL
-        */
+        /* ENEMY SHELL */
 
         else {
 
@@ -2132,7 +1807,6 @@ function updateShells() {
                     dy * dy
                 );
 
-
             if (
                 distance <
                 player.size
@@ -2141,24 +1815,18 @@ function updateShells() {
                 player.health -=
                     shell.damage;
 
-
                 createImpact(
                     shell.x,
                     shell.y
                 );
 
-
                 shells.splice(
                     i,
                     1
                 );
-
             }
-
         }
-
     }
-
 }
 
 
@@ -2172,16 +1840,11 @@ function createImpact(
 ) {
 
     impacts.push({
-
         x: x,
         y: y,
-
         life: 18,
-
         maxLife: 18
-
     });
-
 }
 
 
@@ -2206,16 +1869,13 @@ function updateImpacts() {
                 i,
                 1
             );
-
         }
-
     }
-
 }
 
 
 /* =====================================================
-   TOWN DRAWING
+   DRAW TOWN
 ===================================================== */
 
 function drawTown() {
@@ -2229,7 +1889,6 @@ function drawTown() {
         canvas.width,
         canvas.height
     );
-
 
     ctx.fillStyle =
         "#484842";
@@ -2247,7 +1906,6 @@ function drawTown() {
         180,
         canvas.height
     );
-
 
     ctx.fillStyle =
         "#56564f";
@@ -2280,7 +1938,6 @@ function drawTown() {
         canvas.height
     );
 
-
     ctx.strokeStyle =
         "#777263";
 
@@ -2290,7 +1947,6 @@ function drawTown() {
         35,
         25
     ]);
-
 
     ctx.beginPath();
 
@@ -2306,7 +1962,6 @@ function drawTown() {
 
     ctx.stroke();
 
-
     ctx.beginPath();
 
     ctx.moveTo(
@@ -2321,75 +1976,41 @@ function drawTown() {
 
     ctx.stroke();
 
-
     ctx.setLineDash([]);
 
+    obstacles
+        .filter(
+            o => o.type === "building"
+        )
+        .forEach(drawBuilding);
 
     obstacles
         .filter(
-            o =>
-            o.type === "building"
+            o => o.type === "rubble"
         )
-        .forEach(
-            drawBuilding
-        );
-
+        .forEach(drawRubble);
 
     obstacles
         .filter(
-            o =>
-            o.type === "rubble"
+            o => o.type === "wall"
         )
-        .forEach(
-            drawRubble
-        );
-
+        .forEach(drawWall);
 
     obstacles
         .filter(
-            o =>
-            o.type === "wall"
+            o => o.type === "wreck"
         )
-        .forEach(
-            drawWall
-        );
+        .forEach(drawWreck);
 
-
-    obstacles
-        .filter(
-            o =>
-            o.type === "wreck"
-        )
-        .forEach(
-            drawWreck
-        );
-
-
-    drawTree(
-        370,
-        380
-    );
-
-    drawTree(
-        630,
-        180
-    );
-
-    drawTree(
-        865,
-        350
-    );
-
-    drawTree(
-        250,
-        370
-    );
-
+    drawTree(370, 380);
+    drawTree(630, 180);
+    drawTree(865, 350);
+    drawTree(250, 370);
 }
 
 
 /* =====================================================
-   BUILDING
+   BUILDINGS
 ===================================================== */
 
 function drawBuilding(o) {
@@ -2404,7 +2025,6 @@ function drawBuilding(o) {
         o.height
     );
 
-
     ctx.fillStyle =
         "#625f50";
 
@@ -2414,7 +2034,6 @@ function drawBuilding(o) {
         o.width,
         o.height
     );
-
 
     ctx.fillStyle =
         "#403e35";
@@ -2426,32 +2045,18 @@ function drawBuilding(o) {
         15
     );
 
-
     ctx.fillStyle =
         "#a79a68";
 
-
     for (
-        let x =
-            o.x + 25;
-
-        x <
-        o.x +
-        o.width -
-        15;
-
+        let x = o.x + 25;
+        x < o.x + o.width - 15;
         x += 45
     ) {
 
         for (
-            let y =
-                o.y + 35;
-
-            y <
-            o.y +
-            o.height -
-            15;
-
+            let y = o.y + 35;
+            y < o.y + o.height - 15;
             y += 45
         ) {
 
@@ -2461,11 +2066,8 @@ function drawBuilding(o) {
                 20,
                 24
             );
-
         }
-
     }
-
 
     ctx.fillStyle =
         "#322e25";
@@ -2482,7 +2084,6 @@ function drawBuilding(o) {
         24,
         45
     );
-
 }
 
 
@@ -2502,20 +2103,12 @@ function drawRubble(o) {
         o.height
     );
 
-
     ctx.fillStyle =
         "#292923";
 
-
     for (
-        let x =
-            o.x + 8;
-
-        x <
-        o.x +
-        o.width -
-        5;
-
+        let x = o.x + 8;
+        x < o.x + o.width - 5;
         x += 20
     ) {
 
@@ -2523,26 +2116,16 @@ function drawRubble(o) {
             x,
             o.y + 8,
             10,
-            5 +
-            ((x * 7) % 9)
+            5 + ((x * 7) % 9)
         );
-
     }
-
 
     ctx.fillStyle =
         "#777366";
 
-
     for (
-        let x =
-            o.x + 15;
-
-        x <
-        o.x +
-        o.width -
-        5;
-
+        let x = o.x + 15;
+        x < o.x + o.width - 5;
         x += 27
     ) {
 
@@ -2552,9 +2135,7 @@ function drawRubble(o) {
             9,
             7
         );
-
     }
-
 }
 
 
@@ -2574,21 +2155,14 @@ function drawWall(o) {
         o.height
     );
 
-
     ctx.strokeStyle =
         "#81765d";
 
     ctx.lineWidth = 2;
 
-
     for (
-        let x =
-            o.x;
-
-        x <
-        o.x +
-        o.width;
-
+        let x = o.x;
+        x < o.x + o.width;
         x += 18
     ) {
 
@@ -2601,14 +2175,11 @@ function drawWall(o) {
 
         ctx.lineTo(
             x,
-            o.y +
-            o.height
+            o.y + o.height
         );
 
         ctx.stroke();
-
     }
-
 }
 
 
@@ -2621,17 +2192,11 @@ function drawWreck(o) {
     ctx.save();
 
     ctx.translate(
-        o.x +
-        o.width / 2,
-
-        o.y +
-        o.height / 2
+        o.x + o.width / 2,
+        o.y + o.height / 2
     );
 
-    ctx.rotate(
-        -0.35
-    );
-
+    ctx.rotate(-0.35);
 
     ctx.fillStyle =
         "#292b25";
@@ -2643,7 +2208,6 @@ function drawWreck(o) {
         28
     );
 
-
     ctx.fillStyle =
         "#414238";
 
@@ -2653,7 +2217,6 @@ function drawWreck(o) {
         35,
         25
     );
-
 
     ctx.fillStyle =
         "#24251e";
@@ -2665,9 +2228,7 @@ function drawWreck(o) {
         7
     );
 
-
     ctx.restore();
-
 }
 
 
@@ -2690,10 +2251,8 @@ function drawTree(
         40
     );
 
-
     ctx.fillStyle =
         "#303b28";
-
 
     ctx.beginPath();
 
@@ -2707,7 +2266,6 @@ function drawTree(
 
     ctx.fill();
 
-
     ctx.beginPath();
 
     ctx.arc(
@@ -2720,7 +2278,6 @@ function drawTree(
 
     ctx.fill();
 
-
     ctx.beginPath();
 
     ctx.arc(
@@ -2732,12 +2289,11 @@ function drawTree(
     );
 
     ctx.fill();
-
 }
 
 
 /* =====================================================
-   TRENCH MAP
+   DRAW TRENCHES
 ===================================================== */
 
 function drawTrenches() {
@@ -2752,10 +2308,8 @@ function drawTrenches() {
         canvas.height
     );
 
-
     ctx.fillStyle =
         "#635638";
-
 
     for (
         let i = 0;
@@ -2774,53 +2328,34 @@ function drawTrenches() {
         ctx.fillRect(
             x,
             y,
-            20 +
-            i % 30,
+            20 + i % 30,
             5
         );
-
     }
 
+    obstacles
+        .filter(
+            o => o.type === "trench"
+        )
+        .forEach(drawTrench);
 
     obstacles
         .filter(
-            o =>
-            o.type === "trench"
+            o => o.type === "bunker"
         )
-        .forEach(
-            drawTrench
-        );
-
+        .forEach(drawBunker);
 
     obstacles
         .filter(
-            o =>
-            o.type === "bunker"
+            o => o.type === "wire"
         )
-        .forEach(
-            drawBunker
-        );
-
+        .forEach(drawWire);
 
     obstacles
         .filter(
-            o =>
-            o.type === "wire"
+            o => o.type === "crater"
         )
-        .forEach(
-            drawWire
-        );
-
-
-    obstacles
-        .filter(
-            o =>
-            o.type === "crater"
-        )
-        .forEach(
-            drawCrater
-        );
-
+        .forEach(drawCrater);
 
     drawLog(
         230,
@@ -2828,13 +2363,11 @@ function drawTrenches() {
         120
     );
 
-
     drawLog(
         780,
         450,
         100
     );
-
 }
 
 
@@ -2854,7 +2387,6 @@ function drawTrench(o) {
         o.height
     );
 
-
     ctx.fillStyle =
         "#302d22";
 
@@ -2865,16 +2397,9 @@ function drawTrench(o) {
         o.height - 24
     );
 
-
     for (
-        let x =
-            o.x + 8;
-
-        x <
-        o.x +
-        o.width -
-        15;
-
+        let x = o.x + 8;
+        x < o.x + o.width - 15;
         x += 27
     ) {
 
@@ -2890,16 +2415,11 @@ function drawTrench(o) {
 
         ctx.fillRect(
             x,
-            o.y +
-            o.height -
-            8,
-
+            o.y + o.height - 8,
             22,
             13
         );
-
     }
-
 }
 
 
@@ -2919,7 +2439,6 @@ function drawBunker(o) {
         o.height
     );
 
-
     ctx.fillStyle =
         "#514e3f";
 
@@ -2930,7 +2449,6 @@ function drawBunker(o) {
         o.height - 16
     );
 
-
     ctx.fillStyle =
         "#171812";
 
@@ -2940,7 +2458,6 @@ function drawBunker(o) {
         o.width - 40,
         12
     );
-
 }
 
 
@@ -2955,7 +2472,6 @@ function drawWire(o) {
 
     ctx.lineWidth = 3;
 
-
     ctx.beginPath();
 
     ctx.moveTo(
@@ -2964,43 +2480,29 @@ function drawWire(o) {
     );
 
     ctx.lineTo(
-        o.x +
-        o.width,
-
-        o.y +
-        o.height
+        o.x + o.width,
+        o.y + o.height
     );
 
     ctx.stroke();
 
-
     ctx.beginPath();
 
     ctx.moveTo(
-        o.x +
-        o.width,
-
+        o.x + o.width,
         o.y
     );
 
     ctx.lineTo(
         o.x,
-
-        o.y +
-        o.height
+        o.y + o.height
     );
 
     ctx.stroke();
-
 
     for (
-        let x =
-            o.x + 10;
-
-        x <
-        o.x +
-        o.width;
-
+        let x = o.x + 10;
+        x < o.x + o.width;
         x += 30
     ) {
 
@@ -3015,9 +2517,7 @@ function drawWire(o) {
         );
 
         ctx.stroke();
-
     }
-
 }
 
 
@@ -3033,23 +2533,16 @@ function drawCrater(o) {
     ctx.beginPath();
 
     ctx.ellipse(
-        o.x +
+        o.x + o.width / 2,
+        o.y + o.height / 2,
         o.width / 2,
-
-        o.y +
         o.height / 2,
-
-        o.width / 2,
-
-        o.height / 2,
-
         0,
         0,
         Math.PI * 2
     );
 
     ctx.fill();
-
 
     ctx.fillStyle =
         "#292820";
@@ -3057,23 +2550,16 @@ function drawCrater(o) {
     ctx.beginPath();
 
     ctx.ellipse(
-        o.x +
-        o.width / 2,
-
-        o.y +
-        o.height / 2,
-
+        o.x + o.width / 2,
+        o.y + o.height / 2,
         o.width / 3,
-
         o.height / 3,
-
         0,
         0,
         Math.PI * 2
     );
 
     ctx.fill();
-
 }
 
 
@@ -3094,10 +2580,7 @@ function drawLog(
         y
     );
 
-    ctx.rotate(
-        -0.15
-    );
-
+    ctx.rotate(-0.15);
 
     ctx.fillStyle =
         "#4b3321";
@@ -3108,7 +2591,6 @@ function drawLog(
         length,
         15
     );
-
 
     ctx.fillStyle =
         "#725038";
@@ -3125,21 +2607,15 @@ function drawLog(
 
     ctx.fill();
 
-
     ctx.restore();
-
 }
 
 
 /* =====================================================
-   SNOW FOREST
+   DRAW SNOW
 ===================================================== */
 
 function drawSnow() {
-
-    /*
-       SNOW
-    */
 
     ctx.fillStyle =
         "#e7edf0";
@@ -3151,14 +2627,8 @@ function drawSnow() {
         canvas.height
     );
 
-
-    /*
-       SNOW BANDS
-    */
-
     ctx.fillStyle =
         "#d8e2e5";
-
 
     for (
         let y = 0;
@@ -3172,9 +2642,7 @@ function drawSnow() {
             canvas.width,
             28
         );
-
     }
-
 
     /*
        FROZEN ROAD
@@ -3190,7 +2658,6 @@ function drawSnow() {
         100
     );
 
-
     ctx.fillStyle =
         "#aab9bb";
 
@@ -3201,71 +2668,49 @@ function drawSnow() {
         6
     );
 
-
-    /*
-       CABINS
-    */
+    obstacles
+        .filter(
+            o => o.type === "snowCabin"
+        )
+        .forEach(drawSnowCabin);
 
     obstacles
         .filter(
-            o =>
-            o.type === "snowCabin"
+            o => o.type === "rock"
         )
-        .forEach(
-            drawSnowCabin
-        );
-
-
-    /*
-       ROCKS
-    */
-
-    obstacles
-        .filter(
-            o =>
-            o.type === "rock"
-        )
-        .forEach(
-            drawSnowRock
-        );
-
-
-    /*
-       FOREST
-    */
+        .forEach(drawSnowRock);
 
     const trees = [
 
-        [70,90],
-        [150,240],
-        [90,610],
-        [330,75],
-        [400,185],
-        [350,620],
-        [630,85],
-        [720,200],
-        [650,590],
-        [1000,90],
-        [970,270],
-        [1030,620],
-        [570,120],
-        [850,390],
-        [300,430],
-        [780,610],
-        [450,350],
-        [1020,390]
+        [70, 90],
+        [150, 240],
+        [90, 610],
+        [330, 75],
+        [400, 185],
+        [350, 620],
+        [630, 85],
+        [720, 200],
+        [650, 590],
+        [1000, 90],
+        [970, 270],
+        [1030, 620],
+        [570, 120],
+        [850, 390],
+        [300, 430],
+        [780, 610],
+        [450, 350],
+        [1020, 390]
 
     ];
 
+    trees.forEach(function(point) {
 
-    trees.forEach(
-        p =>
         drawSnowTree(
-            p[0],
-            p[1]
-        )
-    );
+            point[0],
+            point[1]
+        );
 
+    });
 }
 
 
@@ -3288,10 +2733,8 @@ function drawSnowTree(
         38
     );
 
-
     ctx.fillStyle =
         "#294936";
-
 
     ctx.beginPath();
 
@@ -3314,7 +2757,6 @@ function drawSnowTree(
 
     ctx.fill();
 
-
     ctx.beginPath();
 
     ctx.moveTo(
@@ -3336,7 +2778,6 @@ function drawSnowTree(
 
     ctx.fill();
 
-
     ctx.beginPath();
 
     ctx.moveTo(
@@ -3357,11 +2798,6 @@ function drawSnowTree(
     ctx.closePath();
 
     ctx.fill();
-
-
-    /*
-       SNOW ON BRANCHES
-    */
 
     ctx.fillStyle =
         "#edf3f4";
@@ -3386,7 +2822,6 @@ function drawSnowTree(
         60,
         5
     );
-
 }
 
 
@@ -3395,10 +2830,6 @@ function drawSnowTree(
 ===================================================== */
 
 function drawSnowCabin(o) {
-
-    /*
-       SNOW SHADOW
-    */
 
     ctx.fillStyle =
         "#dce4e5";
@@ -3410,11 +2841,6 @@ function drawSnowCabin(o) {
         o.height
     );
 
-
-    /*
-       WOOD
-    */
-
     ctx.fillStyle =
         "#674b35";
 
@@ -3424,11 +2850,6 @@ function drawSnowCabin(o) {
         o.width,
         o.height - 8
     );
-
-
-    /*
-       ROOF
-    */
 
     ctx.fillStyle =
         "#4b3527";
@@ -3441,25 +2862,18 @@ function drawSnowCabin(o) {
     );
 
     ctx.lineTo(
-        o.x +
-        o.width / 2,
+        o.x + o.width / 2,
         o.y - 18
     );
 
     ctx.lineTo(
-        o.x +
-        o.width + 8,
+        o.x + o.width + 8,
         o.y + 10
     );
 
     ctx.closePath();
 
     ctx.fill();
-
-
-    /*
-       SNOWY ROOF
-    */
 
     ctx.fillStyle =
         "#f1f5f5";
@@ -3472,26 +2886,22 @@ function drawSnowCabin(o) {
     );
 
     ctx.lineTo(
-        o.x +
-        o.width / 2,
+        o.x + o.width / 2,
         o.y - 25
     );
 
     ctx.lineTo(
-        o.x +
-        o.width + 8,
+        o.x + o.width + 8,
         o.y + 10
     );
 
     ctx.lineTo(
-        o.x +
-        o.width,
+        o.x + o.width,
         o.y + 5
     );
 
     ctx.lineTo(
-        o.x +
-        o.width / 2,
+        o.x + o.width / 2,
         o.y - 14
     );
 
@@ -3504,11 +2914,6 @@ function drawSnowCabin(o) {
 
     ctx.fill();
 
-
-    /*
-       WINDOWS
-    */
-
     ctx.fillStyle =
         "#a9d0d7";
 
@@ -3520,18 +2925,11 @@ function drawSnowCabin(o) {
     );
 
     ctx.fillRect(
-        o.x +
-        o.width -
-        44,
+        o.x + o.width - 44,
         o.y + 30,
         24,
         20
     );
-
-
-    /*
-       DOOR
-    */
 
     ctx.fillStyle =
         "#39291f";
@@ -3548,7 +2946,6 @@ function drawSnowCabin(o) {
         24,
         42
     );
-
 }
 
 
@@ -3564,23 +2961,16 @@ function drawSnowRock(o) {
     ctx.beginPath();
 
     ctx.ellipse(
-        o.x +
+        o.x + o.width / 2,
+        o.y + o.height / 2,
         o.width / 2,
-
-        o.y +
         o.height / 2,
-
-        o.width / 2,
-
-        o.height / 2,
-
         0,
         0,
         Math.PI * 2
     );
 
     ctx.fill();
-
 
     ctx.fillStyle =
         "#dce5e6";
@@ -3588,34 +2978,27 @@ function drawSnowRock(o) {
     ctx.beginPath();
 
     ctx.ellipse(
-        o.x +
-        o.width * 0.42,
-
-        o.y +
-        o.height * 0.32,
-
+        o.x + o.width * 0.42,
+        o.y + o.height * 0.32,
         o.width * 0.3,
-
         o.height * 0.18,
-
         0,
         0,
         Math.PI * 2
     );
 
     ctx.fill();
-
 }
 
 
 /* =====================================================
-   TANK DRAWING
+   DRAW TANK
 ===================================================== */
 
 function drawTank(tank) {
 
     /*
-       HULL
+       HULL ROTATES SEPARATELY
     */
 
     ctx.save();
@@ -3629,15 +3012,13 @@ function drawTank(tank) {
         tank.angle
     );
 
-    drawTankHull(
-        tank
-    );
+    drawTankHull(tank);
 
     ctx.restore();
 
 
     /*
-       TURRET
+       TURRET ROTATES SEPARATELY
     */
 
     ctx.save();
@@ -3651,9 +3032,7 @@ function drawTank(tank) {
         tank.turretAngle
     );
 
-    drawTurret(
-        tank
-    );
+    drawTurret(tank);
 
     ctx.restore();
 
@@ -3663,47 +3042,32 @@ function drawTank(tank) {
     */
 
     const barWidth =
-        tank.size *
-        2.3;
-
+        tank.size * 2.3;
 
     ctx.fillStyle =
         "#201f18";
 
     ctx.fillRect(
-        tank.x -
-        barWidth / 2,
-
-        tank.y -
-        tank.size -
-        15,
-
+        tank.x - barWidth / 2,
+        tank.y - tank.size - 15,
         barWidth,
         7
     );
-
 
     ctx.fillStyle =
         "#d5c45e";
 
     ctx.fillRect(
-        tank.x -
-        barWidth / 2,
-
-        tank.y -
-        tank.size -
-        15,
-
+        tank.x - barWidth / 2,
+        tank.y - tank.size - 15,
         barWidth *
         Math.max(
             0,
             tank.health /
             tank.maxHealth
         ),
-
         7
     );
-
 }
 
 
@@ -3716,9 +3080,7 @@ function drawTankHull(tank) {
     const s =
         tank.size;
 
-
     let colour;
-
 
     if (
         tank.faction ===
@@ -3727,7 +3089,6 @@ function drawTankHull(tank) {
 
         colour =
             "#53633b";
-
     }
 
     else if (
@@ -3737,14 +3098,12 @@ function drawTankHull(tank) {
 
         colour =
             "#77724e";
-
     }
 
     else {
 
         colour =
             "#4d6738";
-
     }
 
 
@@ -3786,19 +3145,15 @@ function drawTankHull(tank) {
 
 
     /*
-       TRACK WHEELS
+       WHEELS
     */
 
     ctx.fillStyle =
         "#77745d";
 
-
     for (
-        let x =
-            -s + 7;
-
+        let x = -s + 7;
         x < s;
-
         x += 11
     ) {
 
@@ -3814,7 +3169,6 @@ function drawTankHull(tank) {
 
         ctx.fill();
 
-
         ctx.beginPath();
 
         ctx.arc(
@@ -3826,21 +3180,17 @@ function drawTankHull(tank) {
         );
 
         ctx.fill();
-
     }
 
 
     /*
-       HULL SHAPE
+       HULL SHAPES
     */
 
     ctx.fillStyle =
         colour;
 
-
-    switch (
-        tank.model
-    ) {
+    switch (tank.model) {
 
         case "tetrarch":
 
@@ -3852,7 +3202,6 @@ function drawTankHull(tank) {
             );
 
             break;
-
 
         case "cromwell":
 
@@ -3884,7 +3233,6 @@ function drawTankHull(tank) {
 
             break;
 
-
         case "churchill":
 
             ctx.fillRect(
@@ -3896,7 +3244,6 @@ function drawTankHull(tank) {
 
             break;
 
-
         case "panzer2":
 
             ctx.fillRect(
@@ -3907,7 +3254,6 @@ function drawTankHull(tank) {
             );
 
             break;
-
 
         case "panzer4":
 
@@ -3939,7 +3285,6 @@ function drawTankHull(tank) {
 
             break;
 
-
         case "tiger":
 
             ctx.fillRect(
@@ -3950,11 +3295,6 @@ function drawTankHull(tank) {
             );
 
             break;
-
-
-        /*
-           SOVIET
-        */
 
         case "t70":
 
@@ -3986,7 +3326,6 @@ function drawTankHull(tank) {
 
             break;
 
-
         case "t34":
 
             ctx.beginPath();
@@ -4017,7 +3356,6 @@ function drawTankHull(tank) {
 
             break;
 
-
         case "is2":
 
             ctx.fillRect(
@@ -4028,9 +3366,7 @@ function drawTankHull(tank) {
             );
 
             break;
-
     }
-
 }
 
 
@@ -4043,9 +3379,7 @@ function drawTurret(tank) {
     const s =
         tank.size;
 
-
     let colour;
-
 
     if (
         tank.faction ===
@@ -4054,7 +3388,6 @@ function drawTurret(tank) {
 
         colour =
             "#657448";
-
     }
 
     else if (
@@ -4064,24 +3397,20 @@ function drawTurret(tank) {
 
         colour =
             "#8b855d";
-
     }
 
     else {
 
         colour =
             "#5d7845";
-
     }
 
 
     /*
-       CANNON FIRST
+       CANNON
     */
 
-    drawCannon(
-        tank
-    );
+    drawCannon(tank);
 
 
     /*
@@ -4091,10 +3420,7 @@ function drawTurret(tank) {
     ctx.fillStyle =
         colour;
 
-
-    switch (
-        tank.model
-    ) {
+    switch (tank.model) {
 
         case "tetrarch":
 
@@ -4107,7 +3433,6 @@ function drawTurret(tank) {
 
             break;
 
-
         case "cromwell":
 
             ctx.fillRect(
@@ -4118,7 +3443,6 @@ function drawTurret(tank) {
             );
 
             break;
-
 
         case "churchill":
 
@@ -4131,7 +3455,6 @@ function drawTurret(tank) {
 
             break;
 
-
         case "panzer2":
 
             ctx.fillRect(
@@ -4142,7 +3465,6 @@ function drawTurret(tank) {
             );
 
             break;
-
 
         case "panzer4":
 
@@ -4155,7 +3477,6 @@ function drawTurret(tank) {
 
             break;
 
-
         case "tiger":
 
             ctx.fillRect(
@@ -4166,7 +3487,6 @@ function drawTurret(tank) {
             );
 
             break;
-
 
         case "t70":
 
@@ -4198,7 +3518,6 @@ function drawTurret(tank) {
 
             break;
 
-
         case "t34":
 
             ctx.beginPath();
@@ -4229,7 +3548,6 @@ function drawTurret(tank) {
 
             break;
 
-
         case "is2":
 
             ctx.fillRect(
@@ -4240,7 +3558,6 @@ function drawTurret(tank) {
             );
 
             break;
-
     }
 
 
@@ -4264,10 +3581,7 @@ function drawTurret(tank) {
     ctx.fill();
 
 
-    drawTankMarkings(
-        tank
-    );
-
+    drawTankMarkings(tank);
 }
 
 
@@ -4280,16 +3594,12 @@ function drawCannon(tank) {
     const s =
         tank.size;
 
-
     let length =
         s * 1.3;
 
     let width = 6;
 
-
-    switch (
-        tank.model
-    ) {
+    switch (tank.model) {
 
         case "tetrarch":
             length = s * 1.15;
@@ -4335,13 +3645,10 @@ function drawCannon(tank) {
             length = s * 1.9;
             width = 9;
             break;
-
     }
-
 
     ctx.fillStyle =
         "#242820";
-
 
     ctx.fillRect(
         0,
@@ -4350,14 +3657,12 @@ function drawCannon(tank) {
         width
     );
 
-
     ctx.fillRect(
         length - 7,
         -width / 2 - 2,
         10,
         width + 4
     );
-
 }
 
 
@@ -4369,7 +3674,6 @@ function drawTankMarkings(tank) {
 
     const s =
         tank.size;
-
 
     if (
         tank.faction ===
@@ -4392,7 +3696,6 @@ function drawTankMarkings(tank) {
         );
 
         ctx.stroke();
-
     }
 
     else if (
@@ -4416,15 +3719,9 @@ function drawTankMarkings(tank) {
             8,
             s * 0.3
         );
-
     }
 
     else {
-
-        /*
-           Soviet red-star-ish
-           simple marking.
-        */
 
         ctx.fillStyle =
             "#c7c7bd";
@@ -4442,24 +3739,18 @@ function drawTankMarkings(tank) {
             6,
             s * 0.76
         );
-
     }
-
 }
 
 
 /* =====================================================
-   SHELL DRAWING
+   DRAW SHELLS
 ===================================================== */
 
 function drawShells() {
 
     shells.forEach(
         function(shell) {
-
-            /*
-               SHELL TRAIL
-            */
 
             ctx.strokeStyle =
                 "#d6b65c";
@@ -4484,10 +3775,6 @@ function drawShells() {
             ctx.stroke();
 
 
-            /*
-               SHELL
-            */
-
             ctx.save();
 
             ctx.translate(
@@ -4502,7 +3789,6 @@ function drawShells() {
                 )
             );
 
-
             ctx.fillStyle =
                 "#d0b45d";
 
@@ -4512,11 +3798,6 @@ function drawShells() {
                 14,
                 6
             );
-
-
-            /*
-               POINTED NOSE
-            */
 
             ctx.beginPath();
 
@@ -4539,11 +3820,6 @@ function drawShells() {
 
             ctx.fill();
 
-
-            /*
-               DARK BASE
-            */
-
             ctx.fillStyle =
                 "#50472e";
 
@@ -4554,17 +3830,15 @@ function drawShells() {
                 6
             );
 
-
             ctx.restore();
 
         }
     );
-
 }
 
 
 /* =====================================================
-   IMPACT DRAWING
+   DRAW IMPACTS
 ===================================================== */
 
 function drawImpacts() {
@@ -4579,14 +3853,10 @@ function drawImpacts() {
 
             const radius =
                 8 +
-                progress *
-                24;
-
+                progress * 24;
 
             ctx.globalAlpha =
-                1 -
-                progress;
-
+                1 - progress;
 
             ctx.fillStyle =
                 "#e8c66d";
@@ -4603,7 +3873,6 @@ function drawImpacts() {
 
             ctx.fill();
 
-
             ctx.fillStyle =
                 "#342b1b";
 
@@ -4619,17 +3888,14 @@ function drawImpacts() {
 
             ctx.fill();
 
-
             ctx.globalAlpha = 1;
-
         }
     );
-
 }
 
 
 /* =====================================================
-   UI
+   UPDATE UI
 ===================================================== */
 
 function updateUI() {
@@ -4644,12 +3910,10 @@ function updateUI() {
             )
         );
 
-
     document
         .getElementById("enemyCount")
         .textContent =
         enemies.length;
-
 }
 
 
@@ -4676,7 +3940,6 @@ function checkGameState() {
             "block";
 
         return;
-
     }
 
 
@@ -4695,14 +3958,12 @@ function checkGameState() {
             .getElementById("restartButton")
             .style.display =
             "block";
-
     }
-
 }
 
 
 /* =====================================================
-   GAME LOOP
+   MAIN GAME LOOP
 ===================================================== */
 
 function gameLoop() {
@@ -4710,7 +3971,6 @@ function gameLoop() {
     if (!gameRunning) {
         return;
     }
-
 
     movePlayer();
 
@@ -4723,6 +3983,11 @@ function gameLoop() {
     updateImpacts();
 
 
+    /*
+       THIS NOW WORKS BECAUSE
+       drawMap() EXISTS ABOVE.
+    */
+
     drawMap();
 
     drawShells();
@@ -4732,17 +3997,12 @@ function gameLoop() {
 
     enemies.forEach(
         function(enemy) {
-
             drawTank(enemy);
-
         }
     );
 
 
-    drawTank(
-        player
-    );
-
+    drawTank(player);
 
     updateUI();
 
@@ -4754,9 +4014,7 @@ function gameLoop() {
         requestAnimationFrame(
             gameLoop
         );
-
     }
-
 }
 
 </script>

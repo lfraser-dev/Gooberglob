@@ -1,159 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Gooberglob - Tank Battle</title>
+<meta charset="UTF-8">
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-        body {
-            margin: 0;
-            background: #1d2118;
-            color: #eee5c5;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
+<title>Gooberglob - Tank Battle</title>
 
-        h1 {
-            margin: 0;
-            padding: 18px;
-            background: #3f472b;
-            color: #eee5c5;
-            font-family: Impact, "Arial Black", sans-serif;
-            letter-spacing: 4px;
-            text-shadow: 3px 3px #15180f;
-        }
+<style>
 
-        #menu {
-            max-width: 900px;
-            margin: 25px auto;
-            padding: 25px;
-            background: #c5b783;
-            border: 5px solid #59633b;
-            color: #24251d;
-            box-shadow: 8px 8px #11140e;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        .section {
-            margin: 25px 0;
-        }
+body {
+    margin: 0;
+    background: #171914;
+    color: #eee6c8;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
 
-        .section h2 {
-            margin-bottom: 15px;
-            font-family: "Arial Black", sans-serif;
-        }
+h1 {
+    margin: 0;
+    padding: 16px;
 
-        .choices {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
-        }
+    background: #353d27;
 
-        button {
-            background: #59633b;
-            color: #eee5c5;
-            border: 4px solid #292d20;
-            padding: 13px 20px;
-            font-size: 17px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 4px 4px #292d20;
-        }
+    color: #eee6c8;
 
-        button:hover {
-            background: #707b49;
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px #292d20;
-        }
+    font-family:
+        Impact,
+        "Arial Black",
+        sans-serif;
 
-        button.selected {
-            background: #8b7545;
-            border-color: #eee5c5;
-        }
+    letter-spacing: 5px;
 
-        #startButton {
-            margin-top: 15px;
-            font-size: 22px;
-            padding: 15px 40px;
-        }
+    text-shadow:
+        3px 3px #11140d;
+}
 
-        #gameArea {
-            display: none;
-            padding: 15px;
-        }
+#menu {
+    max-width: 950px;
 
-        #gameInfo {
-            max-width: 1000px;
-            margin: 0 auto 10px auto;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+    margin: 25px auto;
 
-        .infoBox {
-            background: #3f472b;
-            padding: 10px 15px;
-            border: 3px solid #59633b;
-            font-weight: bold;
-        }
+    padding: 25px;
 
-        #gameCanvas {
-            border: 5px solid #59633b;
-            background: #777;
-            max-width: 100%;
-            height: auto;
-            cursor: crosshair;
-        }
+    background: #c7bb91;
 
-        #battleMessage {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 10px;
-        }
+    border:
+        5px solid #59613b;
 
-        #restartButton {
-            display: none;
-            margin: 10px auto;
-        }
+    color: #24251d;
 
-        .tankCard {
-            min-width: 160px;
-        }
+    box-shadow:
+        8px 8px #090b08;
+}
 
-        .tankCard small {
-            display: block;
-            margin-top: 6px;
-        }
+.section {
+    margin: 25px 0;
+}
 
-        #controls {
-            margin: 10px;
-            color: #c5b783;
-        }
-    </style>
+.section h2 {
+    font-family: "Arial Black", sans-serif;
+}
+
+.choices {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    gap: 12px;
+}
+
+button {
+    background: #59613b;
+
+    color: #eee6c8;
+
+    border:
+        4px solid #292d20;
+
+    padding:
+        13px 20px;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow:
+        4px 4px #292d20;
+}
+
+button:hover {
+    background: #737c4d;
+
+    transform:
+        translate(2px, 2px);
+
+    box-shadow:
+        2px 2px #292d20;
+}
+
+button.selected {
+    background: #8c7541;
+
+    border-color:
+        #f0e8ca;
+}
+
+.tankCard {
+    min-width: 180px;
+}
+
+.tankCard small {
+    display: block;
+
+    margin-top: 7px;
+
+    line-height: 1.4;
+}
+
+#startButton {
+    margin-top: 15px;
+
+    padding:
+        15px 45px;
+
+    font-size: 22px;
+}
+
+#gameArea {
+    display: none;
+
+    padding: 15px;
+}
+
+#gameInfo {
+    max-width: 1100px;
+
+    margin:
+        0 auto 10px;
+
+    display: flex;
+
+    justify-content:
+        center;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+}
+
+.infoBox {
+    background: #353d27;
+
+    border:
+        3px solid #59613b;
+
+    padding:
+        9px 15px;
+
+    font-weight: bold;
+}
+
+#gameCanvas {
+    display: block;
+
+    margin:
+        0 auto;
+
+    border:
+        6px solid #59613b;
+
+    background: #777;
+
+    max-width: 100%;
+
+    height: auto;
+
+    cursor: crosshair;
+}
+
+#battleMessage {
+    font-size: 22px;
+
+    font-weight: bold;
+
+    margin: 8px;
+}
+
+#controls {
+    color: #c7bb91;
+
+    margin: 9px;
+}
+
+#restartButton {
+    display: none;
+
+    margin: 10px auto;
+}
+
+</style>
+
 </head>
 
 <body>
 
 <h1>★ GOOBERGLOB ★</h1>
 
-<!-- =========================
-     MAIN MENU
-========================= -->
+
+<!-- =====================================================
+     MENU
+===================================================== -->
 
 <div id="menu">
 
     <h2>⚔️ TANK COMMAND ⚔️</h2>
-    <p>Choose your side, tank and battlefield.</p>
 
-    <!-- FACTION -->
+    <p>
+        Choose your faction, tank and battlefield.
+    </p>
+
+
     <div class="section">
+
         <h2>1. Choose Your Faction</h2>
 
         <div class="choices">
@@ -161,32 +240,41 @@
             <button
                 id="britishButton"
                 onclick="chooseFaction('british')">
+
                 🇬🇧 BRITISH
+
             </button>
 
             <button
                 id="germanButton"
                 onclick="chooseFaction('german')">
+
                 🇩🇪 GERMAN
+
             </button>
 
         </div>
+
     </div>
 
-    <!-- TANK -->
+
     <div class="section">
 
         <h2>2. Choose Your Tank</h2>
 
-        <div id="tankChoices" class="choices">
+        <div
+            id="tankChoices"
+            class="choices">
 
-            <p>Choose a faction first.</p>
+            <p>
+                Choose a faction first.
+            </p>
 
         </div>
 
     </div>
 
-    <!-- MAP -->
+
     <div class="section">
 
         <h2>3. Choose Battlefield</h2>
@@ -196,36 +284,45 @@
             <button
                 id="trenchButton"
                 onclick="chooseMap('trenches')">
-                🪖 TRENCHES
+
+                🪖 TRENCH FRONT
+
             </button>
 
             <button
                 id="townButton"
                 onclick="chooseMap('town')">
-                🏘️ TOWN
+
+                🏘️ RUINED TOWN
+
             </button>
 
         </div>
 
     </div>
 
-    <button id="startButton" onclick="startGame()">
+
+    <button
+        id="startButton"
+        onclick="startGame()">
+
         🚀 START BATTLE
+
     </button>
 
 </div>
 
 
-<!-- =========================
+<!-- =====================================================
      GAME
-========================= -->
+===================================================== -->
 
 <div id="gameArea">
 
     <div id="gameInfo">
 
         <div class="infoBox">
-            Tank:
+            TANK:
             <span id="tankName">---</span>
         </div>
 
@@ -235,30 +332,42 @@
         </div>
 
         <div class="infoBox">
-            Enemies:
+            ENEMIES:
             <span id="enemyCount">---</span>
         </div>
 
     </div>
 
+
     <div id="battleMessage">
         BATTLE!
     </div>
 
+
     <canvas
         id="gameCanvas"
-        width="1000"
-        height="650">
+        width="1100"
+        height="700">
     </canvas>
 
+
     <div id="controls">
-        WASD = Move &nbsp; | &nbsp;
-        Mouse = Aim &nbsp; | &nbsp;
-        Click / SPACE = Fire
+
+        W A S D = MOVE
+        &nbsp; | &nbsp;
+        MOUSE = AIM
+        &nbsp; | &nbsp;
+        CLICK / SPACE = FIRE
+
     </div>
 
-    <button id="restartButton" onclick="location.reload()">
+
+    <button
+        id="restartButton"
+        onclick="location.reload()">
+
         🔄 RETURN TO MENU
+
     </button>
 
 </div>
@@ -266,83 +375,137 @@
 
 <script>
 
-/* =========================================================
-   GOOBERGLOB TANK GAME
-   ========================================================= */
-
-
-/* =========================================================
-   GAME DATA
-
-   This is where we can add more tanks later.
-========================================================= */
+/* =====================================================
+   GOOBERGLOB TANK DATABASE
+===================================================== */
 
 const tanks = {
 
     british: {
 
         light: {
+
             name: "Tetrarch",
-            className: "Light",
+
+            className: "LIGHT",
+
             health: 90,
-            speed: 3.8,
+
+            speed: 4.2,
+
             damage: 18,
-            reload: 450,
-            size: 25
+
+            reload: 430,
+
+            size: 24,
+
+            model: "tetrarch"
+
         },
 
         medium: {
+
             name: "Cromwell",
-            className: "Medium",
-            health: 130,
-            speed: 3,
-            damage: 25,
-            reload: 600,
-            size: 29
+
+            className: "MEDIUM",
+
+            health: 135,
+
+            speed: 3.2,
+
+            damage: 27,
+
+            reload: 560,
+
+            size: 29,
+
+            model: "cromwell"
+
         },
 
         heavy: {
+
             name: "Churchill",
-            className: "Heavy",
-            health: 190,
-            speed: 2,
-            damage: 38,
-            reload: 800,
-            size: 34
+
+            className: "HEAVY",
+
+            health: 200,
+
+            speed: 2.1,
+
+            damage: 40,
+
+            reload: 760,
+
+            size: 35,
+
+            model: "churchill"
+
         }
 
     },
 
+
     german: {
 
         light: {
+
             name: "Panzer II",
-            className: "Light",
+
+            className: "LIGHT",
+
             health: 85,
-            speed: 4,
+
+            speed: 4.3,
+
             damage: 17,
-            reload: 430,
-            size: 25
+
+            reload: 410,
+
+            size: 24,
+
+            model: "panzer2"
+
         },
 
         medium: {
+
             name: "Panzer IV",
-            className: "Medium",
-            health: 135,
-            speed: 3,
-            damage: 26,
-            reload: 600,
-            size: 29
+
+            className: "MEDIUM",
+
+            health: 140,
+
+            speed: 3.0,
+
+            damage: 28,
+
+            reload: 570,
+
+            size: 30,
+
+            model: "panzer4"
+
         },
 
         heavy: {
+
             name: "Tiger I",
-            className: "Heavy",
-            health: 210,
+
+            className: "HEAVY",
+
+            health: 215,
+
             speed: 1.8,
-            damage: 42,
-            reload: 850,
-            size: 35
+
+            damage: 44,
+
+            reload: 820,
+
+            size: 36,
+
+            model: "tiger"
+
         }
 
     }
@@ -350,41 +513,52 @@ const tanks = {
 };
 
 
-/* =========================================================
+/* =====================================================
    GAME VARIABLES
-========================================================= */
+===================================================== */
 
 let selectedFaction = null;
+
 let selectedTankClass = null;
+
 let selectedMap = null;
 
-let player;
+let player = null;
+
 let enemies = [];
+
 let bullets = [];
 
-let keys = {};
+let obstacles = [];
 
-let mouse = {
-    x: 500,
-    y: 325
-};
+let keys = {};
 
 let gameRunning = false;
 
 let lastShot = 0;
 
+let mouse = {
+    x: 550,
+    y: 350
+};
 
-/* =========================================================
+
+/* =====================================================
    CANVAS
-========================================================= */
+===================================================== */
 
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+const canvas =
+    document.getElementById(
+        "gameCanvas"
+    );
+
+const ctx =
+    canvas.getContext("2d");
 
 
-/* =========================================================
-   MENU - FACTION
-========================================================= */
+/* =====================================================
+   FACTION SELECTION
+===================================================== */
 
 function chooseFaction(faction) {
 
@@ -401,7 +575,9 @@ function chooseFaction(faction) {
         .classList.remove("selected");
 
     document
-        .getElementById(faction + "Button")
+        .getElementById(
+            faction + "Button"
+        )
         .classList.add("selected");
 
     createTankButtons();
@@ -409,105 +585,175 @@ function chooseFaction(faction) {
 }
 
 
-/* =========================================================
-   MENU - TANK SELECTION
-========================================================= */
+/* =====================================================
+   TANK BUTTONS
+===================================================== */
 
 function createTankButtons() {
 
-    const container = document.getElementById("tankChoices");
+    const container =
+        document.getElementById(
+            "tankChoices"
+        );
 
     container.innerHTML = "";
 
-    const factionTanks = tanks[selectedFaction];
 
-    for (const tankClass in factionTanks) {
+    for (
+        const type in tanks[selectedFaction]
+    ) {
 
-        const tank = factionTanks[tankClass];
+        const tank =
+            tanks[selectedFaction][type];
 
-        const button = document.createElement("button");
 
-        button.className = "tankCard";
+        const button =
+            document.createElement("button");
+
+
+        button.className =
+            "tankCard";
+
 
         button.innerHTML =
+
             tank.name +
+
             "<small>" +
+
             tank.className +
+
             "<br>" +
-            "❤️ " + tank.health +
-            " | ⚡ " + tank.speed +
+
+            "❤️ " +
+            tank.health +
+
+            " &nbsp; ⚡ " +
+            tank.speed +
+
             "</small>";
+
 
         button.onclick = function() {
 
-            selectedTankClass = tankClass;
+            selectedTankClass =
+                type;
 
             document
-                .querySelectorAll(".tankCard")
-                .forEach(b => b.classList.remove("selected"));
+                .querySelectorAll(
+                    ".tankCard"
+                )
+                .forEach(
+                    b =>
+                    b.classList.remove(
+                        "selected"
+                    )
+                );
 
-            button.classList.add("selected");
+            button.classList.add(
+                "selected"
+            );
 
         };
 
-        container.appendChild(button);
+
+        container.appendChild(
+            button
+        );
 
     }
 
 }
 
 
-/* =========================================================
-   MENU - MAP
-========================================================= */
+/* =====================================================
+   MAP SELECTION
+===================================================== */
 
 function chooseMap(map) {
 
     selectedMap = map;
 
     document
-        .getElementById("trenchButton")
-        .classList.remove("selected");
-
-    document
-        .getElementById("townButton")
-        .classList.remove("selected");
+        .getElementById(
+            "trenchButton"
+        )
+        .classList.remove(
+            "selected"
+        );
 
     document
         .getElementById(
-            map === "trenches"
-                ? "trenchButton"
-                : "townButton"
+            "townButton"
         )
-        .classList.add("selected");
+        .classList.remove(
+            "selected"
+        );
+
+
+    const id =
+        map === "trenches"
+            ? "trenchButton"
+            : "townButton";
+
+
+    document
+        .getElementById(id)
+        .classList.add(
+            "selected"
+        );
 
 }
 
 
-/* =========================================================
+/* =====================================================
    START GAME
-========================================================= */
+===================================================== */
 
 function startGame() {
 
     if (!selectedFaction) {
-        alert("Choose British or German first!");
+
+        alert(
+            "Choose a faction first!"
+        );
+
         return;
+
     }
+
 
     if (!selectedTankClass) {
-        alert("Choose a tank first!");
+
+        alert(
+            "Choose a tank first!"
+        );
+
         return;
+
     }
+
 
     if (!selectedMap) {
-        alert("Choose a battlefield first!");
+
+        alert(
+            "Choose a battlefield first!"
+        );
+
         return;
+
     }
 
-    document.getElementById("menu").style.display = "none";
 
-    document.getElementById("gameArea").style.display = "block";
+    document
+        .getElementById("menu")
+        .style.display = "none";
+
+
+    document
+        .getElementById("gameArea")
+        .style.display = "block";
+
 
     createBattle();
 
@@ -518,55 +764,303 @@ function startGame() {
 }
 
 
-/* =========================================================
+/* =====================================================
    CREATE BATTLE
-========================================================= */
+===================================================== */
 
 function createBattle() {
 
-    const tankData =
-        tanks[selectedFaction][selectedTankClass];
+    const data =
+        tanks[selectedFaction]
+            [selectedTankClass];
+
 
     player = {
 
-        x: 150,
-        y: 325,
+        x: 130,
+
+        y: 350,
 
         angle: 0,
 
-        health: tankData.health,
-        maxHealth: tankData.health,
+        health: data.health,
 
-        speed: tankData.speed,
-        damage: tankData.damage,
+        maxHealth: data.health,
 
-        reload: tankData.reload,
+        speed: data.speed,
 
-        size: tankData.size,
+        damage: data.damage,
 
-        name: tankData.name,
+        reload: data.reload,
+
+        size: data.size,
+
+        name: data.name,
+
+        model: data.model,
 
         faction: selectedFaction
 
     };
 
 
-    document.getElementById("tankName").textContent =
+    document
+        .getElementById(
+            "tankName"
+        )
+        .textContent =
         player.name;
 
+
+    createMap();
 
     createEnemies();
 
 }
 
 
-/* =========================================================
-   CREATE ENEMIES
-========================================================= */
+/* =====================================================
+   MAP CREATION
+===================================================== */
+
+function createMap() {
+
+    obstacles = [];
+
+    if (selectedMap === "town") {
+
+        createTownMap();
+
+    } else {
+
+        createTrenchMap();
+
+    }
+
+}
+
+
+/* =====================================================
+   TOWN MAP
+===================================================== */
+
+function createTownMap() {
+
+    /*
+       BUILDINGS
+    */
+
+    addObstacle(
+        40, 40, 210, 150,
+        "building"
+    );
+
+    addObstacle(
+        290, 45, 150, 115,
+        "building"
+    );
+
+    addObstacle(
+        690, 35, 190, 150,
+        "building"
+    );
+
+    addObstacle(
+        920, 60, 130, 180,
+        "building"
+    );
+
+
+    addObstacle(
+        35, 470, 190, 170,
+        "building"
+    );
+
+    addObstacle(
+        285, 500, 145, 130,
+        "building"
+    );
+
+    addObstacle(
+        675, 485, 190, 150,
+        "building"
+    );
+
+    addObstacle(
+        925, 430, 140, 190,
+        "building"
+    );
+
+
+    /*
+       CENTRAL RUBBLE
+    */
+
+    addObstacle(
+        480, 70, 100, 75,
+        "rubble"
+    );
+
+    addObstacle(
+        570, 510, 80, 75,
+        "rubble"
+    );
+
+
+    /*
+       WALLS
+    */
+
+    addObstacle(
+        250, 250, 140, 18,
+        "wall"
+    );
+
+    addObstacle(
+        710, 275, 150, 18,
+        "wall"
+    );
+
+
+    /*
+       WRECKS
+    */
+
+    addObstacle(
+        460, 315, 75, 35,
+        "wreck"
+    );
+
+    addObstacle(
+        600, 380, 70, 32,
+        "wreck"
+    );
+
+}
+
+
+/* =====================================================
+   TRENCH MAP
+===================================================== */
+
+function createTrenchMap() {
+
+    /*
+       TRENCH WALLS
+    */
+
+    addObstacle(
+        0, 120, 300, 55,
+        "trench"
+    );
+
+    addObstacle(
+        360, 100, 280, 55,
+        "trench"
+    );
+
+    addObstacle(
+        700, 125, 400, 55,
+        "trench"
+    );
+
+
+    addObstacle(
+        0, 520, 260, 55,
+        "trench"
+    );
+
+    addObstacle(
+        320, 545, 310, 55,
+        "trench"
+    );
+
+    addObstacle(
+        700, 515, 400, 55,
+        "trench"
+    );
+
+
+    /*
+       BUNKERS
+    */
+
+    addObstacle(
+        350, 220, 115, 70,
+        "bunker"
+    );
+
+    addObstacle(
+        690, 360, 125, 75,
+        "bunker"
+    );
+
+
+    /*
+       BARBED WIRE
+    */
+
+    addObstacle(
+        120, 315, 170, 22,
+        "wire"
+    );
+
+    addObstacle(
+        820, 300, 180, 22,
+        "wire"
+    );
+
+
+    /*
+       CRATERS
+    */
+
+    addObstacle(
+        430, 400, 70, 50,
+        "crater"
+    );
+
+    addObstacle(
+        570, 230, 65, 45,
+        "crater"
+    );
+
+}
+
+
+/* =====================================================
+   OBSTACLE
+===================================================== */
+
+function addObstacle(
+    x,
+    y,
+    width,
+    height,
+    type
+) {
+
+    obstacles.push({
+
+        x,
+        y,
+        width,
+        height,
+        type
+
+    });
+
+}
+
+
+/* =====================================================
+   ENEMIES
+===================================================== */
 
 function createEnemies() {
 
     enemies = [];
+
 
     const enemyFaction =
         selectedFaction === "british"
@@ -574,45 +1068,72 @@ function createEnemies() {
             : "british";
 
 
-    const enemyTypes = [
+    const types = [
         "light",
         "medium",
         "heavy"
     ];
 
 
-    for (let i = 0; i < 3; i++) {
+    const positions = [
 
-        const type =
-            enemyTypes[i];
+        [930, 130],
+
+        [870, 350],
+
+        [950, 570]
+
+    ];
+
+
+    for (
+        let i = 0;
+        i < 3;
+        i++
+    ) {
 
         const data =
-            tanks[enemyFaction][type];
+            tanks[enemyFaction]
+                [types[i]];
 
 
         enemies.push({
 
-            x: 700 + Math.random() * 180,
+            x:
+                positions[i][0],
 
-            y: 120 + Math.random() * 420,
+            y:
+                positions[i][1],
 
-            angle: Math.PI,
+            angle:
+                Math.PI,
 
-            health: data.health,
+            health:
+                data.health,
 
-            maxHealth: data.health,
+            maxHealth:
+                data.health,
 
-            speed: data.speed * 0.45,
+            speed:
+                data.speed * 0.35,
 
-            damage: data.damage,
+            damage:
+                data.damage,
 
-            reload: data.reload + 400,
+            reload:
+                data.reload + 400,
 
-            size: data.size,
+            size:
+                data.size,
 
-            name: data.name,
+            name:
+                data.name,
 
-            faction: enemyFaction,
+            model:
+                data.model,
+
+            faction:
+                enemyFaction,
 
             lastShot: 0
 
@@ -623,110 +1144,175 @@ function createEnemies() {
 }
 
 
-/* =========================================================
+/* =====================================================
    KEYBOARD
-========================================================= */
+===================================================== */
 
-window.addEventListener("keydown", function(event) {
+window.addEventListener(
+    "keydown",
+    event => {
 
-    keys[event.key.toLowerCase()] = true;
+        keys[
+            event.key.toLowerCase()
+        ] = true;
 
-    if (event.code === "Space") {
 
-        event.preventDefault();
+        if (
+            event.code === "Space"
+        ) {
 
-        shoot();
+            event.preventDefault();
+
+            shoot();
+
+        }
 
     }
-
-});
-
-
-window.addEventListener("keyup", function(event) {
-
-    keys[event.key.toLowerCase()] = false;
-
-});
+);
 
 
-/* =========================================================
+window.addEventListener(
+    "keyup",
+    event => {
+
+        keys[
+            event.key.toLowerCase()
+        ] = false;
+
+    }
+);
+
+
+/* =====================================================
    MOUSE
-========================================================= */
+===================================================== */
 
-canvas.addEventListener("mousemove", function(event) {
+canvas.addEventListener(
+    "mousemove",
+    event => {
 
-    const rect = canvas.getBoundingClientRect();
-
-    mouse.x =
-        (event.clientX - rect.left)
-        * canvas.width / rect.width;
-
-    mouse.y =
-        (event.clientY - rect.top)
-        * canvas.height / rect.height;
-
-});
+        const rect =
+            canvas.getBoundingClientRect();
 
 
-canvas.addEventListener("mousedown", function() {
+        mouse.x =
+            (
+                event.clientX -
+                rect.left
+            )
+            *
+            canvas.width /
+            rect.width;
 
-    shoot();
 
-});
+        mouse.y =
+            (
+                event.clientY -
+                rect.top
+            )
+            *
+            canvas.height /
+            rect.height;
+
+    }
+);
 
 
-/* =========================================================
+canvas.addEventListener(
+    "mousedown",
+    shoot
+);
+
+
+/* =====================================================
    PLAYER MOVEMENT
-========================================================= */
+===================================================== */
 
 function movePlayer() {
 
-    if (!player) return;
-
-
     let dx = 0;
+
     let dy = 0;
 
 
-    if (keys["w"]) dy -= 1;
+    if (keys["w"])
+        dy--;
 
-    if (keys["s"]) dy += 1;
+    if (keys["s"])
+        dy++;
 
-    if (keys["a"]) dx -= 1;
+    if (keys["a"])
+        dx--;
 
-    if (keys["d"]) dx += 1;
+    if (keys["d"])
+        dx++;
 
 
-    if (dx !== 0 || dy !== 0) {
+    if (
+        dx !== 0 ||
+        dy !== 0
+    ) {
 
         const length =
-            Math.sqrt(dx * dx + dy * dy);
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
 
         dx /= length;
+
         dy /= length;
 
 
-        player.x += dx * player.speed;
+        const oldX =
+            player.x;
 
-        player.y += dy * player.speed;
+        const oldY =
+            player.y;
+
+
+        player.x +=
+            dx * player.speed;
+
+        player.y +=
+            dy * player.speed;
+
+
+        if (
+            tankHitsObstacle(
+                player
+            )
+        ) {
+
+            player.x =
+                oldX;
+
+            player.y =
+                oldY;
+
+        }
 
     }
 
 
-    /* Keep tank inside battlefield */
-
     player.x =
-        Math.max(player.size,
+        Math.max(
+            player.size,
             Math.min(
-                canvas.width - player.size,
+                canvas.width -
+                player.size,
                 player.x
             )
         );
 
+
     player.y =
-        Math.max(player.size,
+        Math.max(
+            player.size,
             Math.min(
-                canvas.height - player.size,
+                canvas.height -
+                player.size,
                 player.y
             )
         );
@@ -734,233 +1320,423 @@ function movePlayer() {
 }
 
 
-/* =========================================================
-   PLAYER AIM
-========================================================= */
+/* =====================================================
+   AIM
+===================================================== */
 
 function aimPlayer() {
 
     player.angle =
         Math.atan2(
-            mouse.y - player.y,
-            mouse.x - player.x
+            mouse.y -
+            player.y,
+
+            mouse.x -
+            player.x
         );
 
 }
 
 
-/* =========================================================
+/* =====================================================
+   COLLISION
+===================================================== */
+
+function tankHitsObstacle(
+    tank
+) {
+
+    for (
+        const obstacle of obstacles
+    ) {
+
+        if (
+            obstacle.type ===
+            "crater"
+        )
+            continue;
+
+
+        if (
+
+            tank.x >
+                obstacle.x -
+                tank.size &&
+
+            tank.x <
+                obstacle.x +
+                obstacle.width +
+                tank.size &&
+
+            tank.y >
+                obstacle.y -
+                tank.size &&
+
+            tank.y <
+                obstacle.y +
+                obstacle.height +
+                tank.size
+
+        ) {
+
+            return true;
+
+        }
+
+    }
+
+
+    return false;
+
+}
+
+
+/* =====================================================
    SHOOT
-========================================================= */
+===================================================== */
 
 function shoot() {
 
-    if (!gameRunning) return;
-
-    const now = Date.now();
-
-    if (now - lastShot < player.reload) {
+    if (!gameRunning)
         return;
-    }
 
-    lastShot = now;
+
+    const now =
+        Date.now();
+
+
+    if (
+        now - lastShot <
+        player.reload
+    )
+        return;
+
+
+    lastShot =
+        now;
 
 
     bullets.push({
 
         x:
             player.x +
-            Math.cos(player.angle)
-            * player.size,
+            Math.cos(
+                player.angle
+            ) *
+            player.size *
+            1.3,
 
         y:
             player.y +
-            Math.sin(player.angle)
-            * player.size,
+            Math.sin(
+                player.angle
+            ) *
+            player.size *
+            1.3,
 
         vx:
-            Math.cos(player.angle) * 8,
+            Math.cos(
+                player.angle
+            ) * 9,
 
         vy:
-            Math.sin(player.angle) * 8,
+            Math.sin(
+                player.angle
+            ) * 9,
 
-        damage: player.damage,
+        damage:
+            player.damage,
 
-        enemy: false
+        enemy:
+            false
 
     });
 
 }
 
 
-/* =========================================================
+/* =====================================================
    ENEMY AI
-========================================================= */
+===================================================== */
 
 function updateEnemies() {
 
-    enemies.forEach(enemy => {
+    enemies.forEach(
+        enemy => {
 
-        const dx =
-            player.x - enemy.x;
+            const dx =
+                player.x -
+                enemy.x;
 
-        const dy =
-            player.y - enemy.y;
-
-        const distance =
-            Math.sqrt(dx * dx + dy * dy);
-
-
-        enemy.angle =
-            Math.atan2(dy, dx);
+            const dy =
+                player.y -
+                enemy.y;
 
 
-        /* Move toward player */
+            const distance =
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
 
-        if (distance > 230) {
 
-            enemy.x +=
-                Math.cos(enemy.angle)
-                * enemy.speed;
+            enemy.angle =
+                Math.atan2(
+                    dy,
+                    dx
+                );
 
-            enemy.y +=
-                Math.sin(enemy.angle)
-                * enemy.speed;
+
+            if (
+                distance > 260
+            ) {
+
+                const oldX =
+                    enemy.x;
+
+                const oldY =
+                    enemy.y;
+
+
+                enemy.x +=
+                    Math.cos(
+                        enemy.angle
+                    ) *
+                    enemy.speed;
+
+
+                enemy.y +=
+                    Math.sin(
+                        enemy.angle
+                    ) *
+                    enemy.speed;
+
+
+                if (
+                    tankHitsObstacle(
+                        enemy
+                    )
+                ) {
+
+                    enemy.x =
+                        oldX;
+
+                    enemy.y =
+                        oldY;
+
+                }
+
+            }
+
+
+            const now =
+                Date.now();
+
+
+            if (
+
+                distance < 650 &&
+
+                now -
+                enemy.lastShot >
+                enemy.reload
+
+            ) {
+
+                enemy.lastShot =
+                    now;
+
+
+                bullets.push({
+
+                    x:
+                        enemy.x +
+                        Math.cos(
+                            enemy.angle
+                        ) *
+                        enemy.size,
+
+                    y:
+                        enemy.y +
+                        Math.sin(
+                            enemy.angle
+                        ) *
+                        enemy.size,
+
+                    vx:
+                        Math.cos(
+                            enemy.angle
+                        ) * 6,
+
+                    vy:
+                        Math.sin(
+                            enemy.angle
+                        ) * 6,
+
+                    damage:
+                        enemy.damage,
+
+                    enemy:
+                        true
+
+                });
+
+            }
 
         }
-
-
-        /* Shoot */
-
-        const now = Date.now();
-
-        if (
-            distance < 600 &&
-            now - enemy.lastShot > enemy.reload
-        ) {
-
-            enemy.lastShot = now;
-
-            bullets.push({
-
-                x:
-                    enemy.x +
-                    Math.cos(enemy.angle)
-                    * enemy.size,
-
-                y:
-                    enemy.y +
-                    Math.sin(enemy.angle)
-                    * enemy.size,
-
-                vx:
-                    Math.cos(enemy.angle) * 5,
-
-                vy:
-                    Math.sin(enemy.angle) * 5,
-
-                damage: enemy.damage,
-
-                enemy: true
-
-            });
-
-        }
-
-    });
+    );
 
 }
 
 
-/* =========================================================
+/* =====================================================
    BULLETS
-========================================================= */
+===================================================== */
 
 function updateBullets() {
 
-    bullets.forEach(bullet => {
+    bullets.forEach(
+        bullet => {
 
-        bullet.x += bullet.vx;
+            bullet.x +=
+                bullet.vx;
 
-        bullet.y += bullet.vy;
+            bullet.y +=
+                bullet.vy;
 
-    });
+        }
+    );
 
-
-    /* Remove bullets outside map */
 
     bullets =
-        bullets.filter(bullet =>
-            bullet.x > 0 &&
-            bullet.x < canvas.width &&
-            bullet.y > 0 &&
-            bullet.y < canvas.height
+        bullets.filter(
+            bullet =>
+
+                bullet.x > 0 &&
+
+                bullet.x <
+                    canvas.width &&
+
+                bullet.y > 0 &&
+
+                bullet.y <
+                    canvas.height
+
         );
 
 
-    /* Bullet collision */
+    for (
+        let i =
+            bullets.length - 1;
 
-    bullets.forEach((bullet, bulletIndex) => {
+        i >= 0;
+
+        i--
+
+    ) {
+
+        const bullet =
+            bullets[i];
 
 
-        if (!bullet.enemy) {
+        if (
+            !bullet.enemy
+        ) {
 
-            enemies.forEach((enemy, enemyIndex) => {
+            for (
+                let j =
+                    enemies.length - 1;
+
+                j >= 0;
+
+                j--
+
+            ) {
+
+                const enemy =
+                    enemies[j];
+
 
                 const dx =
-                    bullet.x - enemy.x;
+                    bullet.x -
+                    enemy.x;
 
                 const dy =
-                    bullet.y - enemy.y;
+                    bullet.y -
+                    enemy.y;
+
 
                 const distance =
-                    Math.sqrt(dx * dx + dy * dy);
+                    Math.sqrt(
+                        dx * dx +
+                        dy * dy
+                    );
 
 
-                if (distance < enemy.size) {
+                if (
+                    distance <
+                    enemy.size
+                ) {
 
-                    enemy.health -= bullet.damage;
+                    enemy.health -=
+                        bullet.damage;
+
 
                     bullets.splice(
-                        bulletIndex,
+                        i,
                         1
                     );
 
 
-                    if (enemy.health <= 0) {
+                    if (
+                        enemy.health <= 0
+                    ) {
 
                         enemies.splice(
-                            enemyIndex,
+                            j,
                             1
                         );
 
                     }
 
+
+                    break;
+
                 }
 
-            });
+            }
 
         }
-
 
         else {
 
             const dx =
-                bullet.x - player.x;
+                bullet.x -
+                player.x;
 
             const dy =
-                bullet.y - player.y;
+                bullet.y -
+                player.y;
+
 
             const distance =
-                Math.sqrt(dx * dx + dy * dy);
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
 
 
-            if (distance < player.size) {
+            if (
+                distance <
+                player.size
+            ) {
 
-                player.health -= bullet.damage;
+                player.health -=
+                    bullet.damage;
+
 
                 bullets.splice(
-                    bulletIndex,
+                    i,
                     1
                 );
 
@@ -968,39 +1744,47 @@ function updateBullets() {
 
         }
 
-    });
+    }
 
 }
 
 
-/* =========================================================
-   DRAW MAP
-========================================================= */
+/* =====================================================
+   MAP DRAWING
+===================================================== */
 
 function drawMap() {
 
-    if (selectedMap === "trenches") {
-
-        drawTrenches();
-
-    }
-
-    else if (selectedMap === "town") {
+    if (
+        selectedMap ===
+        "town"
+    ) {
 
         drawTown();
 
     }
 
+    else {
+
+        drawTrenches();
+
+    }
+
 }
 
 
-/* =========================================================
-   TRENCH MAP
-========================================================= */
+/* =====================================================
+   TOWN
+===================================================== */
 
-function drawTrenches() {
+function drawTown() {
 
-    ctx.fillStyle = "#817852";
+    /*
+       GRASS
+    */
+
+    ctx.fillStyle =
+        "#73745e";
 
     ctx.fillRect(
         0,
@@ -1010,206 +1794,994 @@ function drawTrenches() {
     );
 
 
-    /* Mud */
+    /*
+       ROAD NETWORK
+    */
 
-    ctx.fillStyle = "#675d3d";
+    ctx.fillStyle =
+        "#454640";
 
-    for (let i = 0; i < 30; i++) {
+    ctx.fillRect(
+        0,
+        265,
+        canvas.width,
+        150
+    );
 
-        const x =
-            (i * 137) % canvas.width;
+    ctx.fillRect(
+        430,
+        0,
+        170,
+        canvas.height
+    );
 
-        const y =
-            (i * 83) % canvas.height;
+
+    /*
+       ROAD LINES
+    */
+
+    ctx.strokeStyle =
+        "#8b856b";
+
+    ctx.lineWidth = 5;
+
+    ctx.setLineDash(
+        [35, 25]
+    );
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        340
+    );
+
+    ctx.lineTo(
+        canvas.width,
+        340
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        515,
+        0
+    );
+
+    ctx.lineTo(
+        515,
+        canvas.height
+    );
+
+    ctx.stroke();
+
+
+    ctx.setLineDash([]);
+
+
+    /*
+       BUILDINGS
+    */
+
+    obstacles
+        .filter(
+            o =>
+                o.type ===
+                "building"
+        )
+        .forEach(
+            drawBuilding
+        );
+
+
+    /*
+       RUBBLE
+    */
+
+    obstacles
+        .filter(
+            o =>
+                o.type ===
+                "rubble"
+        )
+        .forEach(
+            drawRubble
+        );
+
+
+    /*
+       WALLS
+    */
+
+    obstacles
+        .filter(
+            o =>
+                o.type ===
+                "wall"
+        )
+        .forEach(
+            drawWall
+        );
+
+
+    /*
+       WRECKS
+    */
+
+    obstacles
+        .filter(
+            o =>
+                o.type ===
+                "wreck"
+        )
+        .forEach(
+            drawWreck
+        );
+
+
+    /*
+       TREES
+    */
+
+    drawTree(
+        370,
+        380
+    );
+
+    drawTree(
+        630,
+        180
+    );
+
+    drawTree(
+        865,
+        350
+    );
+
+    drawTree(
+        250,
+        370
+    );
+
+}
+
+
+/* =====================================================
+   BUILDINGS
+===================================================== */
+
+function drawBuilding(
+    o
+) {
+
+    /*
+       SHADOW
+    */
+
+    ctx.fillStyle =
+        "#292a24";
+
+    ctx.fillRect(
+        o.x + 8,
+        o.y + 9,
+        o.width,
+        o.height
+    );
+
+
+    /*
+       BUILDING
+    */
+
+    ctx.fillStyle =
+        "#625f50";
+
+    ctx.fillRect(
+        o.x,
+        o.y,
+        o.width,
+        o.height
+    );
+
+
+    /*
+       ROOF DAMAGE
+    */
+
+    ctx.fillStyle =
+        "#403e35";
+
+    for (
+        let x = o.x + 10;
+
+        x <
+        o.x +
+        o.width -
+        10;
+
+        x += 35
+
+    ) {
 
         ctx.fillRect(
             x,
-            y,
-            40,
+            o.y + 10,
+            20,
             8
         );
 
     }
 
 
-    /* Trenches */
+    /*
+       WINDOWS
+    */
 
-    ctx.fillStyle = "#3d3826";
-
-    ctx.fillRect(
-        0,
-        90,
-        1000,
-        65
-    );
-
-    ctx.fillRect(
-        0,
-        495,
-        1000,
-        65
-    );
+    ctx.fillStyle =
+        "#b19d61";
 
 
-    /* Sandbags */
+    for (
+        let x =
+            o.x + 25;
 
-    ctx.fillStyle = "#b3a36d";
+        x <
+        o.x +
+        o.width -
+        15;
 
-    for (let x = 20; x < 980; x += 45) {
+        x += 45
 
-        ctx.fillRect(
-            x,
-            72,
-            32,
-            18
-        );
-
-        ctx.fillRect(
-            x,
-            560,
-            32,
-            18
-        );
-
-    }
-
-
-    /* Wooden barriers */
-
-    ctx.strokeStyle = "#4d3825";
-
-    ctx.lineWidth = 7;
-
-    for (let x = 100; x < 900; x += 180) {
-
-        ctx.beginPath();
-
-        ctx.moveTo(x, 170);
-
-        ctx.lineTo(x + 50, 220);
-
-        ctx.stroke();
-
-        ctx.beginPath();
-
-        ctx.moveTo(x + 50, 170);
-
-        ctx.lineTo(x, 220);
-
-        ctx.stroke();
-
-    }
-
-}
-
-
-/* =========================================================
-   TOWN MAP
-========================================================= */
-
-function drawTown() {
-
-    ctx.fillStyle = "#8d8774";
-
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-
-    /* Roads */
-
-    ctx.fillStyle = "#55534a";
-
-    ctx.fillRect(
-        0,
-        270,
-        canvas.width,
-        120
-    );
-
-    ctx.fillRect(
-        440,
-        0,
-        120,
-        canvas.height
-    );
-
-
-    /* Buildings */
-
-    const buildings = [
-
-        [40, 40, 180, 160],
-        [280, 40, 120, 160],
-
-        [620, 40, 160, 170],
-        [830, 70, 120, 120],
-
-        [40, 430, 170, 150],
-        [270, 450, 130, 130],
-
-        [620, 440, 180, 150],
-        [850, 420, 110, 150]
-
-    ];
-
-
-    ctx.fillStyle = "#504d43";
-
-    buildings.forEach(building => {
-
-        ctx.fillRect(
-            building[0],
-            building[1],
-            building[2],
-            building[3]
-        );
-
-    });
-
-
-    /* Windows */
-
-    ctx.fillStyle = "#b8a76d";
-
-    buildings.forEach(building => {
+    ) {
 
         for (
-            let x = building[0] + 20;
-            x < building[0] + building[2] - 15;
-            x += 45
+            let y =
+                o.y + 35;
+
+            y <
+            o.y +
+            o.height -
+            15;
+
+            y += 45
+
         ) {
 
-            for (
-                let y = building[1] + 25;
-                y < building[1] + building[3] - 15;
-                y += 45
-            ) {
-
-                ctx.fillRect(
-                    x,
-                    y,
-                    18,
-                    20
-                );
-
-            }
+            ctx.fillRect(
+                x,
+                y,
+                20,
+                24
+            );
 
         }
 
-    });
+    }
+
+
+    /*
+       DOOR
+    */
+
+    ctx.fillStyle =
+        "#322e25";
+
+    ctx.fillRect(
+        o.x +
+        o.width / 2 -
+        12,
+
+        o.y +
+        o.height -
+        45,
+
+        24,
+        45
+    );
 
 }
 
 
-/* =========================================================
-   DRAW TANK
-========================================================= */
+/* =====================================================
+   RUBBLE
+===================================================== */
 
-function drawTank(tank) {
+function drawRubble(
+    o
+) {
+
+    ctx.fillStyle =
+        "#48463e";
+
+    ctx.fillRect(
+        o.x,
+        o.y,
+        o.width,
+        o.height
+    );
+
+
+    for (
+        let i = 0;
+        i < 15;
+        i++
+    ) {
+
+        const x =
+            o.x +
+            Math.random() *
+            o.width;
+
+        const y =
+            o.y +
+            Math.random() *
+            o.height;
+
+
+        ctx.fillStyle =
+            i % 2 === 0
+                ? "#292923"
+                : "#777366";
+
+
+        ctx.fillRect(
+            x,
+            y,
+            10 + Math.random() * 12,
+            7 + Math.random() * 10
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   WALL
+===================================================== */
+
+function drawWall(
+    o
+) {
+
+    ctx.fillStyle =
+        "#4d493d";
+
+    ctx.fillRect(
+        o.x,
+        o.y,
+        o.width,
+        o.height
+    );
+
+
+    ctx.strokeStyle =
+        "#81765d";
+
+    ctx.lineWidth = 2;
+
+
+    for (
+        let x =
+            o.x;
+
+        x <
+        o.x +
+        o.width;
+
+        x += 18
+
+    ) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x,
+            o.y
+        );
+
+        ctx.lineTo(
+            x,
+            o.y +
+            o.height
+        );
+
+        ctx.stroke();
+
+    }
+
+}
+
+
+/* =====================================================
+   WRECKED TANK
+===================================================== */
+
+function drawWreck(
+    o
+) {
+
+    ctx.save();
+
+    ctx.translate(
+        o.x +
+        o.width / 2,
+
+        o.y +
+        o.height / 2
+    );
+
+    ctx.rotate(
+        -0.35
+    );
+
+
+    ctx.fillStyle =
+        "#292b25";
+
+    ctx.fillRect(
+        -35,
+        -14,
+        70,
+        28
+    );
+
+
+    ctx.fillStyle =
+        "#414238";
+
+    ctx.fillRect(
+        -20,
+        -22,
+        35,
+        25
+    );
+
+
+    ctx.fillStyle =
+        "#24251e";
+
+    ctx.fillRect(
+        5,
+        -3,
+        40,
+        7
+    );
+
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   TREE
+===================================================== */
+
+function drawTree(
+    x,
+    y
+) {
+
+    ctx.fillStyle =
+        "#473a28";
+
+    ctx.fillRect(
+        x - 6,
+        y,
+        12,
+        40
+    );
+
+
+    ctx.fillStyle =
+        "#303b28";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y - 8,
+        30,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x - 20,
+        y + 4,
+        20,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x + 20,
+        y + 4,
+        20,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+}
+
+
+/* =====================================================
+   TRENCH MAP
+===================================================== */
+
+function drawTrenches() {
+
+    /*
+       MUD
+    */
+
+    ctx.fillStyle =
+        "#756847";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    /*
+       MUD PATCHES
+    */
+
+    ctx.fillStyle =
+        "#635638";
+
+    for (
+        let i = 0;
+        i < 70;
+        i++
+    ) {
+
+        const x =
+            (i * 173) %
+            canvas.width;
+
+        const y =
+            (i * 97) %
+            canvas.height;
+
+
+        ctx.fillRect(
+            x,
+            y,
+            20 + i % 30,
+            5
+        );
+
+    }
+
+
+    /*
+       TRENCHES
+    */
+
+    obstacles
+        .filter(
+            o =>
+                o.type ===
+                "trench"
+        )
+        .forEach(
+            drawTrench
+        );
+
+
+    /*
+       BUNKERS
+    */
+
+    obstacles
+        .filter(
+            o =>
+                o.type ===
+                "bunker"
+        )
+        .forEach(
+            drawBunker
+        );
+
+
+    /*
+       BARBED WIRE
+    */
+
+    obstacles
+        .filter(
+            o =>
+                o.type ===
+                "wire"
+        )
+        .forEach(
+            drawWire
+        );
+
+
+    /*
+       CRATERS
+    */
+
+    obstacles
+        .filter(
+            o =>
+                o.type ===
+                "crater"
+        )
+        .forEach(
+            drawCrater
+        );
+
+
+    /*
+       LOGS
+    */
+
+    drawLog(
+        230,
+        230,
+        120
+    );
+
+    drawLog(
+        780,
+        450,
+        100
+    );
+
+}
+
+
+/* =====================================================
+   TRENCH
+===================================================== */
+
+function drawTrench(
+    o
+) {
+
+    /*
+       DARK EARTH
+    */
+
+    ctx.fillStyle =
+        "#403a29";
+
+    ctx.fillRect(
+        o.x,
+        o.y,
+        o.width,
+        o.height
+    );
+
+
+    /*
+       INNER MUD
+    */
+
+    ctx.fillStyle =
+        "#302d22";
+
+    ctx.fillRect(
+        o.x + 8,
+        o.y + 12,
+        o.width - 16,
+        o.height - 24
+    );
+
+
+    /*
+       SAND BAGS
+    */
+
+    for (
+        let x =
+            o.x + 8;
+
+        x <
+        o.x +
+        o.width -
+        15;
+
+        x += 27
+
+    ) {
+
+        ctx.fillStyle =
+            "#a99a66";
+
+        ctx.fillRect(
+            x,
+            o.y - 5,
+            22,
+            13
+        );
+
+
+        ctx.fillRect(
+            x,
+            o.y +
+            o.height -
+            8,
+
+            22,
+            13
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   BUNKER
+===================================================== */
+
+function drawBunker(
+    o
+) {
+
+    ctx.fillStyle =
+        "#37372e";
+
+    ctx.fillRect(
+        o.x,
+        o.y,
+        o.width,
+        o.height
+    );
+
+
+    ctx.fillStyle =
+        "#514e3f";
+
+    ctx.fillRect(
+        o.x + 8,
+        o.y + 8,
+        o.width - 16,
+        o.height - 16
+    );
+
+
+    /*
+       FIRING SLIT
+    */
+
+    ctx.fillStyle =
+        "#171812";
+
+    ctx.fillRect(
+        o.x + 20,
+        o.y + 25,
+        o.width - 40,
+        12
+    );
+
+}
+
+
+/* =====================================================
+   BARBED WIRE
+===================================================== */
+
+function drawWire(
+    o
+) {
+
+    ctx.strokeStyle =
+        "#282923";
+
+    ctx.lineWidth = 3;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        o.x,
+        o.y
+    );
+
+    ctx.lineTo(
+        o.x +
+        o.width,
+        o.y +
+        o.height
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        o.x +
+        o.width,
+        o.y
+    );
+
+    ctx.lineTo(
+        o.x,
+        o.y +
+        o.height
+    );
+
+    ctx.stroke();
+
+
+    for (
+        let x =
+            o.x + 10;
+
+        x <
+        o.x +
+        o.width;
+
+        x += 30
+
+    ) {
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            o.y + 10,
+            7,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.stroke();
+
+    }
+
+}
+
+
+/* =====================================================
+   CRATER
+===================================================== */
+
+function drawCrater(
+    o
+) {
+
+    ctx.fillStyle =
+        "#4d432f";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        o.x +
+        o.width / 2,
+
+        o.y +
+        o.height / 2,
+
+        o.width / 2,
+
+        o.height / 2,
+
+        0,
+
+        0,
+
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle =
+        "#292820";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        o.x +
+        o.width / 2,
+
+        o.y +
+        o.height / 2,
+
+        o.width / 3,
+
+        o.height / 3,
+
+        0,
+
+        0,
+
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+}
+
+
+/* =====================================================
+   LOG
+===================================================== */
+
+function drawLog(
+    x,
+    y,
+    length
+) {
+
+    ctx.save();
+
+    ctx.translate(
+        x,
+        y
+    );
+
+    ctx.rotate(
+        -0.15
+    );
+
+
+    ctx.fillStyle =
+        "#4b3321";
+
+    ctx.fillRect(
+        0,
+        0,
+        length,
+        15
+    );
+
+
+    ctx.fillStyle =
+        "#725038";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        7,
+        8,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   TANK DRAWING
+===================================================== */
+
+function drawTank(
+    tank
+) {
 
     ctx.save();
 
@@ -1218,223 +2790,868 @@ function drawTank(tank) {
         tank.y
     );
 
-    ctx.rotate(tank.angle);
-
-
-    /* Tank tracks */
-
-    ctx.fillStyle = "#22251c";
-
-    ctx.fillRect(
-        -tank.size,
-        -tank.size * 0.8,
-        tank.size * 2,
-        tank.size * 0.35
-    );
-
-    ctx.fillRect(
-        -tank.size,
-        tank.size * 0.45,
-        tank.size * 2,
-        tank.size * 0.35
+    ctx.rotate(
+        tank.angle
     );
 
 
-    /* Tank body */
+    /*
+       SHADOW
+    */
 
-    if (tank.faction === "british") {
-
-        ctx.fillStyle = "#53613b";
-
-    }
-
-    else {
-
-        ctx.fillStyle = "#777052";
-
-    }
-
+    ctx.fillStyle =
+        "rgba(0,0,0,0.35)";
 
     ctx.fillRect(
-        -tank.size * 0.75,
-        -tank.size * 0.55,
-        tank.size * 1.5,
-        tank.size * 1.1
+        -tank.size - 4,
+        -tank.size + 5,
+        tank.size * 2 + 8,
+        tank.size * 1.7
     );
 
 
-    /* Turret */
+    /*
+       TRACKS
+    */
 
-    ctx.beginPath();
-
-    ctx.arc(
-        0,
-        0,
-        tank.size * 0.55,
-        0,
-        Math.PI * 2
+    drawTracks(
+        tank
     );
 
-    ctx.fill();
+
+    /*
+       HULL
+    */
+
+    drawHull(
+        tank
+    );
 
 
-    /* Cannon */
+    /*
+       TURRET
+    */
 
-    ctx.fillStyle = "#24251d";
+    drawTurret(
+        tank
+    );
 
-    ctx.fillRect(
-        0,
-        -4,
-        tank.size * 1.4,
-        8
+
+    /*
+       CANNON
+    */
+
+    drawCannon(
+        tank
+    );
+
+
+    /*
+       MARKINGS
+    */
+
+    drawTankMarkings(
+        tank
     );
 
 
     ctx.restore();
 
 
-    /* Health bar */
+    /*
+       HEALTH BAR
+    */
 
     const barWidth =
-        tank.size * 2;
-
-    const healthPercent =
-        Math.max(
-            0,
-            tank.health / tank.maxHealth
-        );
+        tank.size * 2.3;
 
 
-    ctx.fillStyle = "#241f18";
+    ctx.fillStyle =
+        "#201f18";
 
     ctx.fillRect(
-        tank.x - barWidth / 2,
-        tank.y - tank.size - 12,
+        tank.x -
+        barWidth / 2,
+
+        tank.y -
+        tank.size -
+        15,
+
         barWidth,
         7
     );
 
 
-    ctx.fillStyle = "#d6c56c";
+    ctx.fillStyle =
+        "#d5c45e";
 
     ctx.fillRect(
-        tank.x - barWidth / 2,
-        tank.y - tank.size - 12,
-        barWidth * healthPercent,
+        tank.x -
+        barWidth / 2,
+
+        tank.y -
+        tank.size -
+        15,
+
+        barWidth *
+        Math.max(
+            0,
+            tank.health /
+            tank.maxHealth
+        ),
+
         7
     );
 
 }
 
 
-/* =========================================================
-   DRAW BULLETS
-========================================================= */
+/* =====================================================
+   TRACKS
+===================================================== */
 
-function drawBullets() {
+function drawTracks(
+    tank
+) {
 
-    bullets.forEach(bullet => {
+    const s =
+        tank.size;
 
-        ctx.fillStyle =
-            bullet.enemy
-                ? "#c7b36a"
-                : "#eee5c5";
 
+    ctx.fillStyle =
+        "#20231d";
+
+
+    /*
+       LEFT TRACK
+    */
+
+    ctx.fillRect(
+        -s,
+        -s * 0.78,
+        s * 2,
+        s * 0.28
+    );
+
+
+    /*
+       RIGHT TRACK
+    */
+
+    ctx.fillRect(
+        -s,
+        s * 0.50,
+        s * 2,
+        s * 0.28
+    );
+
+
+    /*
+       TRACK WHEELS
+    */
+
+    ctx.fillStyle =
+        "#77745d";
+
+
+    for (
+        let x =
+            -s + 7;
+
+        x <
+        s;
+
+        x += 11
+
+    ) {
 
         ctx.beginPath();
 
         ctx.arc(
-            bullet.x,
-            bullet.y,
-            5,
+            x,
+            -s * 0.64,
+            4,
             0,
             Math.PI * 2
         );
 
         ctx.fill();
 
-    });
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            s * 0.64,
+            4,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+    }
 
 }
 
 
-/* =========================================================
-   UI
-========================================================= */
+/* =====================================================
+   HULLS
+===================================================== */
 
-function updateUI() {
+function drawHull(
+    tank
+) {
 
-    document.getElementById(
-        "playerHealth"
-    ).textContent =
-        Math.max(
+    const s =
+        tank.size;
+
+
+    let colour;
+
+
+    if (
+        tank.faction ===
+        "british"
+    ) {
+
+        colour =
+            "#53633b";
+
+    }
+
+    else {
+
+        colour =
+            "#77724e";
+
+    }
+
+
+    ctx.fillStyle =
+        colour;
+
+
+    switch (
+        tank.model
+    ) {
+
+        /*
+           TETRARCH
+        */
+
+        case "tetrarch":
+
+            ctx.fillRect(
+                -s * 0.72,
+                -s * 0.48,
+                s * 1.45,
+                s * 0.95
+            );
+
+            break;
+
+
+        /*
+           CROMWELL
+        */
+
+        case "cromwell":
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                -s,
+                -s * 0.48
+            );
+
+            ctx.lineTo(
+                s * 0.85,
+                -s * 0.42
+            );
+
+            ctx.lineTo(
+                s,
+                s * 0.48
+            );
+
+            ctx.lineTo(
+                -s,
+                s * 0.48
+            );
+
+            ctx.closePath();
+
+            ctx.fill();
+
+            break;
+
+
+        /*
+           CHURCHILL
+        */
+
+        case "churchill":
+
+            ctx.fillRect(
+                -s * 1.05,
+                -s * 0.58,
+                s * 2.1,
+                s * 1.15
+            );
+
+            break;
+
+
+        /*
+           PANZER II
+        */
+
+        case "panzer2":
+
+            ctx.fillRect(
+                -s * 0.72,
+                -s * 0.42,
+                s * 1.45,
+                s * 0.84
+            );
+
+            break;
+
+
+        /*
+           PANZER IV
+        */
+
+        case "panzer4":
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                -s * 0.95,
+                -s * 0.5
+            );
+
+            ctx.lineTo(
+                s * 0.9,
+                -s * 0.5
+            );
+
+            ctx.lineTo(
+                s,
+                s * 0.5
+            );
+
+            ctx.lineTo(
+                -s * 0.95,
+                s * 0.5
+            );
+
+            ctx.closePath();
+
+            ctx.fill();
+
+            break;
+
+
+        /*
+           TIGER
+        */
+
+        case "tiger":
+
+            ctx.fillRect(
+                -s * 1.08,
+                -s * 0.62,
+                s * 2.15,
+                s * 1.25
+            );
+
+            break;
+
+    }
+
+}
+
+
+/* =====================================================
+   TURRETS
+===================================================== */
+
+function drawTurret(
+    tank
+) {
+
+    const s =
+        tank.size;
+
+
+    let turretColour;
+
+
+    if (
+        tank.faction ===
+        "british"
+    ) {
+
+        turretColour =
+            "#657448";
+
+    }
+
+    else {
+
+        turretColour =
+            "#8b855d";
+
+    }
+
+
+    ctx.fillStyle =
+        turretColour;
+
+
+    switch (
+        tank.model
+    ) {
+
+        case "tetrarch":
+
+            ctx.fillRect(
+                -s * 0.42,
+                -s * 0.35,
+                s * 0.7,
+                s * 0.7
+            );
+
+            break;
+
+
+        case "cromwell":
+
+            ctx.fillRect(
+                -s * 0.45,
+                -s * 0.42,
+                s * 0.9,
+                s * 0.84
+            );
+
+            break;
+
+
+        case "churchill":
+
+            ctx.fillRect(
+                -s * 0.5,
+                -s * 0.48,
+                s,
+                s * 0.96
+            );
+
+            break;
+
+
+        case "panzer2":
+
+            ctx.fillRect(
+                -s * 0.38,
+                -s * 0.38,
+                s * 0.72,
+                s * 0.72
+            );
+
+            break;
+
+
+        case "panzer4":
+
+            ctx.fillRect(
+                -s * 0.48,
+                -s * 0.43,
+                s * 0.9,
+                s * 0.86
+            );
+
+            break;
+
+
+        case "tiger":
+
+            ctx.fillRect(
+                -s * 0.52,
+                -s * 0.5,
+                s * 1.05,
+                s
+            );
+
+            break;
+
+    }
+
+
+    /*
+       TURRET CENTRE
+    */
+
+    ctx.fillStyle =
+        "#34382a";
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        0,
+        s * 0.25,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+}
+
+
+/* =====================================================
+   CANNONS
+===================================================== */
+
+function drawCannon(
+    tank
+) {
+
+    const s =
+        tank.size;
+
+
+    let length =
+        s * 1.3;
+
+
+    let width =
+        6;
+
+
+    switch (
+        tank.model
+    ) {
+
+        case "tetrarch":
+
+            length =
+                s * 1.15;
+
+            width = 5;
+
+            break;
+
+
+        case "cromwell":
+
+            length =
+                s * 1.55;
+
+            width = 6;
+
+            break;
+
+
+        case "churchill":
+
+            length =
+                s * 1.45;
+
+            width = 8;
+
+            break;
+
+
+        case "panzer2":
+
+            length =
+                s * 1.1;
+
+            width = 5;
+
+            break;
+
+
+        case "panzer4":
+
+            length =
+                s * 1.6;
+
+            width = 6;
+
+            break;
+
+
+        case "tiger":
+
+            length =
+                s * 1.85;
+
+            width = 9;
+
+            break;
+
+    }
+
+
+    ctx.fillStyle =
+        "#242820";
+
+
+    ctx.fillRect(
+        0,
+        -width / 2,
+        length,
+        width
+    );
+
+
+    /*
+       MUZZLE
+    */
+
+    ctx.fillRect(
+        length - 7,
+        -width / 2 - 2,
+        10,
+        width + 4
+    );
+
+}
+
+
+/* =====================================================
+   TANK MARKINGS
+===================================================== */
+
+function drawTankMarkings(
+    tank
+) {
+
+    const s =
+        tank.size;
+
+
+    if (
+        tank.faction ===
+        "british"
+    ) {
+
+        /*
+           WHITE CIRCLE
+        */
+
+        ctx.strokeStyle =
+            "#ddd7ba";
+
+        ctx.lineWidth = 3;
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            -s * 0.35,
             0,
-            Math.floor(player.health)
+            s * 0.15,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.stroke();
+
+    }
+
+    else {
+
+        /*
+           GERMAN CROSS
+        */
+
+        ctx.fillStyle =
+            "#24251e";
+
+
+        ctx.fillRect(
+            -s * 0.15,
+            -4,
+            s * 0.3,
+            8
         );
 
 
-    document.getElementById(
-        "enemyCount"
-    ).textContent =
+        ctx.fillRect(
+            -4,
+            -s * 0.15,
+            8,
+            s * 0.3
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   BULLETS
+===================================================== */
+
+function drawBullets() {
+
+    bullets.forEach(
+        bullet => {
+
+            ctx.fillStyle =
+                "#e3d49a";
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+                bullet.x,
+                bullet.y,
+                5,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+
+            /*
+               SHELL TRAIL
+            */
+
+            ctx.fillStyle =
+                "rgba(255,220,130,0.25)";
+
+
+            ctx.beginPath();
+
+            ctx.arc(
+                bullet.x -
+                    bullet.vx * 0.7,
+
+                bullet.y -
+                    bullet.vy * 0.7,
+
+                8,
+
+                0,
+
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   UI
+===================================================== */
+
+function updateUI() {
+
+    document
+        .getElementById(
+            "playerHealth"
+        )
+        .textContent =
+        Math.max(
+            0,
+            Math.floor(
+                player.health
+            )
+        );
+
+
+    document
+        .getElementById(
+            "enemyCount"
+        )
+        .textContent =
         enemies.length;
 
 }
 
 
-/* =========================================================
+/* =====================================================
    GAME STATE
-========================================================= */
+===================================================== */
 
 function checkGameState() {
 
-    if (player.health <= 0) {
+    if (
+        player.health <= 0
+    ) {
 
         gameRunning = false;
 
-        document.getElementById(
-            "battleMessage"
-        ).textContent =
-            "💀 YOUR TANK WAS DESTROYED!";
+
+        document
+            .getElementById(
+                "battleMessage"
+            )
+            .textContent =
+            "💀 YOUR TANK HAS BEEN DESTROYED";
 
 
-        document.getElementById(
-            "restartButton"
-        ).style.display = "block";
+        document
+            .getElementById(
+                "restartButton"
+            )
+            .style.display =
+            "block";
+
 
         return;
 
     }
 
 
-    if (enemies.length === 0) {
+    if (
+        enemies.length === 0
+    ) {
 
         gameRunning = false;
 
-        document.getElementById(
-            "battleMessage"
-        ).textContent =
-            "🏆 VICTORY! ENEMY FORCES DESTROYED!";
+
+        document
+            .getElementById(
+                "battleMessage"
+            )
+            .textContent =
+            "🏆 VICTORY! ENEMY FORCES DESTROYED";
 
 
-        document.getElementById(
-            "restartButton"
-        ).style.display = "block";
+        document
+            .getElementById(
+                "restartButton"
+            )
+            .style.display =
+            "block";
 
     }
 
 }
 
 
-/* =========================================================
+/* =====================================================
    GAME LOOP
-========================================================= */
+===================================================== */
 
 function gameLoop() {
 
-    if (!gameRunning) return;
+    if (!gameRunning)
+        return;
 
-
-    /* Update */
 
     movePlayer();
 
@@ -1445,28 +3662,32 @@ function gameLoop() {
     updateBullets();
 
 
-    /* Draw */
-
     drawMap();
 
     drawBullets();
 
-    enemies.forEach(drawTank);
 
-    drawTank(player);
+    enemies.forEach(
+        enemy =>
+        drawTank(enemy)
+    );
 
 
-    /* UI */
+    drawTank(
+        player
+    );
+
 
     updateUI();
 
     checkGameState();
 
 
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(
+        gameLoop
+    );
 
 }
-
 
 </script>
 

@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Gooberglob - Tank Battle</title>
 
@@ -27,40 +24,22 @@ body {
 h1 {
     margin: 0;
     padding: 16px;
-
     background: #353d27;
-
     color: #eee6c8;
-
-    font-family:
-        Impact,
-        "Arial Black",
-        sans-serif;
-
+    font-family: Impact, "Arial Black", sans-serif;
     font-size: 42px;
-
     letter-spacing: 5px;
-
-    text-shadow:
-        3px 3px #11140d;
+    text-shadow: 3px 3px #11140d;
 }
 
 #menu {
     max-width: 1000px;
-
     margin: 25px auto;
-
     padding: 25px;
-
     background: #c7bb91;
-
-    border:
-        5px solid #59613b;
-
+    border: 5px solid #59613b;
     color: #24251d;
-
-    box-shadow:
-        8px 8px #090b08;
+    box-shadow: 8px 8px #090b08;
 }
 
 .section {
@@ -68,55 +47,35 @@ h1 {
 }
 
 .section h2 {
-    font-family:
-        "Arial Black",
-        sans-serif;
+    font-family: "Arial Black", sans-serif;
 }
 
 .choices {
     display: flex;
-
     flex-wrap: wrap;
-
     justify-content: center;
-
     gap: 12px;
 }
 
 button {
     background: #59613b;
-
     color: #eee6c8;
-
-    border:
-        4px solid #292d20;
-
-    padding:
-        13px 20px;
-
+    border: 4px solid #292d20;
+    padding: 13px 20px;
     font-size: 17px;
-
     font-weight: bold;
-
     cursor: pointer;
-
-    box-shadow:
-        4px 4px #292d20;
+    box-shadow: 4px 4px #292d20;
 }
 
 button:hover {
     background: #737c4d;
-
-    transform:
-        translate(2px, 2px);
-
-    box-shadow:
-        2px 2px #292d20;
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px #292d20;
 }
 
 button.selected {
     background: #8c7541;
-
     border-color: #fff0bd;
 }
 
@@ -126,106 +85,69 @@ button.selected {
 
 .tankCard small {
     display: block;
-
     margin-top: 7px;
-
     line-height: 1.4;
 }
 
 #startButton {
     margin-top: 15px;
-
-    padding:
-        15px 45px;
-
+    padding: 15px 45px;
     font-size: 22px;
 }
 
 #gameArea {
     display: none;
-
     padding: 15px;
 }
 
 #gameInfo {
     max-width: 1100px;
-
-    margin:
-        0 auto 10px;
-
+    margin: 0 auto 10px;
     display: flex;
-
     justify-content: center;
-
     flex-wrap: wrap;
-
     gap: 10px;
 }
 
 .infoBox {
     background: #353d27;
-
-    border:
-        3px solid #59613b;
-
-    padding:
-        9px 15px;
-
+    border: 3px solid #59613b;
+    padding: 9px 15px;
     font-weight: bold;
 }
 
 #gameCanvas {
     display: block;
-
-    margin:
-        0 auto;
-
-    border:
-        6px solid #59613b;
-
+    margin: 0 auto;
+    border: 6px solid #59613b;
     background: #777;
-
     max-width: 100%;
-
     height: auto;
-
     cursor: crosshair;
 }
 
 #battleMessage {
     font-size: 22px;
-
     font-weight: bold;
-
     margin: 8px;
 }
 
 #controls {
     color: #c7bb91;
-
     margin: 9px;
 }
 
 #restartButton {
     display: none;
-
     margin: 10px auto;
 }
 
 </style>
-
 </head>
-
 
 <body>
 
-
 <h1>★ GOOBERGLOB ★</h1>
-
-
-<!-- =====================================================
-     MENU
-===================================================== -->
 
 <div id="menu">
 
@@ -234,9 +156,6 @@ button.selected {
     <p>
         Choose your faction, tank and battlefield.
     </p>
-
-
-    <!-- FACTION -->
 
     <div class="section">
 
@@ -247,45 +166,28 @@ button.selected {
             <button
                 id="britishButton"
                 onclick="chooseFaction('british')">
-
                 🇬🇧 BRITISH
-
             </button>
-
 
             <button
                 id="germanButton"
                 onclick="chooseFaction('german')">
-
                 🇩🇪 GERMAN
-
             </button>
 
         </div>
 
     </div>
-
-
-    <!-- TANK -->
 
     <div class="section">
 
         <h2>2. Choose Your Tank</h2>
 
-        <div
-            id="tankChoices"
-            class="choices">
-
-            <p>
-                Choose a faction first.
-            </p>
-
+        <div id="tankChoices" class="choices">
+            <p>Choose a faction first.</p>
         </div>
 
     </div>
-
-
-    <!-- MAP -->
 
     <div class="section">
 
@@ -296,80 +198,51 @@ button.selected {
             <button
                 id="trenchButton"
                 onclick="chooseMap('trenches')">
-
                 🪖 TRENCH FRONT
-
             </button>
-
 
             <button
                 id="townButton"
                 onclick="chooseMap('town')">
-
                 🏘️ RUINED TOWN
-
             </button>
 
         </div>
 
     </div>
 
-
     <button
         id="startButton"
         onclick="startGame()">
-
         🚀 START BATTLE
-
     </button>
 
 </div>
-
-
-<!-- =====================================================
-     GAME
-===================================================== -->
 
 <div id="gameArea">
 
     <div id="gameInfo">
 
         <div class="infoBox">
-
             TANK:
-            <span id="tankName">
-                ---
-            </span>
-
+            <span id="tankName">---</span>
         </div>
 
-
         <div class="infoBox">
-
             HP:
-            <span id="playerHealth">
-                ---
-            </span>
-
+            <span id="playerHealth">---</span>
         </div>
 
-
         <div class="infoBox">
-
             ENEMIES:
-            <span id="enemyCount">
-                ---
-            </span>
-
+            <span id="enemyCount">---</span>
         </div>
 
     </div>
-
 
     <div id="battleMessage">
         BATTLE!
     </div>
-
 
     <canvas
         id="gameCanvas"
@@ -377,31 +250,23 @@ button.selected {
         height="700">
     </canvas>
 
-
     <div id="controls">
-
         W A S D = MOVE
         &nbsp; | &nbsp;
-        MOUSE = AIM
+        MOUSE = AIM TURRET
         &nbsp; | &nbsp;
         CLICK / SPACE = FIRE
-
     </div>
-
 
     <button
         id="restartButton"
         onclick="location.reload()">
-
         🔄 RETURN TO MENU
-
     </button>
 
 </div>
 
-
 <script>
-
 
 /* =====================================================
    TANK DATABASE
@@ -409,138 +274,76 @@ button.selected {
 
 const tanks = {
 
-
     british: {
 
-
         light: {
-
             name: "Tetrarch",
-
             className: "LIGHT",
-
             health: 90,
-
             speed: 4.4,
-
             damage: 18,
-
             reload: 430,
-
             size: 24,
-
             model: "tetrarch"
-
         },
-
 
         medium: {
-
             name: "Cromwell",
-
             className: "MEDIUM",
-
             health: 135,
-
             speed: 3.2,
-
             damage: 27,
-
             reload: 560,
-
             size: 29,
-
             model: "cromwell"
-
         },
 
-
         heavy: {
-
             name: "Churchill",
-
             className: "HEAVY",
-
             health: 200,
-
             speed: 2.2,
-
             damage: 40,
-
             reload: 760,
-
             size: 35,
-
             model: "churchill"
-
         }
 
     },
 
-
     german: {
 
-
         light: {
-
             name: "Panzer II",
-
             className: "LIGHT",
-
             health: 85,
-
             speed: 4.4,
-
             damage: 17,
-
             reload: 410,
-
             size: 24,
-
             model: "panzer2"
-
         },
-
 
         medium: {
-
             name: "Panzer IV",
-
             className: "MEDIUM",
-
             health: 140,
-
             speed: 3.0,
-
             damage: 28,
-
             reload: 570,
-
             size: 30,
-
             model: "panzer4"
-
         },
 
-
         heavy: {
-
             name: "Tiger I",
-
             className: "HEAVY",
-
             health: 215,
-
             speed: 1.9,
-
             damage: 44,
-
             reload: 820,
-
             size: 36,
-
             model: "tiger"
-
         }
 
     }
@@ -553,17 +356,13 @@ const tanks = {
 ===================================================== */
 
 let selectedFaction = null;
-
 let selectedTankClass = null;
-
 let selectedMap = null;
 
 let player = null;
-
 let enemies = [];
-
-let bullets = [];
-
+let shells = [];
+let impacts = [];
 let obstacles = [];
 
 let keys = {};
@@ -583,9 +382,7 @@ let mouse = {
 ===================================================== */
 
 const canvas =
-    document.getElementById(
-        "gameCanvas"
-    );
+    document.getElementById("gameCanvas");
 
 const ctx =
     canvas.getContext("2d");
@@ -597,40 +394,20 @@ const ctx =
 
 function chooseFaction(faction) {
 
-    selectedFaction =
-        faction;
-
-    selectedTankClass =
-        null;
-
+    selectedFaction = faction;
+    selectedTankClass = null;
 
     document
-        .getElementById(
-            "britishButton"
-        )
-        .classList.remove(
-            "selected"
-        );
-
+        .getElementById("britishButton")
+        .classList.remove("selected");
 
     document
-        .getElementById(
-            "germanButton"
-        )
-        .classList.remove(
-            "selected"
-        );
-
+        .getElementById("germanButton")
+        .classList.remove("selected");
 
     document
-        .getElementById(
-            faction +
-            "Button"
-        )
-        .classList.add(
-            "selected"
-        );
-
+        .getElementById(faction + "Button")
+        .classList.add("selected");
 
     createTankButtons();
 
@@ -644,83 +421,44 @@ function chooseFaction(faction) {
 function createTankButtons() {
 
     const container =
-        document.getElementById(
-            "tankChoices"
-        );
-
+        document.getElementById("tankChoices");
 
     container.innerHTML = "";
 
-
-    for (
-        const type in
-        tanks[selectedFaction]
-    ) {
+    for (const type in tanks[selectedFaction]) {
 
         const tank =
-            tanks[selectedFaction]
-            [type];
-
+            tanks[selectedFaction][type];
 
         const button =
-            document.createElement(
-                "button"
-            );
+            document.createElement("button");
 
-
-        button.className =
-            "tankCard";
-
+        button.className = "tankCard";
 
         button.innerHTML =
-
             tank.name +
-
             "<small>" +
-
             tank.className +
-
             "<br>" +
-
-            "❤️ " +
-            tank.health +
-
-            " &nbsp; ⚡ " +
-            tank.speed +
-
+            "❤️ " + tank.health +
+            " &nbsp; ⚡ " + tank.speed +
             "</small>";
 
+        button.onclick = function() {
 
-        button.onclick =
-            function() {
+            selectedTankClass = type;
 
-                selectedTankClass =
-                    type;
-
-
-                document
-                    .querySelectorAll(
-                        ".tankCard"
-                    )
-                    .forEach(
-                        b =>
-                        b.classList
-                        .remove(
-                            "selected"
-                        )
-                    );
-
-
-                button.classList.add(
-                    "selected"
+            document
+                .querySelectorAll(".tankCard")
+                .forEach(
+                    b => b.classList.remove("selected")
                 );
 
-            };
+            button.classList.add("selected");
 
+        };
 
-        container.appendChild(
-            button
-        );
+        container.appendChild(button);
 
     }
 
@@ -728,44 +466,29 @@ function createTankButtons() {
 
 
 /* =====================================================
-   MAP SELECTION
+   MAP
 ===================================================== */
 
 function chooseMap(map) {
 
-    selectedMap =
-        map;
-
+    selectedMap = map;
 
     document
-        .getElementById(
-            "trenchButton"
-        )
-        .classList.remove(
-            "selected"
-        );
-
+        .getElementById("trenchButton")
+        .classList.remove("selected");
 
     document
-        .getElementById(
-            "townButton"
-        )
-        .classList.remove(
-            "selected"
-        );
-
+        .getElementById("townButton")
+        .classList.remove("selected");
 
     const id =
         map === "trenches"
         ? "trenchButton"
         : "townButton";
 
-
     document
         .getElementById(id)
-        .classList.add(
-            "selected"
-        );
+        .classList.add("selected");
 
 }
 
@@ -777,64 +500,33 @@ function chooseMap(map) {
 function startGame() {
 
     if (!selectedFaction) {
-
-        alert(
-            "Choose a faction first!"
-        );
-
+        alert("Choose a faction first!");
         return;
-
     }
-
 
     if (!selectedTankClass) {
-
-        alert(
-            "Choose a tank first!"
-        );
-
+        alert("Choose a tank first!");
         return;
-
     }
-
 
     if (!selectedMap) {
-
-        alert(
-            "Choose a battlefield first!"
-        );
-
+        alert("Choose a battlefield first!");
         return;
-
     }
 
+    document
+        .getElementById("menu")
+        .style.display = "none";
 
     document
-        .getElementById(
-            "menu"
-        )
-        .style.display =
-        "none";
-
-
-    document
-        .getElementById(
-            "gameArea"
-        )
-        .style.display =
-        "block";
-
+        .getElementById("gameArea")
+        .style.display = "block";
 
     createBattle();
 
+    gameRunning = true;
 
-    gameRunning =
-        true;
-
-
-    requestAnimationFrame(
-        gameLoop
-    );
+    requestAnimationFrame(gameLoop);
 
 }
 
@@ -846,338 +538,120 @@ function startGame() {
 function createBattle() {
 
     const data =
-        tanks[selectedFaction]
-        [selectedTankClass];
-
+        tanks[selectedFaction][selectedTankClass];
 
     player = {
 
         x: 130,
-
         y: 350,
 
+        /*
+           HULL ROTATION
+        */
         angle: 0,
 
-        health:
-            data.health,
+        /*
+           TURRET ROTATION
+        */
+        turretAngle: 0,
 
-        maxHealth:
-            data.health,
+        health: data.health,
+        maxHealth: data.health,
 
-        speed:
-            data.speed,
+        speed: data.speed,
+        damage: data.damage,
+        reload: data.reload,
 
-        damage:
-            data.damage,
+        size: data.size,
 
-        reload:
-            data.reload,
-
-        size:
-            data.size,
-
-        name:
-            data.name,
-
-        model:
-            data.model,
-
-        faction:
-            selectedFaction
+        name: data.name,
+        model: data.model,
+        faction: selectedFaction
 
     };
 
-
     document
-        .getElementById(
-            "tankName"
-        )
-        .textContent =
-        player.name;
+        .getElementById("tankName")
+        .textContent = player.name;
 
+    shells = [];
+    impacts = [];
 
     createMap();
-
     createEnemies();
 
 }
 
 
 /* =====================================================
-   MAP
+   MAP CREATION
 ===================================================== */
 
 function createMap() {
 
     obstacles = [];
 
-
-    if (
-        selectedMap ===
-        "town"
-    ) {
-
+    if (selectedMap === "town") {
         createTownMap();
-
-    }
-
-    else {
-
+    } else {
         createTrenchMap();
-
     }
 
 }
 
 
 /* =====================================================
-   TOWN
+   TOWN MAP
 ===================================================== */
 
 function createTownMap() {
 
+    addObstacle(40, 40, 210, 150, "building");
+    addObstacle(290, 45, 150, 115, "building");
 
-    addObstacle(
-        40,
-        40,
-        210,
-        150,
-        "building"
-    );
+    addObstacle(690, 35, 190, 150, "building");
+    addObstacle(920, 60, 130, 180, "building");
 
+    addObstacle(35, 470, 190, 170, "building");
+    addObstacle(285, 500, 145, 130, "building");
 
-    addObstacle(
-        290,
-        45,
-        150,
-        115,
-        "building"
-    );
+    addObstacle(675, 485, 190, 150, "building");
+    addObstacle(925, 430, 140, 190, "building");
 
+    addObstacle(480, 70, 100, 75, "rubble");
+    addObstacle(570, 510, 80, 75, "rubble");
 
-    addObstacle(
-        690,
-        35,
-        190,
-        150,
-        "building"
-    );
+    addObstacle(250, 250, 140, 18, "wall");
+    addObstacle(710, 275, 150, 18, "wall");
 
-
-    addObstacle(
-        920,
-        60,
-        130,
-        180,
-        "building"
-    );
-
-
-    addObstacle(
-        35,
-        470,
-        190,
-        170,
-        "building"
-    );
-
-
-    addObstacle(
-        285,
-        500,
-        145,
-        130,
-        "building"
-    );
-
-
-    addObstacle(
-        675,
-        485,
-        190,
-        150,
-        "building"
-    );
-
-
-    addObstacle(
-        925,
-        430,
-        140,
-        190,
-        "building"
-    );
-
-
-    addObstacle(
-        480,
-        70,
-        100,
-        75,
-        "rubble"
-    );
-
-
-    addObstacle(
-        570,
-        510,
-        80,
-        75,
-        "rubble"
-    );
-
-
-    addObstacle(
-        250,
-        250,
-        140,
-        18,
-        "wall"
-    );
-
-
-    addObstacle(
-        710,
-        275,
-        150,
-        18,
-        "wall"
-    );
-
-
-    addObstacle(
-        460,
-        315,
-        75,
-        35,
-        "wreck"
-    );
-
-
-    addObstacle(
-        600,
-        380,
-        70,
-        32,
-        "wreck"
-    );
+    addObstacle(460, 315, 75, 35, "wreck");
+    addObstacle(600, 380, 70, 32, "wreck");
 
 }
 
 
 /* =====================================================
-   TRENCHES
+   TRENCH MAP
 ===================================================== */
 
 function createTrenchMap() {
 
+    addObstacle(0, 120, 300, 55, "trench");
+    addObstacle(360, 100, 280, 55, "trench");
+    addObstacle(700, 125, 400, 55, "trench");
 
-    addObstacle(
-        0,
-        120,
-        300,
-        55,
-        "trench"
-    );
+    addObstacle(0, 520, 260, 55, "trench");
+    addObstacle(320, 545, 310, 55, "trench");
+    addObstacle(700, 515, 400, 55, "trench");
 
+    addObstacle(350, 220, 115, 70, "bunker");
+    addObstacle(690, 360, 125, 75, "bunker");
 
-    addObstacle(
-        360,
-        100,
-        280,
-        55,
-        "trench"
-    );
+    addObstacle(120, 315, 170, 22, "wire");
+    addObstacle(820, 300, 180, 22, "wire");
 
-
-    addObstacle(
-        700,
-        125,
-        400,
-        55,
-        "trench"
-    );
-
-
-    addObstacle(
-        0,
-        520,
-        260,
-        55,
-        "trench"
-    );
-
-
-    addObstacle(
-        320,
-        545,
-        310,
-        55,
-        "trench"
-    );
-
-
-    addObstacle(
-        700,
-        515,
-        400,
-        55,
-        "trench"
-    );
-
-
-    addObstacle(
-        350,
-        220,
-        115,
-        70,
-        "bunker"
-    );
-
-
-    addObstacle(
-        690,
-        360,
-        125,
-        75,
-        "bunker"
-    );
-
-
-    addObstacle(
-        120,
-        315,
-        170,
-        22,
-        "wire"
-    );
-
-
-    addObstacle(
-        820,
-        300,
-        180,
-        22,
-        "wire"
-    );
-
-
-    addObstacle(
-        430,
-        400,
-        70,
-        50,
-        "crater"
-    );
-
-
-    addObstacle(
-        570,
-        230,
-        65,
-        45,
-        "crater"
-    );
+    addObstacle(430, 400, 70, 50, "crater");
+    addObstacle(570, 230, 65, 45, "crater");
 
 }
 
@@ -1195,22 +669,11 @@ function addObstacle(
 ) {
 
     obstacles.push({
-
-        x:
-            x,
-
-        y:
-            y,
-
-        width:
-            width,
-
-        height:
-            height,
-
-        type:
-            type
-
+        x,
+        y,
+        width,
+        height,
+        type
     });
 
 }
@@ -1224,89 +687,59 @@ function createEnemies() {
 
     enemies = [];
 
-
     const enemyFaction =
-        selectedFaction ===
-        "british"
-
+        selectedFaction === "british"
         ? "german"
-
         : "british";
 
-
     const types = [
-
         "light",
         "medium",
         "heavy"
-
     ];
-
 
     const positions = [
-
         [930, 130],
-
         [870, 350],
-
         [950, 570]
-
     ];
 
-
-    for (
-        let i = 0;
-        i < 3;
-        i++
-    ) {
+    for (let i = 0; i < 3; i++) {
 
         const data =
-            tanks[enemyFaction]
-            [types[i]];
-
+            tanks[enemyFaction][types[i]];
 
         enemies.push({
 
-            x:
-                positions[i][0],
+            x: positions[i][0],
+            y: positions[i][1],
 
-            y:
-                positions[i][1],
+            /*
+               HULL
+            */
+            angle: Math.PI,
 
-            angle:
-                Math.PI,
+            /*
+               TURRET
+            */
+            turretAngle: Math.PI,
 
-            health:
-                data.health,
+            health: data.health,
+            maxHealth: data.health,
 
-            maxHealth:
-                data.health,
+            speed: data.speed * 0.55,
 
-            speed:
-                data.speed *
-                0.55,
+            damage: data.damage,
 
-            damage:
-                data.damage,
+            reload: data.reload + 500,
 
-            reload:
-                data.reload +
-                500,
+            size: data.size,
 
-            size:
-                data.size,
+            name: data.name,
+            model: data.model,
+            faction: enemyFaction,
 
-            name:
-                data.name,
-
-            model:
-                data.model,
-
-            faction:
-                enemyFaction,
-
-            lastShot:
-                0
+            lastShot: 0
 
         });
 
@@ -1327,11 +760,7 @@ window.addEventListener(
             event.key.toLowerCase()
         ] = true;
 
-
-        if (
-            event.code ===
-            "Space"
-        ) {
+        if (event.code === "Space") {
 
             event.preventDefault();
 
@@ -1366,23 +795,19 @@ canvas.addEventListener(
         const rect =
             canvas.getBoundingClientRect();
 
-
         mouse.x =
             (
                 event.clientX -
                 rect.left
-            )
-            *
+            ) *
             canvas.width /
             rect.width;
-
 
         mouse.y =
             (
                 event.clientY -
                 rect.top
-            )
-            *
+            ) *
             canvas.height /
             rect.height;
 
@@ -1401,7 +826,25 @@ canvas.addEventListener(
 
 
 /* =====================================================
-   COLLISION
+   SOLID OBSTACLES
+===================================================== */
+
+function isSolidObstacle(obstacle) {
+
+    return [
+
+        "building",
+        "wall",
+        "bunker",
+        "wreck"
+
+    ].includes(obstacle.type);
+
+}
+
+
+/* =====================================================
+   TANK COLLISION
 ===================================================== */
 
 function tankHitsObstacle(
@@ -1410,77 +853,40 @@ function tankHitsObstacle(
     newY = tank.y
 ) {
 
-    const solidTypes = [
+    for (const obstacle of obstacles) {
 
-        "building",
-        "wall",
-        "bunker",
-        "wreck"
-
-    ];
-
-
-    for (
-        const obstacle of
-        obstacles
-    ) {
-
-        if (
-            !solidTypes.includes(
-                obstacle.type
-            )
-        ) {
-
+        if (!isSolidObstacle(obstacle)) {
             continue;
-
         }
-
 
         const closestX =
             Math.max(
                 obstacle.x,
-
                 Math.min(
                     newX,
-
-                    obstacle.x +
-                    obstacle.width
+                    obstacle.x + obstacle.width
                 )
             );
-
 
         const closestY =
             Math.max(
                 obstacle.y,
-
                 Math.min(
                     newY,
-
-                    obstacle.y +
-                    obstacle.height
+                    obstacle.y + obstacle.height
                 )
             );
 
-
         const dx =
-            newX -
-            closestX;
-
+            newX - closestX;
 
         const dy =
-            newY -
-            closestY;
-
-
-        const distanceSquared =
-            dx * dx +
-            dy * dy;
-
+            newY - closestY;
 
         if (
-            distanceSquared <
-            tank.size *
-            tank.size
+            dx * dx +
+            dy * dy <
+            tank.size * tank.size
         ) {
 
             return true;
@@ -1489,8 +895,90 @@ function tankHitsObstacle(
 
     }
 
+    return false;
+
+}
+
+
+/* =====================================================
+   LINE / RECTANGLE COLLISION
+   Used by shells to hit buildings.
+===================================================== */
+
+function lineHitsRectangle(
+    x1,
+    y1,
+    x2,
+    y2,
+    rect
+) {
+
+    const steps = 12;
+
+    for (let i = 0; i <= steps; i++) {
+
+        const t = i / steps;
+
+        const x =
+            x1 +
+            (x2 - x1) * t;
+
+        const y =
+            y1 +
+            (y2 - y1) * t;
+
+        if (
+            x >= rect.x &&
+            x <= rect.x + rect.width &&
+            y >= rect.y &&
+            y <= rect.y + rect.height
+        ) {
+
+            return true;
+
+        }
+
+    }
 
     return false;
+
+}
+
+
+/* =====================================================
+   SHELL HITS BUILDING
+===================================================== */
+
+function shellHitsObstacle(
+    oldX,
+    oldY,
+    newX,
+    newY
+) {
+
+    for (const obstacle of obstacles) {
+
+        if (!isSolidObstacle(obstacle)) {
+            continue;
+        }
+
+        if (
+            lineHitsRectangle(
+                oldX,
+                oldY,
+                newX,
+                newY,
+                obstacle
+            )
+        ) {
+
+            return obstacle;
+
+        }
+
+    }
+
+    return null;
 
 }
 
@@ -1505,41 +993,17 @@ function movePlayer() {
         return;
     }
 
-
     let dx = 0;
-
     let dy = 0;
 
+    if (keys["w"]) dy -= 1;
+    if (keys["s"]) dy += 1;
+    if (keys["a"]) dx -= 1;
+    if (keys["d"]) dx += 1;
 
-    if (keys["w"]) {
-        dy -= 1;
-    }
-
-
-    if (keys["s"]) {
-        dy += 1;
-    }
-
-
-    if (keys["a"]) {
-        dx -= 1;
-    }
-
-
-    if (keys["d"]) {
-        dx += 1;
-    }
-
-
-    if (
-        dx === 0 &&
-        dy === 0
-    ) {
-
+    if (dx === 0 && dy === 0) {
         return;
-
     }
-
 
     const length =
         Math.sqrt(
@@ -1547,30 +1011,24 @@ function movePlayer() {
             dy * dy
         );
 
-
     dx /= length;
-
     dy /= length;
 
-
-    const moveX =
-        dx *
-        player.speed;
-
-
-    const moveY =
-        dy *
-        player.speed;
-
-
     /*
-       X MOVEMENT
+       HULL FOLLOWS MOVEMENT
     */
 
-    const newX =
-        player.x +
-        moveX;
+    player.angle =
+        Math.atan2(dy, dx);
 
+    const moveX =
+        dx * player.speed;
+
+    const moveY =
+        dy * player.speed;
+
+    const newX =
+        player.x + moveX;
 
     if (
         !tankHitsObstacle(
@@ -1580,20 +1038,12 @@ function movePlayer() {
         )
     ) {
 
-        player.x =
-            newX;
+        player.x = newX;
 
     }
 
-
-    /*
-       Y MOVEMENT
-    */
-
     const newY =
-        player.y +
-        moveY;
-
+        player.y + moveY;
 
     if (
         !tankHitsObstacle(
@@ -1603,37 +1053,24 @@ function movePlayer() {
         )
     ) {
 
-        player.y =
-            newY;
+        player.y = newY;
 
     }
-
-
-    /*
-       MAP BOUNDARIES
-    */
 
     player.x =
         Math.max(
             player.size,
-
             Math.min(
-                canvas.width -
-                player.size,
-
+                canvas.width - player.size,
                 player.x
             )
         );
 
-
     player.y =
         Math.max(
             player.size,
-
             Math.min(
-                canvas.height -
-                player.size,
-
+                canvas.height - player.size,
                 player.y
             )
         );
@@ -1642,7 +1079,7 @@ function movePlayer() {
 
 
 /* =====================================================
-   AIM
+   PLAYER TURRET AIM
 ===================================================== */
 
 function aimPlayer() {
@@ -1651,39 +1088,30 @@ function aimPlayer() {
         return;
     }
 
-
-    player.angle =
+    player.turretAngle =
         Math.atan2(
-
-            mouse.y -
-            player.y,
-
-            mouse.x -
-            player.x
-
+            mouse.y - player.y,
+            mouse.x - player.x
         );
 
 }
 
 
 /* =====================================================
-   PLAYER SHOOT
+   FIRE
 ===================================================== */
 
 function shoot() {
 
-    if (!gameRunning) {
+    if (!gameRunning || !player) {
         return;
     }
-
 
     const now =
         Date.now();
 
-
     if (
-        now -
-        lastShot <
+        now - lastShot <
         player.reload
     ) {
 
@@ -1691,46 +1119,62 @@ function shoot() {
 
     }
 
+    lastShot = now;
 
-    lastShot =
-        now;
+    createShell(
+        player,
+        false
+    );
+
+}
 
 
-    bullets.push({
+/* =====================================================
+   CREATE SHELL
+===================================================== */
 
-        x:
-            player.x +
-            Math.cos(
-                player.angle
-            ) *
-            player.size *
-            1.3,
+function createShell(
+    tank,
+    enemyShell
+) {
 
-        y:
-            player.y +
-            Math.sin(
-                player.angle
-            ) *
-            player.size *
-            1.3,
+    const angle =
+        tank.turretAngle;
+
+    const barrelLength =
+        tank.size * 1.7;
+
+    const shellX =
+        tank.x +
+        Math.cos(angle) *
+        barrelLength;
+
+    const shellY =
+        tank.y +
+        Math.sin(angle) *
+        barrelLength;
+
+    shells.push({
+
+        x: shellX,
+        y: shellY,
+
+        oldX: shellX,
+        oldY: shellY,
 
         vx:
-            Math.cos(
-                player.angle
-            ) *
-            9,
+            Math.cos(angle) * 10,
 
         vy:
-            Math.sin(
-                player.angle
-            ) *
-            9,
+            Math.sin(angle) * 10,
 
         damage:
-            player.damage,
+            tank.damage,
 
         enemy:
-            false
+            enemyShell,
+
+        life: 120
 
     });
 
@@ -1747,20 +1191,14 @@ function updateEnemies() {
         return;
     }
 
-
     enemies.forEach(
         function(enemy) {
 
-
             const dx =
-                player.x -
-                enemy.x;
-
+                player.x - enemy.x;
 
             const dy =
-                player.y -
-                enemy.y;
-
+                player.y - enemy.y;
 
             const distance =
                 Math.sqrt(
@@ -1768,49 +1206,46 @@ function updateEnemies() {
                     dy * dy
                 );
 
-
             /*
-               AIM
+               TURRET AIMS AT PLAYER
             */
 
-            enemy.angle =
+            enemy.turretAngle =
                 Math.atan2(
                     dy,
                     dx
                 );
 
-
             /*
                MOVE TOWARD PLAYER
             */
 
-            if (
-                distance > 260
-            ) {
+            if (distance > 260) {
 
-
-                const moveX =
-                    Math.cos(
-                        enemy.angle
-                    ) *
-                    enemy.speed;
-
-
-                const moveY =
-                    Math.sin(
-                        enemy.angle
-                    ) *
-                    enemy.speed;
-
+                const moveAngle =
+                    Math.atan2(
+                        dy,
+                        dx
+                    );
 
                 /*
-                   X
+                   HULL ROTATES
+                   independently from turret.
                 */
 
-                const newX =
-                    enemy.x +
-                    moveX;
+                enemy.angle =
+                    moveAngle;
 
+                const moveX =
+                    Math.cos(moveAngle) *
+                    enemy.speed;
+
+                const moveY =
+                    Math.sin(moveAngle) *
+                    enemy.speed;
+
+                const newX =
+                    enemy.x + moveX;
 
                 if (
                     !tankHitsObstacle(
@@ -1820,20 +1255,12 @@ function updateEnemies() {
                     )
                 ) {
 
-                    enemy.x =
-                        newX;
+                    enemy.x = newX;
 
                 }
 
-
-                /*
-                   Y
-                */
-
                 const newY =
-                    enemy.y +
-                    moveY;
-
+                    enemy.y + moveY;
 
                 if (
                     !tankHitsObstacle(
@@ -1843,104 +1270,67 @@ function updateEnemies() {
                     )
                 ) {
 
-                    enemy.y =
-                        newY;
+                    enemy.y = newY;
 
                 }
 
             }
 
-
-            /*
-               KEEP INSIDE MAP
-            */
-
             enemy.x =
                 Math.max(
                     enemy.size,
-
                     Math.min(
-                        canvas.width -
-                        enemy.size,
-
+                        canvas.width - enemy.size,
                         enemy.x
                     )
                 );
 
-
             enemy.y =
                 Math.max(
                     enemy.size,
-
                     Math.min(
-                        canvas.height -
-                        enemy.size,
-
+                        canvas.height - enemy.size,
                         enemy.y
                     )
                 );
 
-
             /*
-               SHOOT
+               FIRE
             */
 
             const now =
                 Date.now();
 
-
             if (
-
                 distance < 700 &&
-
-                now -
-                enemy.lastShot >=
+                now - enemy.lastShot >=
                 enemy.reload
-
             ) {
 
+                /*
+                   Only fire if there isn't
+                   a building directly between
+                   the enemy and player.
+                */
 
-                enemy.lastShot =
-                    now;
+                if (
+                    !shotBlocked(
+                        enemy.x,
+                        enemy.y,
+                        player.x,
+                        player.y
+                    )
+                ) {
 
+                    enemy.lastShot =
+                        now;
 
-                bullets.push({
-
-                    x:
-                        enemy.x +
-                        Math.cos(
-                            enemy.angle
-                        ) *
-                        enemy.size *
-                        1.2,
-
-                    y:
-                        enemy.y +
-                        Math.sin(
-                            enemy.angle
-                        ) *
-                        enemy.size *
-                        1.2,
-
-                    vx:
-                        Math.cos(
-                            enemy.angle
-                        ) *
-                        6,
-
-                    vy:
-                        Math.sin(
-                            enemy.angle
-                        ) *
-                        6,
-
-                    damage:
-                        enemy.damage,
-
-                    enemy:
+                    createShell(
+                        enemy,
                         true
+                    );
 
-                });
+                }
 
             }
 
@@ -1951,101 +1341,119 @@ function updateEnemies() {
 
 
 /* =====================================================
-   BULLET UPDATE
+   CHECK IF A SHOT IS BLOCKED
 ===================================================== */
 
-function updateBullets() {
+function shotBlocked(
+    x1,
+    y1,
+    x2,
+    y2
+) {
 
-
-    bullets.forEach(
-        function(bullet) {
-
-            bullet.x +=
-                bullet.vx;
-
-            bullet.y +=
-                bullet.vy;
-
-        }
+    return !!shellHitsObstacle(
+        x1,
+        y1,
+        x2,
+        y2
     );
 
-
-    /*
-       REMOVE OFFSCREEN
-    */
-
-    bullets =
-        bullets.filter(
-            function(bullet) {
-
-                return (
-
-                    bullet.x > 0 &&
-
-                    bullet.x <
-                        canvas.width &&
-
-                    bullet.y > 0 &&
-
-                    bullet.y <
-                        canvas.height
-
-                );
-
-            }
-        );
+}
 
 
-    /*
-       COLLISIONS
-    */
+/* =====================================================
+   UPDATE SHELLS
+===================================================== */
+
+function updateShells() {
 
     for (
-        let i =
-            bullets.length - 1;
-
+        let i = shells.length - 1;
         i >= 0;
-
         i--
     ) {
 
+        const shell =
+            shells[i];
 
-        const bullet =
-            bullets[i];
+        shell.oldX =
+            shell.x;
 
+        shell.oldY =
+            shell.y;
+
+        shell.x += shell.vx;
+        shell.y += shell.vy;
+
+        shell.life--;
 
         /*
-           PLAYER BULLET
+           BUILDING COLLISION
+        */
+
+        const obstacle =
+            shellHitsObstacle(
+                shell.oldX,
+                shell.oldY,
+                shell.x,
+                shell.y
+            );
+
+        if (obstacle) {
+
+            createImpact(
+                shell.x,
+                shell.y
+            );
+
+            shells.splice(i, 1);
+
+            continue;
+
+        }
+
+        /*
+           OFFSCREEN
         */
 
         if (
-            !bullet.enemy
+            shell.x < 0 ||
+            shell.x > canvas.width ||
+            shell.y < 0 ||
+            shell.y > canvas.height ||
+            shell.life <= 0
         ) {
 
+            shells.splice(i, 1);
+
+            continue;
+
+        }
+
+        /*
+           PLAYER SHELL HITS ENEMY
+        */
+
+        if (!shell.enemy) {
+
+            let hit = false;
 
             for (
-                let j =
-                    enemies.length - 1;
-
+                let j = enemies.length - 1;
                 j >= 0;
-
                 j--
             ) {
-
 
                 const enemy =
                     enemies[j];
 
-
                 const dx =
-                    bullet.x -
+                    shell.x -
                     enemy.x;
 
-
                 const dy =
-                    bullet.y -
+                    shell.y -
                     enemy.y;
-
 
                 const distance =
                     Math.sqrt(
@@ -2053,26 +1461,25 @@ function updateBullets() {
                         dy * dy
                     );
 
-
                 if (
                     distance <
                     enemy.size
                 ) {
 
-
                     enemy.health -=
-                        bullet.damage;
+                        shell.damage;
 
-
-                    bullets.splice(
-                        i,
-                        1
+                    createImpact(
+                        shell.x,
+                        shell.y
                     );
 
+                    shells.splice(i, 1);
+
+                    hit = true;
 
                     if (
-                        enemy.health <=
-                        0
+                        enemy.health <= 0
                     ) {
 
                         enemies.splice(
@@ -2082,32 +1489,31 @@ function updateBullets() {
 
                     }
 
-
                     break;
 
                 }
 
             }
 
+            if (hit) {
+                continue;
+            }
+
         }
 
-
         /*
-           ENEMY BULLET
+           ENEMY SHELL HITS PLAYER
         */
 
         else {
 
-
             const dx =
-                bullet.x -
+                shell.x -
                 player.x;
 
-
             const dy =
-                bullet.y -
+                shell.y -
                 player.y;
-
 
             const distance =
                 Math.sqrt(
@@ -2115,27 +1521,245 @@ function updateBullets() {
                     dy * dy
                 );
 
-
             if (
                 distance <
                 player.size
             ) {
 
-
                 player.health -=
-                    bullet.damage;
+                    shell.damage;
 
-
-                bullets.splice(
-                    i,
-                    1
+                createImpact(
+                    shell.x,
+                    shell.y
                 );
+
+                shells.splice(i, 1);
 
             }
 
         }
 
     }
+
+}
+
+
+/* =====================================================
+   IMPACT EFFECT
+===================================================== */
+
+function createImpact(
+    x,
+    y
+) {
+
+    impacts.push({
+
+        x,
+        y,
+
+        life: 18,
+
+        maxLife: 18
+
+    });
+
+}
+
+
+/* =====================================================
+   UPDATE IMPACTS
+===================================================== */
+
+function updateImpacts() {
+
+    for (
+        let i = impacts.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        impacts[i].life--;
+
+        if (
+            impacts[i].life <= 0
+        ) {
+
+            impacts.splice(i, 1);
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   DRAW IMPACTS
+===================================================== */
+
+function drawImpacts() {
+
+    impacts.forEach(
+        function(impact) {
+
+            const progress =
+                1 -
+                impact.life /
+                impact.maxLife;
+
+            const radius =
+                8 +
+                progress * 24;
+
+            ctx.globalAlpha =
+                1 - progress;
+
+            ctx.fillStyle =
+                "#e8c66d";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                impact.x,
+                impact.y,
+                radius,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.fillStyle =
+                "#342b1b";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                impact.x,
+                impact.y,
+                radius * 0.35,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.globalAlpha = 1;
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   DRAW SHELLS
+===================================================== */
+
+function drawShells() {
+
+    shells.forEach(
+        function(shell) {
+
+            /*
+               TRAIL
+            */
+
+            ctx.strokeStyle =
+                "#d6b65c";
+
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                shell.x -
+                shell.vx * 1.2,
+
+                shell.y -
+                shell.vy * 1.2
+            );
+
+            ctx.lineTo(
+                shell.x,
+                shell.y
+            );
+
+            ctx.stroke();
+
+            /*
+               SHELL BODY
+            */
+
+            ctx.save();
+
+            ctx.translate(
+                shell.x,
+                shell.y
+            );
+
+            ctx.rotate(
+                Math.atan2(
+                    shell.vy,
+                    shell.vx
+                )
+            );
+
+            ctx.fillStyle =
+                "#d0b45d";
+
+            ctx.fillRect(
+                -7,
+                -3,
+                14,
+                6
+            );
+
+            /*
+               POINTED NOSE
+            */
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                7,
+                -3
+            );
+
+            ctx.lineTo(
+                12,
+                0
+            );
+
+            ctx.lineTo(
+                7,
+                3
+            );
+
+            ctx.closePath();
+
+            ctx.fill();
+
+            /*
+               DARK BASE
+            */
+
+            ctx.fillStyle =
+                "#50472e";
+
+            ctx.fillRect(
+                -8,
+                -3,
+                4,
+                6
+            );
+
+            ctx.restore();
+
+        }
+    );
 
 }
 
@@ -2146,16 +1770,11 @@ function updateBullets() {
 
 function drawMap() {
 
-    if (
-        selectedMap ===
-        "town"
-    ) {
+    if (selectedMap === "town") {
 
         drawTown();
 
-    }
-
-    else {
+    } else {
 
         drawTrenches();
 
@@ -2170,14 +1789,12 @@ function drawMap() {
 
 function drawTown() {
 
-
     /*
-       GRASS
+       CLEAN BASE
     */
 
     ctx.fillStyle =
-        "#73745e";
-
+        "#747660";
 
     ctx.fillRect(
         0,
@@ -2186,47 +1803,99 @@ function drawTown() {
         canvas.height
     );
 
-
     /*
-       ROADS
+       GRASS AREAS
     */
 
     ctx.fillStyle =
-        "#454640";
-
+        "#68705a";
 
     ctx.fillRect(
         0,
-        265,
+        0,
         canvas.width,
-        150
+        250
     );
 
+    ctx.fillRect(
+        0,
+        430,
+        canvas.width,
+        270
+    );
+
+    /*
+       MAIN HORIZONTAL ROAD
+    */
+
+    ctx.fillStyle =
+        "#484842";
+
+    ctx.fillRect(
+        0,
+        250,
+        canvas.width,
+        180
+    );
+
+    /*
+       MAIN VERTICAL ROAD
+    */
 
     ctx.fillRect(
         430,
         0,
-        170,
+        180,
         canvas.height
     );
 
+    /*
+       ROAD EDGES
+    */
+
+    ctx.fillStyle =
+        "#56564f";
+
+    ctx.fillRect(
+        0,
+        250,
+        canvas.width,
+        8
+    );
+
+    ctx.fillRect(
+        0,
+        422,
+        canvas.width,
+        8
+    );
+
+    ctx.fillRect(
+        430,
+        0,
+        8,
+        canvas.height
+    );
+
+    ctx.fillRect(
+        602,
+        0,
+        8,
+        canvas.height
+    );
 
     /*
        ROAD MARKINGS
     */
 
     ctx.strokeStyle =
-        "#8b856b";
+        "#777263";
 
-
-    ctx.lineWidth =
-        5;
-
+    ctx.lineWidth = 5;
 
     ctx.setLineDash(
         [35, 25]
     );
-
 
     ctx.beginPath();
 
@@ -2242,24 +1911,21 @@ function drawTown() {
 
     ctx.stroke();
 
-
     ctx.beginPath();
 
     ctx.moveTo(
-        515,
+        520,
         0
     );
 
     ctx.lineTo(
-        515,
+        520,
         canvas.height
     );
 
     ctx.stroke();
 
-
     ctx.setLineDash([]);
-
 
     /*
        BUILDINGS
@@ -2267,14 +1933,11 @@ function drawTown() {
 
     obstacles
         .filter(
-            o =>
-                o.type ===
-                "building"
+            o => o.type === "building"
         )
         .forEach(
             drawBuilding
         );
-
 
     /*
        RUBBLE
@@ -2282,14 +1945,11 @@ function drawTown() {
 
     obstacles
         .filter(
-            o =>
-                o.type ===
-                "rubble"
+            o => o.type === "rubble"
         )
         .forEach(
             drawRubble
         );
-
 
     /*
        WALLS
@@ -2297,14 +1957,11 @@ function drawTown() {
 
     obstacles
         .filter(
-            o =>
-                o.type ===
-                "wall"
+            o => o.type === "wall"
         )
         .forEach(
             drawWall
         );
-
 
     /*
        WRECKS
@@ -2312,51 +1969,29 @@ function drawTown() {
 
     obstacles
         .filter(
-            o =>
-                o.type ===
-                "wreck"
+            o => o.type === "wreck"
         )
         .forEach(
             drawWreck
         );
 
-
     /*
        TREES
     */
 
-    drawTree(
-        370,
-        380
-    );
-
-
-    drawTree(
-        630,
-        180
-    );
-
-
-    drawTree(
-        865,
-        350
-    );
-
-
-    drawTree(
-        250,
-        370
-    );
+    drawTree(370, 380);
+    drawTree(630, 180);
+    drawTree(865, 350);
+    drawTree(250, 370);
 
 }
 
 
 /* =====================================================
-   BUILDINGS
+   BUILDING
 ===================================================== */
 
 function drawBuilding(o) {
-
 
     /*
        SHADOW
@@ -2365,14 +2000,12 @@ function drawBuilding(o) {
     ctx.fillStyle =
         "#292a24";
 
-
     ctx.fillRect(
-        o.x + 8,
-        o.y + 9,
+        o.x + 7,
+        o.y + 8,
         o.width,
         o.height
     );
-
 
     /*
        BUILDING
@@ -2381,14 +2014,12 @@ function drawBuilding(o) {
     ctx.fillStyle =
         "#625f50";
 
-
     ctx.fillRect(
         o.x,
         o.y,
         o.width,
         o.height
     );
-
 
     /*
        ROOF
@@ -2397,7 +2028,6 @@ function drawBuilding(o) {
     ctx.fillStyle =
         "#403e35";
 
-
     ctx.fillRect(
         o.x + 5,
         o.y + 5,
@@ -2405,40 +2035,24 @@ function drawBuilding(o) {
         15
     );
 
-
     /*
        WINDOWS
     */
 
     ctx.fillStyle =
-        "#b19d61";
-
+        "#a79a68";
 
     for (
-        let x =
-            o.x + 25;
-
-        x <
-        o.x +
-        o.width -
-        15;
-
+        let x = o.x + 25;
+        x < o.x + o.width - 15;
         x += 45
     ) {
 
-
         for (
-            let y =
-                o.y + 35;
-
-            y <
-            o.y +
-            o.height -
-            15;
-
+            let y = o.y + 35;
+            y < o.y + o.height - 15;
             y += 45
         ) {
-
 
             ctx.fillRect(
                 x,
@@ -2451,14 +2065,12 @@ function drawBuilding(o) {
 
     }
 
-
     /*
        DOOR
     */
 
     ctx.fillStyle =
         "#322e25";
-
 
     ctx.fillRect(
         o.x +
@@ -2482,10 +2094,8 @@ function drawBuilding(o) {
 
 function drawRubble(o) {
 
-
     ctx.fillStyle =
         "#48463e";
-
 
     ctx.fillRect(
         o.x,
@@ -2494,37 +2104,48 @@ function drawRubble(o) {
         o.height
     );
 
+    /*
+       STATIC RUBBLE.
+       No Math.random() here,
+       so it doesn't flicker every frame.
+    */
+
+    ctx.fillStyle =
+        "#292923";
 
     for (
-        let i = 0;
-        i < 12;
-        i++
+        let x = o.x + 8;
+        x < o.x + o.width - 5;
+        x += 20
     ) {
 
-
-        const x =
-            o.x +
-            Math.random() *
-            o.width;
-
-
-        const y =
-            o.y +
-            Math.random() *
-            o.height;
-
-
-        ctx.fillStyle =
-            i % 2 === 0
-            ? "#292923"
-            : "#777366";
-
+        const height =
+            5 +
+            ((x * 7) % 9);
 
         ctx.fillRect(
             x,
-            y,
+            o.y + 8,
             10,
-            8
+            height
+        );
+
+    }
+
+    ctx.fillStyle =
+        "#777366";
+
+    for (
+        let x = o.x + 15;
+        x < o.x + o.width - 5;
+        x += 27
+    ) {
+
+        ctx.fillRect(
+            x,
+            o.y + 35,
+            9,
+            7
         );
 
     }
@@ -2538,10 +2159,8 @@ function drawRubble(o) {
 
 function drawWall(o) {
 
-
     ctx.fillStyle =
         "#4d493d";
-
 
     ctx.fillRect(
         o.x,
@@ -2550,25 +2169,16 @@ function drawWall(o) {
         o.height
     );
 
-
     ctx.strokeStyle =
         "#81765d";
 
-
     ctx.lineWidth = 2;
 
-
     for (
-        let x =
-            o.x;
-
-        x <
-        o.x +
-        o.width;
-
+        let x = o.x;
+        x < o.x + o.width;
         x += 18
     ) {
-
 
         ctx.beginPath();
 
@@ -2579,8 +2189,7 @@ function drawWall(o) {
 
         ctx.lineTo(
             x,
-            o.y +
-            o.height
+            o.y + o.height
         );
 
         ctx.stroke();
@@ -2596,27 +2205,17 @@ function drawWall(o) {
 
 function drawWreck(o) {
 
-
     ctx.save();
 
-
     ctx.translate(
-        o.x +
-        o.width / 2,
-
-        o.y +
-        o.height / 2
+        o.x + o.width / 2,
+        o.y + o.height / 2
     );
 
-
-    ctx.rotate(
-        -0.35
-    );
-
+    ctx.rotate(-0.35);
 
     ctx.fillStyle =
         "#292b25";
-
 
     ctx.fillRect(
         -35,
@@ -2625,10 +2224,8 @@ function drawWreck(o) {
         28
     );
 
-
     ctx.fillStyle =
         "#414238";
-
 
     ctx.fillRect(
         -20,
@@ -2637,10 +2234,8 @@ function drawWreck(o) {
         25
     );
 
-
     ctx.fillStyle =
         "#24251e";
-
 
     ctx.fillRect(
         5,
@@ -2648,7 +2243,6 @@ function drawWreck(o) {
         40,
         7
     );
-
 
     ctx.restore();
 
@@ -2659,15 +2253,10 @@ function drawWreck(o) {
    TREE
 ===================================================== */
 
-function drawTree(
-    x,
-    y
-) {
-
+function drawTree(x, y) {
 
     ctx.fillStyle =
         "#473a28";
-
 
     ctx.fillRect(
         x - 6,
@@ -2676,10 +2265,8 @@ function drawTree(
         40
     );
 
-
     ctx.fillStyle =
         "#303b28";
-
 
     ctx.beginPath();
 
@@ -2693,7 +2280,6 @@ function drawTree(
 
     ctx.fill();
 
-
     ctx.beginPath();
 
     ctx.arc(
@@ -2705,7 +2291,6 @@ function drawTree(
     );
 
     ctx.fill();
-
 
     ctx.beginPath();
 
@@ -2723,15 +2308,13 @@ function drawTree(
 
 
 /* =====================================================
-   TRENCHES
+   TRENCH MAP
 ===================================================== */
 
 function drawTrenches() {
 
-
     ctx.fillStyle =
         "#756847";
-
 
     ctx.fillRect(
         0,
@@ -2740,14 +2323,12 @@ function drawTrenches() {
         canvas.height
     );
 
-
     /*
-       MUD
+       MUD MARKINGS
     */
 
     ctx.fillStyle =
         "#635638";
-
 
     for (
         let i = 0;
@@ -2755,16 +2336,13 @@ function drawTrenches() {
         i++
     ) {
 
-
         const x =
             (i * 173) %
             canvas.width;
 
-
         const y =
             (i * 97) %
             canvas.height;
-
 
         ctx.fillRect(
             x,
@@ -2775,79 +2353,40 @@ function drawTrenches() {
 
     }
 
-
-    /*
-       TRENCHES
-    */
-
     obstacles
         .filter(
-            o =>
-                o.type ===
-                "trench"
+            o => o.type === "trench"
         )
         .forEach(
             drawTrench
         );
 
-
-    /*
-       BUNKERS
-    */
-
     obstacles
         .filter(
-            o =>
-                o.type ===
-                "bunker"
+            o => o.type === "bunker"
         )
         .forEach(
             drawBunker
         );
 
-
-    /*
-       WIRE
-    */
-
     obstacles
         .filter(
-            o =>
-                o.type ===
-                "wire"
+            o => o.type === "wire"
         )
         .forEach(
             drawWire
         );
 
-
-    /*
-       CRATERS
-    */
-
     obstacles
         .filter(
-            o =>
-                o.type ===
-                "crater"
+            o => o.type === "crater"
         )
         .forEach(
             drawCrater
         );
 
-
-    drawLog(
-        230,
-        230,
-        120
-    );
-
-
-    drawLog(
-        780,
-        450,
-        100
-    );
+    drawLog(230, 230, 120);
+    drawLog(780, 450, 100);
 
 }
 
@@ -2858,10 +2397,8 @@ function drawTrenches() {
 
 function drawTrench(o) {
 
-
     ctx.fillStyle =
         "#403a29";
-
 
     ctx.fillRect(
         o.x,
@@ -2870,10 +2407,8 @@ function drawTrench(o) {
         o.height
     );
 
-
     ctx.fillStyle =
         "#302d22";
-
 
     ctx.fillRect(
         o.x + 8,
@@ -2882,27 +2417,14 @@ function drawTrench(o) {
         o.height - 24
     );
 
-
-    /*
-       SAND BAGS
-    */
-
     for (
-        let x =
-            o.x + 8;
-
-        x <
-        o.x +
-        o.width -
-        15;
-
+        let x = o.x + 8;
+        x < o.x + o.width - 15;
         x += 27
     ) {
 
-
         ctx.fillStyle =
             "#a99a66";
-
 
         ctx.fillRect(
             x,
@@ -2911,13 +2433,9 @@ function drawTrench(o) {
             13
         );
 
-
         ctx.fillRect(
             x,
-            o.y +
-            o.height -
-            8,
-
+            o.y + o.height - 8,
             22,
             13
         );
@@ -2933,10 +2451,8 @@ function drawTrench(o) {
 
 function drawBunker(o) {
 
-
     ctx.fillStyle =
         "#37372e";
-
 
     ctx.fillRect(
         o.x,
@@ -2945,10 +2461,8 @@ function drawBunker(o) {
         o.height
     );
 
-
     ctx.fillStyle =
         "#514e3f";
-
 
     ctx.fillRect(
         o.x + 8,
@@ -2957,10 +2471,8 @@ function drawBunker(o) {
         o.height - 16
     );
 
-
     ctx.fillStyle =
         "#171812";
-
 
     ctx.fillRect(
         o.x + 20,
@@ -2978,14 +2490,11 @@ function drawBunker(o) {
 
 function drawWire(o) {
 
-
     ctx.strokeStyle =
         "#282923";
 
-
     ctx.lineWidth = 3;
 
-
     ctx.beginPath();
 
     ctx.moveTo(
@@ -2994,43 +2503,31 @@ function drawWire(o) {
     );
 
     ctx.lineTo(
-        o.x +
-        o.width,
-        o.y +
-        o.height
+        o.x + o.width,
+        o.y + o.height
     );
 
     ctx.stroke();
 
-
     ctx.beginPath();
 
     ctx.moveTo(
-        o.x +
-        o.width,
+        o.x + o.width,
         o.y
     );
 
     ctx.lineTo(
         o.x,
-        o.y +
-        o.height
+        o.y + o.height
     );
 
     ctx.stroke();
-
 
     for (
-        let x =
-            o.x + 10;
-
-        x <
-        o.x +
-        o.width;
-
+        let x = o.x + 10;
+        x < o.x + o.width;
         x += 30
     ) {
-
 
         ctx.beginPath();
 
@@ -3055,60 +2552,36 @@ function drawWire(o) {
 
 function drawCrater(o) {
 
-
     ctx.fillStyle =
         "#4d432f";
-
 
     ctx.beginPath();
 
     ctx.ellipse(
-
-        o.x +
+        o.x + o.width / 2,
+        o.y + o.height / 2,
         o.width / 2,
-
-        o.y +
         o.height / 2,
-
-        o.width / 2,
-
-        o.height / 2,
-
         0,
-
         0,
-
         Math.PI * 2
-
     );
 
     ctx.fill();
 
-
     ctx.fillStyle =
         "#292820";
-
 
     ctx.beginPath();
 
     ctx.ellipse(
-
-        o.x +
-        o.width / 2,
-
-        o.y +
-        o.height / 2,
-
+        o.x + o.width / 2,
+        o.y + o.height / 2,
         o.width / 3,
-
         o.height / 3,
-
         0,
-
         0,
-
         Math.PI * 2
-
     );
 
     ctx.fill();
@@ -3126,24 +2599,17 @@ function drawLog(
     length
 ) {
 
-
     ctx.save();
-
 
     ctx.translate(
         x,
         y
     );
 
-
-    ctx.rotate(
-        -0.15
-    );
-
+    ctx.rotate(-0.15);
 
     ctx.fillStyle =
         "#4b3321";
-
 
     ctx.fillRect(
         0,
@@ -3152,10 +2618,8 @@ function drawLog(
         15
     );
 
-
     ctx.fillStyle =
         "#725038";
-
 
     ctx.beginPath();
 
@@ -3169,59 +2633,59 @@ function drawLog(
 
     ctx.fill();
 
-
     ctx.restore();
 
 }
 
 
 /* =====================================================
-   TANK DRAWING
+   TANK
 ===================================================== */
 
 function drawTank(tank) {
 
-
     ctx.save();
-
 
     ctx.translate(
         tank.x,
         tank.y
     );
 
+    /*
+       HULL ROTATES
+       independently.
+    */
 
     ctx.rotate(
         tank.angle
     );
 
-
-    /*
-       SHADOW
-    */
-
-    ctx.fillStyle =
-        "rgba(0,0,0,0.35)";
-
-
-    ctx.fillRect(
-        -tank.size - 4,
-        -tank.size + 5,
-        tank.size * 2 + 8,
-        tank.size * 1.7
+    drawTankHull(
+        tank
     );
 
+    ctx.restore();
 
-    drawTracks(tank);
 
-    drawHull(tank);
+    /*
+       TURRET ROTATES
+       independently.
+    */
 
-    drawTurret(tank);
+    ctx.save();
 
-    drawCannon(tank);
+    ctx.translate(
+        tank.x,
+        tank.y
+    );
 
-    drawTankMarkings(tank);
+    ctx.rotate(
+        tank.turretAngle
+    );
 
+    drawTurret(
+        tank
+    );
 
     ctx.restore();
 
@@ -3231,71 +2695,81 @@ function drawTank(tank) {
     */
 
     const barWidth =
-        tank.size *
-        2.3;
-
+        tank.size * 2.3;
 
     ctx.fillStyle =
         "#201f18";
 
-
     ctx.fillRect(
-
-        tank.x -
-        barWidth / 2,
-
-        tank.y -
-        tank.size -
-        15,
-
+        tank.x - barWidth / 2,
+        tank.y - tank.size - 15,
         barWidth,
-
         7
-
     );
-
 
     ctx.fillStyle =
         "#d5c45e";
 
-
     ctx.fillRect(
-
-        tank.x -
-        barWidth / 2,
-
-        tank.y -
-        tank.size -
-        15,
-
+        tank.x - barWidth / 2,
+        tank.y - tank.size - 15,
         barWidth *
         Math.max(
             0,
             tank.health /
             tank.maxHealth
         ),
-
         7
-
     );
 
 }
 
 
 /* =====================================================
-   TRACKS
+   HULL
 ===================================================== */
 
-function drawTracks(tank) {
-
+function drawTankHull(tank) {
 
     const s =
         tank.size;
 
+    let colour;
+
+    if (
+        tank.faction === "british"
+    ) {
+
+        colour =
+            "#53633b";
+
+    } else {
+
+        colour =
+            "#77724e";
+
+    }
+
+    /*
+       SHADOW
+    */
+
+    ctx.fillStyle =
+        "rgba(0,0,0,0.35)";
+
+    ctx.fillRect(
+        -s - 4,
+        -s + 5,
+        s * 2 + 8,
+        s * 1.7
+    );
+
+    /*
+       TRACKS
+    */
 
     ctx.fillStyle =
         "#20231d";
-
 
     ctx.fillRect(
         -s,
@@ -3304,7 +2778,6 @@ function drawTracks(tank) {
         s * 0.28
     );
 
-
     ctx.fillRect(
         -s,
         s * 0.50,
@@ -3312,21 +2785,18 @@ function drawTracks(tank) {
         s * 0.28
     );
 
+    /*
+       TRACK DETAIL
+    */
 
     ctx.fillStyle =
         "#77745d";
 
-
     for (
-        let x =
-            -s + 7;
-
-        x <
-        s;
-
+        let x = -s + 7;
+        x < s;
         x += 11
     ) {
-
 
         ctx.beginPath();
 
@@ -3339,7 +2809,6 @@ function drawTracks(tank) {
         );
 
         ctx.fill();
-
 
         ctx.beginPath();
 
@@ -3355,49 +2824,14 @@ function drawTracks(tank) {
 
     }
 
-}
-
-
-/* =====================================================
-   HULLS
-===================================================== */
-
-function drawHull(tank) {
-
-
-    const s =
-        tank.size;
-
-
-    let colour;
-
-
-    if (
-        tank.faction ===
-        "british"
-    ) {
-
-        colour =
-            "#53633b";
-
-    }
-
-    else {
-
-        colour =
-            "#77724e";
-
-    }
-
+    /*
+       HULL
+    */
 
     ctx.fillStyle =
         colour;
 
-
-    switch (
-        tank.model
-    ) {
-
+    switch (tank.model) {
 
         case "tetrarch":
 
@@ -3409,7 +2843,6 @@ function drawHull(tank) {
             );
 
             break;
-
 
         case "cromwell":
 
@@ -3441,7 +2874,6 @@ function drawHull(tank) {
 
             break;
 
-
         case "churchill":
 
             ctx.fillRect(
@@ -3453,7 +2885,6 @@ function drawHull(tank) {
 
             break;
 
-
         case "panzer2":
 
             ctx.fillRect(
@@ -3464,7 +2895,6 @@ function drawHull(tank) {
             );
 
             break;
-
 
         case "panzer4":
 
@@ -3496,7 +2926,6 @@ function drawHull(tank) {
 
             break;
 
-
         case "tiger":
 
             ctx.fillRect(
@@ -3514,45 +2943,47 @@ function drawHull(tank) {
 
 
 /* =====================================================
-   TURRETS
+   TURRET
 ===================================================== */
 
 function drawTurret(tank) {
 
-
     const s =
         tank.size;
 
-
     let turretColour;
 
-
     if (
-        tank.faction ===
-        "british"
+        tank.faction === "british"
     ) {
 
         turretColour =
             "#657448";
 
-    }
-
-    else {
+    } else {
 
         turretColour =
             "#8b855d";
 
     }
 
+    /*
+       CANNON FIRST
+       so it sits behind turret.
+    */
+
+    drawCannon(
+        tank
+    );
+
+    /*
+       TURRET
+    */
 
     ctx.fillStyle =
         turretColour;
 
-
-    switch (
-        tank.model
-    ) {
-
+    switch (tank.model) {
 
         case "tetrarch":
 
@@ -3565,7 +2996,6 @@ function drawTurret(tank) {
 
             break;
 
-
         case "cromwell":
 
             ctx.fillRect(
@@ -3576,7 +3006,6 @@ function drawTurret(tank) {
             );
 
             break;
-
 
         case "churchill":
 
@@ -3589,7 +3018,6 @@ function drawTurret(tank) {
 
             break;
 
-
         case "panzer2":
 
             ctx.fillRect(
@@ -3601,7 +3029,6 @@ function drawTurret(tank) {
 
             break;
 
-
         case "panzer4":
 
             ctx.fillRect(
@@ -3612,7 +3039,6 @@ function drawTurret(tank) {
             );
 
             break;
-
 
         case "tiger":
 
@@ -3627,10 +3053,12 @@ function drawTurret(tank) {
 
     }
 
+    /*
+       TURRET CENTER
+    */
 
     ctx.fillStyle =
         "#34382a";
-
 
     ctx.beginPath();
 
@@ -3644,98 +3072,67 @@ function drawTurret(tank) {
 
     ctx.fill();
 
+    /*
+       MARKINGS
+    */
+
+    drawTankMarkings(
+        tank
+    );
+
 }
 
 
 /* =====================================================
-   CANNONS
+   CANNON
 ===================================================== */
 
 function drawCannon(tank) {
 
-
     const s =
         tank.size;
-
 
     let length =
         s * 1.3;
 
+    let width = 6;
 
-    let width =
-        6;
-
-
-    switch (
-        tank.model
-    ) {
-
+    switch (tank.model) {
 
         case "tetrarch":
-
-            length =
-                s * 1.15;
-
+            length = s * 1.15;
             width = 5;
-
             break;
-
 
         case "cromwell":
-
-            length =
-                s * 1.55;
-
+            length = s * 1.55;
             width = 6;
-
             break;
-
 
         case "churchill":
-
-            length =
-                s * 1.45;
-
+            length = s * 1.45;
             width = 8;
-
             break;
-
 
         case "panzer2":
-
-            length =
-                s * 1.1;
-
+            length = s * 1.1;
             width = 5;
-
             break;
-
 
         case "panzer4":
-
-            length =
-                s * 1.6;
-
+            length = s * 1.6;
             width = 6;
-
             break;
 
-
         case "tiger":
-
-            length =
-                s * 1.85;
-
+            length = s * 1.85;
             width = 9;
-
             break;
 
     }
 
-
     ctx.fillStyle =
         "#242820";
-
 
     ctx.fillRect(
         0,
@@ -3744,6 +3141,9 @@ function drawCannon(tank) {
         width
     );
 
+    /*
+       MUZZLE
+    */
 
     ctx.fillRect(
         length - 7,
@@ -3756,28 +3156,22 @@ function drawCannon(tank) {
 
 
 /* =====================================================
-   MARKINGS
+   TANK MARKINGS
 ===================================================== */
 
 function drawTankMarkings(tank) {
 
-
     const s =
         tank.size;
 
-
     if (
-        tank.faction ===
-        "british"
+        tank.faction === "british"
     ) {
-
 
         ctx.strokeStyle =
             "#ddd7ba";
 
-
         ctx.lineWidth = 3;
-
 
         ctx.beginPath();
 
@@ -3791,14 +3185,10 @@ function drawTankMarkings(tank) {
 
         ctx.stroke();
 
-    }
-
-    else {
-
+    } else {
 
         ctx.fillStyle =
             "#24251e";
-
 
         ctx.fillRect(
             -s * 0.15,
@@ -3806,7 +3196,6 @@ function drawTankMarkings(tank) {
             s * 0.3,
             8
         );
-
 
         ctx.fillRect(
             -4,
@@ -3821,76 +3210,13 @@ function drawTankMarkings(tank) {
 
 
 /* =====================================================
-   BULLETS
-===================================================== */
-
-function drawBullets() {
-
-
-    bullets.forEach(
-        function(bullet) {
-
-
-            ctx.fillStyle =
-                "#e3d49a";
-
-
-            ctx.beginPath();
-
-            ctx.arc(
-                bullet.x,
-                bullet.y,
-                5,
-                0,
-                Math.PI * 2
-            );
-
-            ctx.fill();
-
-
-            ctx.fillStyle =
-                "rgba(255,220,130,0.25)";
-
-
-            ctx.beginPath();
-
-            ctx.arc(
-
-                bullet.x -
-                bullet.vx *
-                0.7,
-
-                bullet.y -
-                bullet.vy *
-                0.7,
-
-                8,
-
-                0,
-
-                Math.PI * 2
-
-            );
-
-            ctx.fill();
-
-        }
-    );
-
-}
-
-
-/* =====================================================
    UI
 ===================================================== */
 
 function updateUI() {
 
-
     document
-        .getElementById(
-            "playerHealth"
-        )
+        .getElementById("playerHealth")
         .textContent =
         Math.max(
             0,
@@ -3899,11 +3225,8 @@ function updateUI() {
             )
         );
 
-
     document
-        .getElementById(
-            "enemyCount"
-        )
+        .getElementById("enemyCount")
         .textContent =
         enemies.length;
 
@@ -3916,58 +3239,39 @@ function updateUI() {
 
 function checkGameState() {
 
-
     if (
         player.health <= 0
     ) {
 
-
-        gameRunning =
-            false;
-
+        gameRunning = false;
 
         document
-            .getElementById(
-                "battleMessage"
-            )
+            .getElementById("battleMessage")
             .textContent =
             "💀 YOUR TANK HAS BEEN DESTROYED";
 
-
         document
-            .getElementById(
-                "restartButton"
-            )
+            .getElementById("restartButton")
             .style.display =
             "block";
-
 
         return;
 
     }
 
-
     if (
         enemies.length === 0
     ) {
 
-
-        gameRunning =
-            false;
-
+        gameRunning = false;
 
         document
-            .getElementById(
-                "battleMessage"
-            )
+            .getElementById("battleMessage")
             .textContent =
             "🏆 VICTORY! ENEMY FORCES DESTROYED";
 
-
         document
-            .getElementById(
-                "restartButton"
-            )
+            .getElementById("restartButton")
             .style.display =
             "block";
 
@@ -3982,49 +3286,39 @@ function checkGameState() {
 
 function gameLoop() {
 
-
     if (!gameRunning) {
         return;
     }
 
-
     movePlayer();
-
 
     aimPlayer();
 
-
     updateEnemies();
 
+    updateShells();
 
-    updateBullets();
-
+    updateImpacts();
 
     drawMap();
 
+    drawShells();
 
-    drawBullets();
-
+    drawImpacts();
 
     enemies.forEach(
         function(enemy) {
-
             drawTank(enemy);
-
         }
     );
-
 
     drawTank(
         player
     );
 
-
     updateUI();
 
-
     checkGameState();
-
 
     if (gameRunning) {
 
@@ -4036,9 +3330,7 @@ function gameLoop() {
 
 }
 
-
 </script>
 
 </body>
-
 </html>

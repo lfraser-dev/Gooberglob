@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gooberglob - Tank Battle</title>
+<title>WWII Tank Battle</title>
 
 <style>
 * {
@@ -12,392 +12,329 @@
 
 body {
     margin: 0;
-    background: #151711;
-    color: #eee6c8;
+    background: #111;
+    color: white;
     font-family: Arial, sans-serif;
-    text-align: center;
+    overflow: hidden;
 }
 
-h1 {
-    margin: 0;
-    padding: 16px;
-    background: #353d27;
-    color: #eee6c8;
-    font-family: Impact, "Arial Black", sans-serif;
-    font-size: 42px;
-    letter-spacing: 5px;
-    text-shadow: 3px 3px #11140d;
-}
-
-#menu {
-    max-width: 1000px;
-    margin: 25px auto;
-    padding: 25px;
-    background: #c7bb91;
-    border: 5px solid #59613b;
-    color: #24251d;
-    box-shadow: 8px 8px #090b08;
-}
-
-.section {
-    margin: 25px 0;
-}
-
-.section h2 {
-    font-family: "Arial Black", sans-serif;
-}
-
-.choices {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-}
-
-button {
-    background: #59613b;
-    color: #eee6c8;
-    border: 4px solid #292d20;
-    padding: 13px 20px;
-    font-size: 17px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 4px 4px #292d20;
-}
-
-button:hover {
-    background: #737c4d;
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px #292d20;
-}
-
-button.selected {
-    background: #8c7541;
-    border-color: #fff0bd;
-}
-
-.tankCard {
-    min-width: 180px;
-}
-
-.tankCard small {
-    display: block;
-    margin-top: 7px;
-    line-height: 1.4;
-}
-
-#startButton {
-    margin-top: 15px;
-    padding: 15px 45px;
-    font-size: 22px;
-}
-
-#gameArea {
-    display: none;
-    padding: 15px;
-}
-
-#gameInfo {
-    max-width: 1100px;
-    margin: 0 auto 10px;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.infoBox {
-    background: #353d27;
-    border: 3px solid #59613b;
-    padding: 9px 15px;
-    font-weight: bold;
-}
-
-#gameCanvas {
+canvas {
     display: block;
     margin: 0 auto;
-    border: 6px solid #59613b;
-    background: #777;
-    max-width: 100%;
-    height: auto;
+    background: #222;
     cursor: crosshair;
 }
 
-#battleMessage {
-    font-size: 22px;
+#ui {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1100px;
+    pointer-events: none;
+}
+
+#health {
+    position: absolute;
+    left: 15px;
+    top: 10px;
+    font-size: 20px;
     font-weight: bold;
+}
+
+#enemyCount {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#battleMessage {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 42px;
+    font-weight: bold;
+    text-shadow: 3px 3px #000;
+    text-align: center;
+}
+
+button {
+    font-size: 20px;
+    padding: 12px 25px;
     margin: 8px;
+    cursor: pointer;
 }
 
-#controls {
-    color: #c7bb91;
-    margin: 9px;
+#menu {
+    position: absolute;
+    inset: 0;
+    background: #151515;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
 }
 
-#restartButton {
-    display: none;
-    margin: 10px auto;
+.menuBox {
+    width: 700px;
+    max-height: 95vh;
+    overflow-y: auto;
+    text-align: center;
+    background: #262626;
+    border: 3px solid #777;
+    padding: 30px;
+    box-shadow: 0 0 30px #000;
+}
+
+.menuBox h1 {
+    font-size: 48px;
+    margin-top: 0;
+}
+
+.menuBox h2 {
+    margin-bottom: 10px;
+}
+
+.choiceRow {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.choice {
+    background: #444;
+    border: 2px solid #888;
+    min-width: 170px;
+    margin: 8px;
+    padding: 15px;
+    cursor: pointer;
+}
+
+.choice:hover {
+    background: #555;
+}
+
+.choice.selected {
+    background: #685d31;
+    border-color: #e5cc65;
+}
+
+.small {
+    font-size: 14px;
+    color: #bbb;
+}
+
+.hidden {
+    display: none !important;
 }
 </style>
 </head>
 
 <body>
 
-<h1>★ GOOBERGLOB ★</h1>
-
 <div id="menu">
 
-    <h2>⚔️ TANK COMMAND ⚔️</h2>
+    <div class="menuBox">
 
-    <p>Choose your faction, tank and battlefield.</p>
+        <h1>WWII TANK BATTLE</h1>
 
-    <div class="section">
+        <div id="factionStep">
 
-        <h2>1. Choose Your Faction</h2>
+            <h2>Choose Your Faction</h2>
 
-        <div class="choices">
+            <div class="choiceRow">
 
-            <button
-                id="britishButton"
-                onclick="chooseFaction('british')">
-                🇬🇧 BRITISH
-            </button>
+                <div class="choice" data-faction="British">
+                    <h2>British</h2>
+                    <p>Balanced and reliable.</p>
+                </div>
 
-            <button
-                id="germanButton"
-                onclick="chooseFaction('german')">
-                🇩🇪 GERMAN
-            </button>
+                <div class="choice" data-faction="German">
+                    <h2>German</h2>
+                    <p>Powerful armour and guns.</p>
+                </div>
 
-            <button
-                id="sovietButton"
-                onclick="chooseFaction('soviet')">
-                🇷🇺 SOVIET UNION
-            </button>
+                <div class="choice" data-faction="Soviet Union">
+                    <h2>Soviet Union</h2>
+                    <p>Heavy hitting tanks.</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="tankStep" class="hidden">
+
+            <h2>Choose Your Tank</h2>
+
+            <div id="tankChoices" class="choiceRow"></div>
+
+        </div>
+
+        <div id="mapStep" class="hidden">
+
+            <h2>Choose Battlefield</h2>
+
+            <div class="choiceRow">
+
+                <div class="choice" data-map="trench">
+                    <h2>Trench Front</h2>
+                    <p>Open battlefield with trenches.</p>
+                </div>
+
+                <div class="choice" data-map="town">
+                    <h2>Ruined Town</h2>
+                    <p>Buildings provide cover.</p>
+                </div>
+
+                <div class="choice" data-map="snow">
+                    <h2>Snowy Forest</h2>
+                    <p>Cabins and rocks in the snow.</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="startStep" class="hidden">
+
+            <h2 id="summary"></h2>
+
+            <button id="startBattle">START BATTLE</button>
 
         </div>
 
     </div>
-
-    <div class="section">
-
-        <h2>2. Choose Your Tank</h2>
-
-        <div id="tankChoices" class="choices">
-            <p>Choose a faction first.</p>
-        </div>
-
-    </div>
-
-    <div class="section">
-
-        <h2>3. Choose Battlefield</h2>
-
-        <div class="choices">
-
-            <button
-                id="trenchButton"
-                onclick="chooseMap('trenches')">
-                🪖 TRENCH FRONT
-            </button>
-
-            <button
-                id="townButton"
-                onclick="chooseMap('town')">
-                🏘️ RUINED TOWN
-            </button>
-
-            <button
-                id="snowButton"
-                onclick="chooseMap('snow')">
-                ❄️🌲 SNOWY FOREST
-            </button>
-
-        </div>
-
-    </div>
-
-    <button
-        id="startButton"
-        onclick="startGame()">
-        🚀 START BATTLE
-    </button>
 
 </div>
 
+<canvas id="gameCanvas" width="1100" height="700"></canvas>
 
-<div id="gameArea">
+<div id="ui">
 
-    <div id="gameInfo">
-
-        <div class="infoBox">
-            TANK:
-            <span id="tankName">---</span>
-        </div>
-
-        <div class="infoBox">
-            HP:
-            <span id="playerHealth">---</span>
-        </div>
-
-        <div class="infoBox">
-            ENEMIES:
-            <span id="enemyCount">---</span>
-        </div>
-
+    <div id="health">
+        HP: <span id="playerHealth">0</span>
     </div>
 
-    <div id="battleMessage">
-        BATTLE!
+    <div id="enemyCount">
+        Enemies: <span id="enemiesLeft">0</span>
     </div>
 
-    <canvas
-        id="gameCanvas"
-        width="1100"
-        height="700">
-    </canvas>
-
-    <div id="controls">
-        W A S D = MOVE
-        &nbsp; | &nbsp;
-        MOUSE = AIM TURRET
-        &nbsp; | &nbsp;
-        CLICK / SPACE = FIRE
-    </div>
-
-    <button
-        id="restartButton"
-        onclick="location.reload()">
-        🔄 RETURN TO MENU
-    </button>
+    <div id="battleMessage"></div>
 
 </div>
-
 
 <script>
 
-/* =====================================================
-   TANK DATABASE
-===================================================== */
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-const tanks = {
+const W = canvas.width;
+const H = canvas.height;
 
-    british: {
+
+/* =========================================================
+   MENU
+   ========================================================= */
+
+let selectedFaction = null;
+let selectedTank = null;
+let selectedMap = null;
+
+const tankData = {
+
+    British: {
 
         light: {
             name: "Tetrarch",
-            className: "LIGHT",
-            health: 90,
-            speed: 4.4,
-            damage: 18,
-            reload: 430,
-            size: 24,
-            armor: 0.82,
-            model: "tetrarch"
+            hp: 80,
+            speed: 2.8,
+            damage: 16,
+            reload: 42,
+            armour: 1
         },
 
         medium: {
             name: "Cromwell",
-            className: "MEDIUM",
-            health: 135,
-            speed: 3.2,
-            damage: 27,
-            reload: 560,
-            size: 29,
-            armor: 0.70,
-            model: "cromwell"
+            hp: 125,
+            speed: 2.2,
+            damage: 24,
+            reload: 52,
+            armour: 0.9
         },
 
         heavy: {
             name: "Churchill",
-            className: "HEAVY",
-            health: 200,
-            speed: 2.2,
-            damage: 40,
-            reload: 760,
-            size: 35,
-            armor: 0.55,
-            model: "churchill"
+            hp: 190,
+            speed: 1.5,
+            damage: 34,
+            reload: 70,
+            armour: 0.65
         }
 
     },
 
-    german: {
+    German: {
 
         light: {
             name: "Panzer II",
-            className: "LIGHT",
-            health: 85,
-            speed: 4.4,
+            hp: 85,
+            speed: 2.7,
             damage: 17,
-            reload: 410,
-            size: 24,
-            armor: 0.84,
-            model: "panzer2"
+            reload: 40,
+            armour: 0.95
         },
 
         medium: {
             name: "Panzer IV",
-            className: "MEDIUM",
-            health: 140,
-            speed: 3.0,
-            damage: 28,
-            reload: 570,
-            size: 30,
-            armor: 0.69,
-            model: "panzer4"
+            hp: 135,
+            speed: 2.1,
+            damage: 27,
+            reload: 52,
+            armour: 0.82
         },
 
         heavy: {
             name: "Tiger I",
-            className: "HEAVY",
-            health: 215,
-            speed: 1.9,
-            damage: 44,
-            reload: 820,
-            size: 36,
-            armor: 0.48,
-            model: "tiger"
+            hp: 220,
+            speed: 1.35,
+            damage: 42,
+            reload: 78,
+            armour: 0.55
         }
 
     },
 
-    soviet: {
+    "Soviet Union": {
 
         light: {
             name: "T-70",
-            className: "LIGHT",
-            health: 95,
-            speed: 4.2,
-            damage: 19,
-            reload: 430,
-            size: 24,
-            armor: 0.80,
-            model: "t70"
+            hp: 82,
+            speed: 2.75,
+            damage: 18,
+            reload: 42,
+            armour: 0.95
         },
 
         medium: {
             name: "T-34",
-            className: "MEDIUM",
-            health: 150,
-            speed: 3.5,
-            damage: 30,
-            reload: 550,
-            size: 30,
-            armor: 0.64,
-            model: "t34"
+            hp: 145,
+            speed: 2.3,
+            damage: 29,
+            reload: 50,
+            armour: 0.78
         },
 
         heavy: {
             name: "IS-2",
-            className: "HEAVY",
-            health: 225,
-            speed: 2.0,
-            damage: 48,
-            reload: 850,
-            size: 36,
-            armor: 0.43,
-            model: "is2"
+            hp: 230,
+            speed: 1.3,
+            damage: 46,
+            reload: 82,
+            armour: 0.52
         }
 
     }
@@ -405,268 +342,553 @@ const tanks = {
 };
 
 
-/* =====================================================
-   GAME VARIABLES
-===================================================== */
+document.querySelectorAll("[data-faction]").forEach(function(el) {
 
-let selectedFaction = null;
-let selectedTankClass = null;
-let selectedMap = null;
+    el.addEventListener("click", function() {
 
-let player = null;
-let enemies = [];
+        document.querySelectorAll("[data-faction]").forEach(function(x) {
+            x.classList.remove("selected");
+        });
 
-let shells = [];
-let impacts = [];
-let explosions = [];
-let smokeParticles = [];
-let fireParticles = [];
-let muzzleFlashes = [];
-let trackMarks = [];
-let wrecks = [];
+        el.classList.add("selected");
 
-let obstacles = [];
+        selectedFaction = el.dataset.faction;
 
-let keys = {};
+        buildTankChoices();
 
-let gameRunning = false;
+        document.getElementById("tankStep").classList.remove("hidden");
 
-let lastShot = 0;
+    });
 
-let screenShake = 0;
-
-let mouse = {
-    x: 550,
-    y: 350
-};
+});
 
 
-/* =====================================================
-   CANVAS
-===================================================== */
+function buildTankChoices() {
 
-const canvas =
-    document.getElementById("gameCanvas");
-
-const ctx =
-    canvas.getContext("2d");
-
-
-/* =====================================================
-   FACTION SELECTION
-===================================================== */
-
-function chooseFaction(faction) {
-
-    selectedFaction = faction;
-    selectedTankClass = null;
-
-    document
-        .getElementById("britishButton")
-        .classList.remove("selected");
-
-    document
-        .getElementById("germanButton")
-        .classList.remove("selected");
-
-    document
-        .getElementById("sovietButton")
-        .classList.remove("selected");
-
-    document
-        .getElementById(faction + "Button")
-        .classList.add("selected");
-
-    createTankButtons();
-}
-
-
-/* =====================================================
-   TANK BUTTONS
-===================================================== */
-
-function createTankButtons() {
-
-    const container =
-        document.getElementById("tankChoices");
+    const container = document.getElementById("tankChoices");
 
     container.innerHTML = "";
 
-    for (
-        const type in tanks[selectedFaction]
-    ) {
+    const faction = tankData[selectedFaction];
 
-        const tank =
-            tanks[selectedFaction][type];
+    Object.keys(faction).forEach(function(type) {
 
-        const button =
-            document.createElement("button");
+        const data = faction[type];
 
-        button.className =
-            "tankCard";
+        const div = document.createElement("div");
 
-        button.innerHTML =
-            tank.name +
-            "<small>" +
-            tank.className +
-            "<br>" +
-            "❤️ " + tank.health +
-            " &nbsp; ⚡ " + tank.speed +
-            "</small>";
+        div.className = "choice";
 
-        button.onclick = function() {
+        div.innerHTML = `
+            <h2>${data.name}</h2>
+            <p>${type.toUpperCase()}</p>
+            <p>HP: ${data.hp}</p>
+            <p>Damage: ${data.damage}</p>
+            <p>Speed: ${data.speed}</p>
+        `;
 
-            selectedTankClass =
-                type;
+        div.addEventListener("click", function() {
 
-            document
-                .querySelectorAll(".tankCard")
-                .forEach(
-                    function(button) {
-                        button.classList
-                            .remove("selected");
-                    }
-                );
+            document.querySelectorAll("#tankChoices .choice").forEach(function(x) {
+                x.classList.remove("selected");
+            });
 
-            button.classList.add(
-                "selected"
-            );
-        };
+            div.classList.add("selected");
 
-        container.appendChild(
-            button
-        );
-    }
+            selectedTank = {
+                type: type,
+                data: data
+            };
+
+            document.getElementById("mapStep").classList.remove("hidden");
+
+        });
+
+        container.appendChild(div);
+
+    });
+
 }
 
 
-/* =====================================================
-   MAP SELECTION
-===================================================== */
+document.querySelectorAll("[data-map]").forEach(function(el) {
 
-function chooseMap(map) {
+    el.addEventListener("click", function() {
 
-    selectedMap = map;
+        document.querySelectorAll("[data-map]").forEach(function(x) {
+            x.classList.remove("selected");
+        });
 
-    document
-        .getElementById("trenchButton")
-        .classList.remove("selected");
+        el.classList.add("selected");
 
-    document
-        .getElementById("townButton")
-        .classList.remove("selected");
+        selectedMap = el.dataset.map;
 
-    document
-        .getElementById("snowButton")
-        .classList.remove("selected");
+        document.getElementById("startStep").classList.remove("hidden");
 
-    let id;
+        document.getElementById("summary").textContent =
+            selectedFaction +
+            " — " +
+            selectedTank.data.name +
+            " — " +
+            selectedMap;
 
-    if (map === "trenches") {
-        id = "trenchButton";
+    });
+
+});
+
+
+document.getElementById("startBattle").addEventListener("click", function() {
+
+    startGame();
+
+});
+
+
+/* =========================================================
+   GAME STATE
+   ========================================================= */
+
+let player;
+
+let enemies = [];
+
+let shells = [];
+
+let impacts = [];
+
+let explosions = [];
+
+let smokeParticles = [];
+
+let fireParticles = [];
+
+let muzzleFlashes = [];
+
+let trackMarks = [];
+
+let hitTexts = [];
+
+let wrecks = [];
+
+let buildings = [];
+
+let trenches = [];
+
+let rocks = [];
+
+let trees = [];
+
+let cabins = [];
+
+let gameRunning = false;
+
+let mouseX = W / 2;
+let mouseY = H / 2;
+
+let screenShake = 0;
+
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
+const keys = {};
+
+document.addEventListener("keydown", function(e) {
+
+    keys[e.key.toLowerCase()] = true;
+
+    if (e.code === "Space") {
+
+        e.preventDefault();
+
+        shoot(player);
+
     }
 
-    else if (map === "town") {
-        id = "townButton";
-    }
+});
 
-    else {
-        id = "snowButton";
-    }
 
-    document
-        .getElementById(id)
-        .classList.add("selected");
+document.addEventListener("keyup", function(e) {
+
+    keys[e.key.toLowerCase()] = false;
+
+});
+
+
+canvas.addEventListener("mousemove", function(e) {
+
+    const rect = canvas.getBoundingClientRect();
+
+    mouseX =
+        (e.clientX - rect.left) *
+        W / rect.width;
+
+    mouseY =
+        (e.clientY - rect.top) *
+        H / rect.height;
+
+});
+
+
+canvas.addEventListener("mousedown", function() {
+
+    shoot(player);
+
+});
+
+
+/* =========================================================
+   UTILITY
+   ========================================================= */
+
+function random(min, max) {
+
+    return Math.random() * (max - min) + min;
+
 }
 
 
-/* =====================================================
-   START GAME
-===================================================== */
+function distance(x1, y1, x2, y2) {
+
+    return Math.hypot(
+        x2 - x1,
+        y2 - y1
+    );
+
+}
+
+
+function clamp(value, min, max) {
+
+    return Math.max(
+        min,
+        Math.min(max, value)
+    );
+
+}
+
+
+function angleDifference(a, b) {
+
+    let diff = a - b;
+
+    while (diff > Math.PI) {
+        diff -= Math.PI * 2;
+    }
+
+    while (diff < -Math.PI) {
+        diff += Math.PI * 2;
+    }
+
+    return diff;
+
+}
+
+
+/* =========================================================
+   MAP GENERATION
+   ========================================================= */
+
+function clearMap() {
+
+    buildings = [];
+    trenches = [];
+    rocks = [];
+    trees = [];
+    cabins = [];
+
+}
+
+
+function createMap() {
+
+    clearMap();
+
+    if (selectedMap === "trench") {
+
+        for (let i = 0; i < 7; i++) {
+
+            trenches.push({
+                x: random(50, W - 250),
+                y: random(100, H - 120),
+                w: random(130, 240),
+                h: random(35, 60)
+            });
+
+        }
+
+    }
+
+
+    if (selectedMap === "town") {
+
+        const positions = [
+
+            [100, 110, 180, 130],
+            [350, 80, 190, 150],
+            [700, 100, 240, 130],
+            [120, 380, 210, 140],
+            [430, 350, 200, 160],
+            [730, 390, 220, 150]
+
+        ];
+
+        positions.forEach(function(p) {
+
+            buildings.push({
+                x: p[0],
+                y: p[1],
+                w: p[2],
+                h: p[3]
+            });
+
+        });
+
+    }
+
+
+    if (selectedMap === "snow") {
+
+        for (let i = 0; i < 35; i++) {
+
+            trees.push({
+                x: random(30, W - 30),
+                y: random(60, H - 30),
+                r: random(10, 18)
+            });
+
+        }
+
+        for (let i = 0; i < 18; i++) {
+
+            rocks.push({
+                x: random(40, W - 40),
+                y: random(80, H - 40),
+                r: random(10, 24)
+            });
+
+        }
+
+        const cabinPositions = [
+            [180, 160],
+            [770, 180],
+            [250, 480],
+            [760, 470]
+        ];
+
+        cabinPositions.forEach(function(p) {
+
+            cabins.push({
+                x: p[0],
+                y: p[1],
+                w: 130,
+                h: 90
+            });
+
+        });
+
+    }
+
+}
+
+
+/* =========================================================
+   COLLISION
+   ========================================================= */
+
+function circleRectCollision(x, y, radius, rect) {
+
+    const closestX = clamp(
+        x,
+        rect.x,
+        rect.x + rect.w
+    );
+
+    const closestY = clamp(
+        y,
+        rect.y,
+        rect.y + rect.h
+    );
+
+    const dx = x - closestX;
+    const dy = y - closestY;
+
+    return dx * dx + dy * dy <
+        radius * radius;
+
+}
+
+
+function isSolidAt(x, y, radius) {
+
+    for (const b of buildings) {
+
+        if (circleRectCollision(
+            x,
+            y,
+            radius,
+            b
+        )) {
+            return true;
+        }
+
+    }
+
+
+    for (const c of cabins) {
+
+        if (circleRectCollision(
+            x,
+            y,
+            radius,
+            c
+        )) {
+            return true;
+        }
+
+    }
+
+
+    for (const r of rocks) {
+
+        if (
+            distance(
+                x,
+                y,
+                r.x,
+                r.y
+            ) < radius + r.r
+        ) {
+            return true;
+        }
+
+    }
+
+    return false;
+
+}
+
+
+/* =========================================================
+   TANK CREATION
+   ========================================================= */
+
+function createTank(x, y, faction, data, isPlayer) {
+
+    return {
+
+        x: x,
+        y: y,
+
+        faction: faction,
+
+        name: data.name,
+
+        type: data.type || "medium",
+
+        hp: data.hp,
+        maxHp: data.hp,
+
+        speed: data.speed,
+
+        damage: data.damage,
+
+        reload: data.reload,
+
+        armour: data.armour,
+
+        reloadTimer: 0,
+
+        hullAngle: 0,
+
+        turretAngle: 0,
+
+        radius: 25,
+
+        isPlayer: isPlayer,
+
+        destroyed: false,
+
+        fireSmoke: 0,
+
+        hitFlash: 0,
+
+        aiTimer: random(0, 60),
+
+        trackTimer: 0
+
+    };
+
+}
+
+
+/* =========================================================
+   GAME START
+   ========================================================= */
+
+function getEnemyFaction() {
+
+    if (selectedFaction === "British") {
+        return "German";
+    }
+
+    if (selectedFaction === "German") {
+        return "Soviet Union";
+    }
+
+    return "British";
+
+}
+
+
+function getSpawnPoint(isPlayer) {
+
+    let attempts = 0;
+
+    while (attempts < 500) {
+
+        attempts++;
+
+        let x;
+        let y;
+
+        if (isPlayer) {
+
+            x = random(80, 280);
+            y = random(100, H - 100);
+
+        } else {
+
+            x = random(W - 280, W - 80);
+            y = random(100, H - 100);
+
+        }
+
+        if (!isSolidAt(x, y, 30)) {
+
+            return {
+                x: x,
+                y: y
+            };
+
+        }
+
+    }
+
+    return {
+        x: isPlayer ? 150 : W - 150,
+        y: H / 2
+    };
+
+}
+
 
 function startGame() {
 
-    if (!selectedFaction) {
-        alert("Choose a faction first!");
-        return;
-    }
+    document.getElementById("menu").classList.add("hidden");
 
-    if (!selectedTankClass) {
-        alert("Choose a tank first!");
-        return;
-    }
-
-    if (!selectedMap) {
-        alert("Choose a battlefield first!");
-        return;
-    }
-
-    document
-        .getElementById("menu")
-        .style.display = "none";
-
-    document
-        .getElementById("gameArea")
-        .style.display = "block";
-
-    createBattle();
-
-    gameRunning = true;
-
-    requestAnimationFrame(
-        gameLoop
-    );
-}
-
-
-/* =====================================================
-   CREATE BATTLE
-===================================================== */
-
-function createBattle() {
-
-    const data =
-        tanks[selectedFaction]
-        [selectedTankClass];
-
-    player = {
-
-        x: 130,
-        y: 350,
-
-        angle: 0,
-        turretAngle: 0,
-
-        health: data.health,
-        maxHealth: data.health,
-
-        speed: data.speed,
-        damage: data.damage,
-        reload: data.reload,
-
-        size: data.size,
-
-        armor: data.armor,
-
-        name: data.name,
-        model: data.model,
-
-        faction:
-            selectedFaction,
-
-        className:
-            data.className,
-
-        trackTimer: 0,
-
-        fireSmoke: 0,
-        burning: false
-    };
-
-    document
-        .getElementById("tankName")
-        .textContent =
-        player.name;
+    createMap();
 
     shells = [];
     impacts = [];
@@ -675,931 +897,1121 @@ function createBattle() {
     fireParticles = [];
     muzzleFlashes = [];
     trackMarks = [];
+    hitTexts = [];
     wrecks = [];
 
-    screenShake = 0;
-
-    createMap();
-
-    createEnemies();
-
-    updateUI();
-}
-
-
-/* =====================================================
-   MAP CREATION
-===================================================== */
-
-function addObstacle(
-    x,
-    y,
-    width,
-    height,
-    type
-) {
-
-    obstacles.push({
-        x,
-        y,
-        width,
-        height,
-        type
-    });
-}
-
-
-function createMap() {
-
-    obstacles = [];
-
-    if (
-        selectedMap === "town"
-    ) {
-
-        createTownMap();
-    }
-
-    else if (
-        selectedMap === "snow"
-    ) {
-
-        createSnowMap();
-    }
-
-    else {
-
-        createTrenchMap();
-    }
-}
-
-
-/* =====================================================
-   TOWN MAP
-===================================================== */
-
-function createTownMap() {
-
-    addObstacle(
-        40, 40, 210, 150,
-        "building"
-    );
-
-    addObstacle(
-        290, 45, 150, 115,
-        "building"
-    );
-
-    addObstacle(
-        690, 35, 190, 150,
-        "building"
-    );
-
-    addObstacle(
-        920, 60, 130, 180,
-        "building"
-    );
-
-    addObstacle(
-        35, 470, 190, 170,
-        "building"
-    );
-
-    addObstacle(
-        285, 500, 145, 130,
-        "building"
-    );
-
-    addObstacle(
-        675, 485, 190, 150,
-        "building"
-    );
-
-    addObstacle(
-        925, 430, 140, 190,
-        "building"
-    );
-
-    addObstacle(
-        480, 70, 100, 75,
-        "rubble"
-    );
-
-    addObstacle(
-        570, 510, 80, 75,
-        "rubble"
-    );
-
-    addObstacle(
-        250, 250, 140, 18,
-        "wall"
-    );
-
-    addObstacle(
-        710, 275, 150, 18,
-        "wall"
-    );
-
-    addObstacle(
-        460, 315, 75, 35,
-        "wreck"
-    );
-
-    addObstacle(
-        600, 380, 70, 32,
-        "wreck"
-    );
-}
-
-
-/* =====================================================
-   TRENCH MAP
-===================================================== */
-
-function createTrenchMap() {
-
-    addObstacle(
-        0, 120, 300, 55,
-        "trench"
-    );
-
-    addObstacle(
-        360, 100, 280, 55,
-        "trench"
-    );
-
-    addObstacle(
-        700, 125, 400, 55,
-        "trench"
-    );
-
-    addObstacle(
-        0, 520, 260, 55,
-        "trench"
-    );
-
-    addObstacle(
-        320, 545, 310, 55,
-        "trench"
-    );
-
-    addObstacle(
-        700, 515, 400, 55,
-        "trench"
-    );
-
-    addObstacle(
-        350, 220, 115, 70,
-        "bunker"
-    );
-
-    addObstacle(
-        690, 360, 125, 75,
-        "bunker"
-    );
-
-    addObstacle(
-        120, 315, 170, 22,
-        "wire"
-    );
-
-    addObstacle(
-        820, 300, 180, 22,
-        "wire"
-    );
-
-    addObstacle(
-        430, 400, 70, 50,
-        "crater"
-    );
-
-    addObstacle(
-        570, 230, 65, 45,
-        "crater"
-    );
-}
-
-
-/* =====================================================
-   SNOW MAP
-===================================================== */
-
-function createSnowMap() {
-
-    addObstacle(
-        260, 95, 120, 70,
-        "snowCabin"
-    );
-
-    addObstacle(
-        760, 85, 135, 75,
-        "snowCabin"
-    );
-
-    addObstacle(
-        430, 515, 125, 70,
-        "snowCabin"
-    );
-
-    addObstacle(
-        865, 500, 115, 70,
-        "snowCabin"
-    );
-
-    addObstacle(
-        500, 250, 90, 60,
-        "rock"
-    );
-
-    addObstacle(
-        700, 330, 105, 55,
-        "rock"
-    );
-
-    addObstacle(
-        240, 390, 90, 50,
-        "rock"
-    );
-}
-
-
-/* =====================================================
-   OBSTACLE COLLISION
-===================================================== */
-
-function isSolidObstacle(
-    obstacle
-) {
-
-    return [
-        "building",
-        "wall",
-        "bunker",
-        "wreck",
-        "snowCabin",
-        "rock"
-    ].includes(
-        obstacle.type
-    );
-}
-
-
-function tankHitsObstacle(
-    tank,
-    newX = tank.x,
-    newY = tank.y
-) {
-
-    for (
-        const obstacle of obstacles
-    ) {
-
-        if (
-            !isSolidObstacle(
-                obstacle
-            )
-        ) {
-            continue;
-        }
-
-        const closestX =
-            Math.max(
-                obstacle.x,
-                Math.min(
-                    newX,
-                    obstacle.x +
-                    obstacle.width
-                )
-            );
-
-        const closestY =
-            Math.max(
-                obstacle.y,
-                Math.min(
-                    newY,
-                    obstacle.y +
-                    obstacle.height
-                )
-            );
-
-        const dx =
-            newX -
-            closestX;
-
-        const dy =
-            newY -
-            closestY;
-
-        if (
-            dx * dx +
-            dy * dy <
-            tank.size *
-            tank.size
-        ) {
-
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-/* =====================================================
-   SAFE SPAWNS
-===================================================== */
-
-function validSpawnPoint(
-    x,
-    y,
-    size
-) {
-
-    if (
-        x < size + 10 ||
-        x >
-        canvas.width -
-        size -
-        10 ||
-        y < size + 10 ||
-        y >
-        canvas.height -
-        size -
-        10
-    ) {
-
-        return false;
-    }
-
-    const fakeTank = {
-        x,
-        y,
-        size
+    const playerSpawn = getSpawnPoint(true);
+
+    const playerData = {
+        ...selectedTank.data,
+        type: selectedTank.type
     };
 
-    if (
-        tankHitsObstacle(
-            fakeTank,
-            x,
-            y
-        )
-    ) {
-
-        return false;
-    }
-
-    if (player) {
-
-        const distance =
-            Math.hypot(
-                x - player.x,
-                y - player.y
-            );
-
-        if (
-            distance < 220
-        ) {
-
-            return false;
-        }
-    }
-
-    for (
-        const enemy of enemies
-    ) {
-
-        const distance =
-            Math.hypot(
-                x - enemy.x,
-                y - enemy.y
-            );
-
-        if (
-            distance <
-            size +
-            enemy.size +
-            35
-        ) {
-
-            return false;
-        }
-    }
-
-    return true;
-}
-
-
-function findSpawnPoint(
-    preferred,
-    size
-) {
-
-    if (
-        validSpawnPoint(
-            preferred[0],
-            preferred[1],
-            size
-        )
-    ) {
-
-        return {
-            x: preferred[0],
-            y: preferred[1]
-        };
-    }
-
-    for (
-        let y = 45;
-        y < canvas.height - 45;
-        y += 45
-    ) {
-
-        for (
-            let x = 45;
-            x < canvas.width - 45;
-            x += 45
-        ) {
-
-            if (
-                validSpawnPoint(
-                    x,
-                    y,
-                    size
-                )
-            ) {
-
-                return {
-                    x,
-                    y
-                };
-            }
-        }
-    }
-
-    return {
-        x:
-            canvas.width -
-            size -
-            20,
-
-        y:
-            canvas.height / 2
-    };
-}
-
-
-/* =====================================================
-   CREATE ENEMIES
-===================================================== */
-
-function createEnemies() {
+    player = createTank(
+        playerSpawn.x,
+        playerSpawn.y,
+        selectedFaction,
+        playerData,
+        true
+    );
 
     enemies = [];
 
-    let enemyFaction;
+    const enemyFaction = getEnemyFaction();
 
-    if (
-        selectedFaction ===
-        "british"
-    ) {
-
-        enemyFaction =
-            "german";
-    }
-
-    else if (
-        selectedFaction ===
-        "german"
-    ) {
-
-        enemyFaction =
-            "soviet";
-    }
-
-    else {
-
-        enemyFaction =
-            "british";
-    }
-
-    const types = [
+    const enemyTypes = [
         "light",
         "medium",
-        "heavy"
+        "heavy",
+        "medium",
+        "light"
     ];
 
-    let preferred;
+    enemyTypes.forEach(function(type) {
 
-    if (
-        selectedMap === "town"
-    ) {
+        const data = {
+            ...tankData[enemyFaction][type],
+            type: type
+        };
 
-        preferred = [
-            [560, 90],
-            [560, 350],
-            [560, 620]
-        ];
-    }
+        const spawn = getSpawnPoint(false);
 
-    else if (
-        selectedMap === "snow"
-    ) {
-
-        preferred = [
-            [1000, 120],
-            [930, 350],
-            [1000, 620]
-        ];
-    }
-
-    else {
-
-        preferred = [
-            [930, 130],
-            [870, 350],
-            [950, 570]
-        ];
-    }
-
-    for (
-        let i = 0;
-        i < 3;
-        i++
-    ) {
-
-        const data =
-            tanks[enemyFaction]
-            [types[i]];
-
-        const spawn =
-            findSpawnPoint(
-                preferred[i],
-                data.size
-            );
-
-        enemies.push({
-
-            x: spawn.x,
-            y: spawn.y,
-
-            angle: Math.PI,
-            turretAngle: Math.PI,
-
-            health: data.health,
-            maxHealth: data.health,
-
-            speed:
-                data.speed * 0.55,
-
-            damage:
-                data.damage,
-
-            reload:
-                data.reload + 500,
-
-            size:
-                data.size,
-
-            armor:
-                data.armor,
-
-            name:
-                data.name,
-
-            model:
-                data.model,
-
-            faction:
+        enemies.push(
+            createTank(
+                spawn.x,
+                spawn.y,
                 enemyFaction,
+                data,
+                false
+            )
+        );
 
-            className:
-                data.className,
+    });
 
-            lastShot: 0,
+    gameRunning = true;
 
-            trackTimer: 0,
+    document.getElementById("battleMessage").textContent = "";
 
-            fireSmoke: 0,
-            burning: false
-        });
-    }
+    gameLoop();
+
 }
 
 
-/* =====================================================
-   KEYBOARD
-===================================================== */
-
-window.addEventListener(
-    "keydown",
-    function(event) {
-
-        keys[
-            event.key.toLowerCase()
-        ] = true;
-
-        if (
-            event.code === "Space"
-        ) {
-
-            event.preventDefault();
-
-            shoot();
-        }
-    }
-);
-
-
-window.addEventListener(
-    "keyup",
-    function(event) {
-
-        keys[
-            event.key.toLowerCase()
-        ] = false;
-    }
-);
-
-
-/* =====================================================
-   MOUSE
-===================================================== */
-
-canvas.addEventListener(
-    "mousemove",
-    function(event) {
-
-        const rect =
-            canvas.getBoundingClientRect();
-
-        mouse.x =
-            (
-                event.clientX -
-                rect.left
-            ) *
-            canvas.width /
-            rect.width;
-
-        mouse.y =
-            (
-                event.clientY -
-                rect.top
-            ) *
-            canvas.height /
-            rect.height;
-    }
-);
-
-
-canvas.addEventListener(
-    "mousedown",
-    function() {
-
-        shoot();
-    }
-);
-
-
-/* =====================================================
-   PLAYER MOVEMENT
-===================================================== */
+/* =========================================================
+   MOVEMENT
+   ========================================================= */
 
 function movePlayer() {
+
+    if (!player || player.destroyed) {
+        return;
+    }
 
     let dx = 0;
     let dy = 0;
 
-    if (keys.w) dy--;
-    if (keys.s) dy++;
-    if (keys.a) dx--;
-    if (keys.d) dx++;
-
-    if (
-        dx === 0 &&
-        dy === 0
-    ) {
-
-        return;
+    if (keys["w"]) {
+        dy -= 1;
     }
 
-    const length =
-        Math.hypot(
-            dx,
-            dy
-        );
-
-    dx /= length;
-    dy /= length;
-
-    player.angle =
-        Math.atan2(
-            dy,
-            dx
-        );
-
-    const moveX =
-        dx * player.speed;
-
-    const moveY =
-        dy * player.speed;
-
-    if (
-        !tankHitsObstacle(
-            player,
-            player.x + moveX,
-            player.y
-        )
-    ) {
-
-        player.x += moveX;
+    if (keys["s"]) {
+        dy += 1;
     }
 
-    if (
-        !tankHitsObstacle(
-            player,
-            player.x,
-            player.y + moveY
-        )
-    ) {
-
-        player.y += moveY;
+    if (keys["a"]) {
+        dx -= 1;
     }
 
-    player.x =
-        Math.max(
-            player.size,
-            Math.min(
-                canvas.width -
-                player.size,
-                player.x
+    if (keys["d"]) {
+        dx += 1;
+    }
+
+    if (dx !== 0 || dy !== 0) {
+
+        const length = Math.hypot(dx, dy);
+
+        dx /= length;
+        dy /= length;
+
+        const nx =
+            player.x +
+            dx * player.speed;
+
+        const ny =
+            player.y +
+            dy * player.speed;
+
+        if (
+            nx > player.radius &&
+            nx < W - player.radius &&
+            ny > player.radius &&
+            ny < H - player.radius &&
+            !isSolidAt(
+                nx,
+                ny,
+                player.radius
             )
-        );
+        ) {
 
-    player.y =
-        Math.max(
-            player.size,
-            Math.min(
-                canvas.height -
-                player.size,
-                player.y
-            )
-        );
+            player.x = nx;
+            player.y = ny;
 
-    addTrackMarks(
-        player
-    );
+            player.hullAngle =
+                Math.atan2(dy, dx);
+
+            player.trackTimer++;
+
+            if (player.trackTimer > 5) {
+
+                createTrackMark(
+                    player.x,
+                    player.y,
+                    player.hullAngle
+                );
+
+                player.trackTimer = 0;
+
+            }
+
+        }
+
+    }
+
 }
 
-
-/* =====================================================
-   PLAYER AIM
-===================================================== */
 
 function aimPlayer() {
 
+    if (!player) {
+        return;
+    }
+
     player.turretAngle =
         Math.atan2(
-            mouse.y -
-            player.y,
-
-            mouse.x -
-            player.x
+            mouseY - player.y,
+            mouseX - player.x
         );
+
 }
 
 
-/* =====================================================
-   SHOOT
-===================================================== */
+/* =========================================================
+   AI
+   ========================================================= */
 
-function shoot() {
+function updateEnemies() {
 
-    if (
-        !gameRunning ||
-        !player
-    ) {
+    enemies.forEach(function(enemy) {
 
-        return;
-    }
+        if (enemy.destroyed) {
+            return;
+        }
 
-    const now =
-        Date.now();
+        enemy.reloadTimer--;
 
-    if (
-        now -
-        lastShot <
-        player.reload
-    ) {
+        enemy.aiTimer--;
 
-        return;
-    }
+        const dx =
+            player.x - enemy.x;
 
-    lastShot = now;
+        const dy =
+            player.y - enemy.y;
 
-    createShell(
-        player,
-        false
-    );
+        const dist =
+            Math.hypot(dx, dy);
 
-    createMuzzleFlash(
-        player
-    );
+        const targetAngle =
+            Math.atan2(dy, dx);
 
-    player.fireSmoke = 12;
+        enemy.turretAngle =
+            targetAngle;
+
+        if (enemy.aiTimer <= 0) {
+
+            enemy.aiTimer = random(30, 80);
+
+            if (dist > 260) {
+
+                const nx =
+                    enemy.x +
+                    Math.cos(targetAngle) *
+                    enemy.speed;
+
+                const ny =
+                    enemy.y +
+                    Math.sin(targetAngle) *
+                    enemy.speed;
+
+                if (
+                    nx > enemy.radius &&
+                    nx < W - enemy.radius &&
+                    ny > enemy.radius &&
+                    ny < H - enemy.radius &&
+                    !isSolidAt(
+                        nx,
+                        ny,
+                        enemy.radius
+                    )
+                ) {
+
+                    enemy.x = nx;
+                    enemy.y = ny;
+
+                    enemy.hullAngle =
+                        targetAngle;
+
+                    enemy.trackTimer++;
+
+                    if (enemy.trackTimer > 6) {
+
+                        createTrackMark(
+                            enemy.x,
+                            enemy.y,
+                            enemy.hullAngle
+                        );
+
+                        enemy.trackTimer = 0;
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        if (
+            dist < 650 &&
+            enemy.reloadTimer <= 0
+        ) {
+
+            shoot(enemy);
+
+        }
+
+    });
+
 }
 
 
-/* =====================================================
-   CREATE SHELL
-===================================================== */
+/* =========================================================
+   SHOOTING
+   ========================================================= */
 
-function createShell(
-    tank,
-    enemyShell
-) {
+function shoot(tank) {
+
+    if (
+        !tank ||
+        tank.destroyed ||
+        tank.reloadTimer > 0
+    ) {
+        return;
+    }
 
     const angle =
-        tank.turretAngle;
+        tank.isPlayer ?
+        tank.turretAngle :
+        Math.atan2(
+            player.y - tank.y,
+            player.x - tank.x
+        );
 
-    const barrelLength =
-        tank.size * 1.7;
+    tank.turretAngle = angle;
 
-    const shellX =
+    tank.reloadTimer = tank.reload;
+
+    const muzzleDistance = 34;
+
+    const sx =
         tank.x +
         Math.cos(angle) *
-        barrelLength;
+        muzzleDistance;
 
-    const shellY =
+    const sy =
         tank.y +
         Math.sin(angle) *
-        barrelLength;
+        muzzleDistance;
 
     shells.push({
 
-        x: shellX,
-        y: shellY,
-
-        oldX: shellX,
-        oldY: shellY,
+        x: sx,
+        y: sy,
 
         vx:
-            Math.cos(angle) * 10,
+            Math.cos(angle) * 8,
 
         vy:
-            Math.sin(angle) * 10,
+            Math.sin(angle) * 8,
 
-        damage:
-            tank.damage,
+        damage: tank.damage,
 
-        enemy:
-            enemyShell,
+        owner: tank,
 
-        life: 120
+        radius: 4,
+
+        trailTimer: 0
+
     });
+
+    createMuzzleFlash(
+        sx,
+        sy,
+        angle
+    );
+
+    tank.fireSmoke = 12;
+
+    createSmoke(
+        sx,
+        sy,
+        4,
+        1.5
+    );
+
 }
 
 
-/* =====================================================
-   MUZZLE FLASH
-===================================================== */
+/* =========================================================
+   SHELLS
+   ========================================================= */
 
-function createMuzzleFlash(
-    tank
+function updateShells() {
+
+    for (
+        let i = shells.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const shell = shells[i];
+
+        shell.x += shell.vx;
+        shell.y += shell.vy;
+
+        shell.trailTimer++;
+
+        if (shell.trailTimer % 2 === 0) {
+
+            createSmoke(
+                shell.x,
+                shell.y,
+                1,
+                0.6
+            );
+
+        }
+
+        if (
+            shell.x < 0 ||
+            shell.x > W ||
+            shell.y < 0 ||
+            shell.y > H
+        ) {
+
+            createImpact(
+                shell.x,
+                shell.y,
+                false
+            );
+
+            shells.splice(i, 1);
+
+            continue;
+
+        }
+
+
+        let blocked = false;
+
+
+        for (const b of buildings) {
+
+            if (
+                circleRectCollision(
+                    shell.x,
+                    shell.y,
+                    shell.radius,
+                    b
+                )
+            ) {
+
+                createImpact(
+                    shell.x,
+                    shell.y,
+                    true
+                );
+
+                shells.splice(i, 1);
+
+                blocked = true;
+
+                break;
+
+            }
+
+        }
+
+        if (blocked) {
+            continue;
+        }
+
+
+        for (const c of cabins) {
+
+            if (
+                circleRectCollision(
+                    shell.x,
+                    shell.y,
+                    shell.radius,
+                    c
+                )
+            ) {
+
+                createImpact(
+                    shell.x,
+                    shell.y,
+                    true
+                );
+
+                shells.splice(i, 1);
+
+                blocked = true;
+
+                break;
+
+            }
+
+        }
+
+        if (blocked) {
+            continue;
+        }
+
+
+        for (const r of rocks) {
+
+            if (
+                distance(
+                    shell.x,
+                    shell.y,
+                    r.x,
+                    r.y
+                ) <
+                shell.radius + r.r
+            ) {
+
+                createImpact(
+                    shell.x,
+                    shell.y,
+                    true
+                );
+
+                shells.splice(i, 1);
+
+                blocked = true;
+
+                break;
+
+            }
+
+        }
+
+        if (blocked) {
+            continue;
+        }
+
+
+        const targets =
+            shell.owner.isPlayer ?
+            enemies :
+            [player];
+
+
+        for (const target of targets) {
+
+            if (
+                target.destroyed
+            ) {
+                continue;
+            }
+
+            if (
+                distance(
+                    shell.x,
+                    shell.y,
+                    target.x,
+                    target.y
+                ) <
+                shell.radius +
+                target.radius
+            ) {
+
+                const damage =
+                    calculateDamage(
+                        shell,
+                        target
+                    );
+
+                target.hp -= damage;
+
+                target.hitFlash = 8;
+
+                target.fireSmoke =
+                    Math.min(
+                        25,
+                        target.fireSmoke + 6
+                    );
+
+                createImpact(
+                    shell.x,
+                    shell.y,
+                    false
+                );
+
+                screenShake =
+                    Math.max(
+                        screenShake,
+                        5
+                    );
+
+                shells.splice(i, 1);
+
+                if (target.hp <= 0) {
+
+                    destroyTank(target);
+
+                }
+
+                break;
+
+            }
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   DAMAGE
+   ========================================================= */
+
+function calculateDamage(shell, target) {
+
+    let damage =
+        shell.damage *
+        target.armour;
+
+    // Every shell that hits a tank is a normal hit.
+    // No glancing, edge, or direct-hit bonus/penalty.
+    createHitText(
+        shell.x,
+        shell.y,
+        "HIT"
+    );
+
+    return Math.max(
+        3,
+        Math.round(damage)
+    );
+
+}
+
+
+/* =========================================================
+   DESTROY TANK
+   ========================================================= */
+
+function destroyTank(tank) {
+
+    if (tank.destroyed) {
+        return;
+    }
+
+    tank.destroyed = true;
+
+    tank.hp = 0;
+
+    wrecks.push({
+
+        x: tank.x,
+        y: tank.y,
+
+        angle: tank.hullAngle,
+
+        faction: tank.faction,
+
+        type: tank.type
+
+    });
+
+    createExplosion(
+        tank.x,
+        tank.y,
+        1.5
+    );
+
+    createExplosion(
+        tank.x + random(-18, 18),
+        tank.y + random(-18, 18),
+        0.8
+    );
+
+    for (let i = 0; i < 25; i++) {
+
+        createSmoke(
+            tank.x + random(-15, 15),
+            tank.y + random(-15, 15),
+            random(1, 3),
+            random(1, 2)
+        );
+
+    }
+
+    for (let i = 0; i < 20; i++) {
+
+        createFireParticle(
+            tank.x,
+            tank.y
+        );
+
+    }
+
+    screenShake = 14;
+
+}
+
+
+/* =========================================================
+   IMPACTS
+   ========================================================= */
+
+function createImpact(x, y, buildingHit) {
+
+    impacts.push({
+
+        x: x,
+        y: y,
+
+        life: 16,
+
+        maxLife: 16,
+
+        buildingHit: buildingHit
+
+    });
+
+    for (let i = 0; i < 7; i++) {
+
+        createFireParticle(
+            x,
+            y
+        );
+
+    }
+
+}
+
+
+function updateImpacts() {
+
+    for (
+        let i = impacts.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        impacts[i].life--;
+
+        if (impacts[i].life <= 0) {
+
+            impacts.splice(i, 1);
+
+        }
+
+    }
+
+}
+
+
+function drawImpacts() {
+
+    impacts.forEach(function(impact) {
+
+        const progress =
+            1 -
+            impact.life /
+            impact.maxLife;
+
+        const radius =
+            5 +
+            progress * 15;
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            impact.life /
+            impact.maxLife;
+
+        ctx.fillStyle =
+            impact.buildingHit ?
+            "#ddd" :
+            "#ffcc55";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            impact.x,
+            impact.y,
+            radius,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+
+    });
+
+}
+
+
+/* =========================================================
+   EXPLOSIONS
+   ========================================================= */
+
+function createExplosion(x, y, strength) {
+
+    explosions.push({
+
+        x: x,
+        y: y,
+
+        life: 45,
+
+        maxLife: 45,
+
+        strength: strength
+
+    });
+
+    for (let i = 0; i < 20 * strength; i++) {
+
+        createFireParticle(
+            x,
+            y
+        );
+
+    }
+
+}
+
+
+function updateExplosions() {
+
+    for (
+        let i = explosions.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const e = explosions[i];
+
+        e.life--;
+
+        if (e.life <= 0) {
+
+            explosions.splice(i, 1);
+
+        }
+
+    }
+
+}
+
+
+function drawExplosions() {
+
+    explosions.forEach(function(e) {
+
+        const progress =
+            1 -
+            e.life /
+            e.maxLife;
+
+        const radius =
+            progress * 70 *
+            e.strength;
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            e.life /
+            e.maxLife;
+
+        const gradient =
+            ctx.createRadialGradient(
+                e.x,
+                e.y,
+                0,
+                e.x,
+                e.y,
+                radius
+            );
+
+        gradient.addColorStop(
+            0,
+            "#fff7aa"
+        );
+
+        gradient.addColorStop(
+            0.25,
+            "#ffcc33"
+        );
+
+        gradient.addColorStop(
+            0.6,
+            "#ff6622"
+        );
+
+        gradient.addColorStop(
+            1,
+            "rgba(80,20,0,0)"
+        );
+
+        ctx.fillStyle = gradient;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            e.x,
+            e.y,
+            radius,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+
+    });
+
+}
+
+
+/* =========================================================
+   SMOKE
+   ========================================================= */
+
+function createSmoke(
+    x,
+    y,
+    amount,
+    speed
 ) {
 
-    const angle =
-        tank.turretAngle;
+    for (let i = 0; i < amount; i++) {
+
+        smokeParticles.push({
+
+            x: x + random(-4, 4),
+            y: y + random(-4, 4),
+
+            vx: random(-0.5, 0.5) * speed,
+            vy: random(-1, -0.2) * speed,
+
+            size: random(3, 8),
+
+            life: random(25, 55),
+
+            maxLife: 55
+
+        });
+
+    }
+
+}
+
+
+function createTankSmoke(tank) {
+
+    if (
+        !tank ||
+        tank.destroyed ||
+        tank.fireSmoke <= 0
+    ) {
+        return;
+    }
+
+    if (Math.random() < 0.25) {
+
+        createSmoke(
+            tank.x +
+            random(-10, 10),
+
+            tank.y +
+            random(-10, 10),
+
+            1,
+
+            1
+        );
+
+    }
+
+    // Smoke is temporary. Fade the tank's smoke timer so
+    // damaged tanks do not stay permanently smoking.
+    tank.fireSmoke = Math.max(
+        0,
+        tank.fireSmoke - 0.25
+    );
+
+}
+
+
+function updateSmoke() {
+
+    for (
+        let i = smokeParticles.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const p =
+            smokeParticles[i];
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        p.size += 0.08;
+
+        p.life--;
+
+        if (p.life <= 0) {
+
+            smokeParticles.splice(i, 1);
+
+        }
+
+    }
+
+}
+
+
+function drawSmoke() {
+
+    smokeParticles.forEach(function(p) {
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            p.life /
+            p.maxLife *
+            0.45;
+
+        ctx.fillStyle = "#555";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            p.x,
+            p.y,
+            p.size,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+
+    });
+
+}
+
+
+/* =========================================================
+   FIRE PARTICLES
+   ========================================================= */
+
+function createFireParticle(x, y) {
+
+    fireParticles.push({
+
+        x: x,
+        y: y,
+
+        vx: random(-2, 2),
+        vy: random(-2.5, 0),
+
+        life: random(15, 35),
+
+        maxLife: 35,
+
+        size: random(2, 5)
+
+    });
+
+}
+
+
+function updateFireParticles() {
+
+    for (
+        let i = fireParticles.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const p =
+            fireParticles[i];
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        p.vy += 0.06;
+
+        p.life--;
+
+        if (p.life <= 0) {
+
+            fireParticles.splice(i, 1);
+
+        }
+
+    }
+
+}
+
+
+function drawFireParticles() {
+
+    fireParticles.forEach(function(p) {
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            p.life /
+            p.maxLife;
+
+        ctx.fillStyle =
+            p.life % 2 === 0 ?
+            "#ffcc33" :
+            "#ff5a20";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            p.x,
+            p.y,
+            p.size,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+
+    });
+
+}
+
+
+/* =========================================================
+   MUZZLE FLASH
+   ========================================================= */
+
+function createMuzzleFlash(
+    x,
+    y,
+    angle
+) {
 
     muzzleFlashes.push({
 
-        x:
-            tank.x +
-            Math.cos(angle) *
-            tank.size *
-            1.75,
+        x: x,
+        y: y,
 
-        y:
-            tank.y +
-            Math.sin(angle) *
-            tank.size *
-            1.75,
+        angle: angle,
 
-        angle,
+        life: 5,
 
-        life: 7,
-        maxLife: 7
+        maxLife: 5
+
     });
+
 }
 
 
 function updateMuzzleFlashes() {
 
     for (
-        let i =
-            muzzleFlashes.length - 1;
-
+        let i = muzzleFlashes.length - 1;
         i >= 0;
-
         i--
     ) {
 
@@ -1609,258 +2021,150 @@ function updateMuzzleFlashes() {
             muzzleFlashes[i].life <= 0
         ) {
 
-            muzzleFlashes.splice(
-                i,
-                1
-            );
+            muzzleFlashes.splice(i, 1);
+
         }
+
     }
+
 }
 
 
 function drawMuzzleFlashes() {
 
-    muzzleFlashes.forEach(
-        function(flash) {
+    muzzleFlashes.forEach(function(f) {
 
-            const size =
-                10 +
-                flash.life;
+        ctx.save();
 
-            ctx.save();
+        ctx.translate(
+            f.x,
+            f.y
+        );
 
-            ctx.translate(
-                flash.x,
-                flash.y
-            );
+        ctx.rotate(
+            f.angle
+        );
 
-            ctx.rotate(
-                flash.angle
-            );
+        ctx.globalAlpha =
+            f.life /
+            f.maxLife;
 
-            ctx.fillStyle =
-                "#fff0a0";
+        ctx.fillStyle = "#fff4a0";
 
-            ctx.beginPath();
+        ctx.beginPath();
 
-            ctx.moveTo(
-                0,
-                0
-            );
+        ctx.moveTo(0, 0);
 
-            ctx.lineTo(
-                size * 2.2,
-                -size * 0.65
-            );
+        ctx.lineTo(30, -10);
 
-            ctx.lineTo(
-                size * 1.4,
-                0
-            );
+        ctx.lineTo(20, 0);
 
-            ctx.lineTo(
-                size * 2.2,
-                size * 0.65
-            );
+        ctx.lineTo(30, 10);
 
-            ctx.closePath();
+        ctx.closePath();
 
-            ctx.fill();
+        ctx.fill();
 
-            ctx.fillStyle =
-                "#e38a2d";
+        ctx.restore();
 
-            ctx.beginPath();
+    });
 
-            ctx.arc(
-                0,
-                0,
-                size * 0.65,
-                0,
-                Math.PI * 2
-            );
-
-            ctx.fill();
-
-            ctx.restore();
-        }
-    );
 }
 
 
-/* =====================================================
-   SHELL COLLISION
-===================================================== */
+/* =========================================================
+   TRACKS
+   ========================================================= */
 
-function lineHitsRectangle(
-    x1,
-    y1,
-    x2,
-    y2,
-    rect
+function createTrackMark(
+    x,
+    y,
+    angle
 ) {
 
-    const steps = 14;
+    trackMarks.push({
+
+        x: x,
+        y: y,
+
+        angle: angle,
+
+        life: 500,
+
+        maxLife: 500
+
+    });
+
+}
+
+
+function updateTrackMarks() {
 
     for (
-        let i = 0;
-        i <= steps;
-        i++
+        let i = trackMarks.length - 1;
+        i >= 0;
+        i--
     ) {
 
-        const t =
-            i / steps;
+        trackMarks[i].life--;
 
-        const x =
-            x1 +
-            (x2 - x1) * t;
+        if (trackMarks[i].life <= 0) {
 
-        const y =
-            y1 +
-            (y2 - y1) * t;
+            trackMarks.splice(i, 1);
 
-        if (
-            x >= rect.x &&
-            x <=
-                rect.x +
-                rect.width &&
-            y >= rect.y &&
-            y <=
-                rect.y +
-                rect.height
-        ) {
-
-            return true;
         }
+
     }
 
-    return false;
 }
 
 
-function shellHitsObstacle(
-    x1,
-    y1,
-    x2,
-    y2
-) {
+function drawTrackMarks() {
 
-    for (
-        const obstacle of obstacles
-    ) {
+    trackMarks.forEach(function(t) {
 
-        if (
-            !isSolidObstacle(
-                obstacle
-            )
-        ) {
+        ctx.save();
 
-            continue;
-        }
+        ctx.translate(
+            t.x,
+            t.y
+        );
 
-        if (
-            lineHitsRectangle(
-                x1,
-                y1,
-                x2,
-                y2,
-                obstacle
-            )
-        ) {
+        ctx.rotate(
+            t.angle
+        );
 
-            return obstacle;
-        }
-    }
+        ctx.globalAlpha =
+            t.life /
+            t.maxLife *
+            0.35;
 
-    return null;
+        ctx.fillStyle = "#222";
+
+        ctx.fillRect(
+            -17,
+            -17,
+            7,
+            34
+        );
+
+        ctx.fillRect(
+            10,
+            -17,
+            7,
+            34
+        );
+
+        ctx.restore();
+
+    });
+
 }
 
 
-/* =====================================================
-   DAMAGE CALCULATION
-===================================================== */
-
-function calculateDamage(
-    shell,
-    target
-) {
-
-    /*
-       Basic armour reduction.
-    */
-
-    let damage =
-        shell.damage *
-        target.armor;
-
-
-    /*
-       HIT LOCATION
-
-       Centre hits do normal damage.
-       Edge hits do reduced damage.
-       Rear/side effects can be added
-       later with the AI upgrade.
-    */
-
-    const distance =
-        Math.hypot(
-            shell.x - target.x,
-            shell.y - target.y
-        );
-
-    const edgeRatio =
-        distance /
-        target.size;
-
-    if (
-        edgeRatio > 0.75
-    ) {
-
-        damage *= 0.72;
-
-        createHitText(
-            shell.x,
-            shell.y,
-            "GLANCING HIT"
-        );
-    }
-
-    else if (
-        edgeRatio < 0.35
-    ) {
-
-        damage *= 1.20;
-
-        createHitText(
-            shell.x,
-            shell.y,
-            "DIRECT HIT!"
-        );
-    }
-
-    else {
-
-        createHitText(
-            shell.x,
-            shell.y,
-            "HIT"
-        );
-    }
-
-    return Math.max(
-        3,
-        Math.round(damage)
-    );
-}
-
-
-/* =====================================================
+/* =========================================================
    HIT TEXT
-===================================================== */
-
-let hitTexts = [];
-
+   ========================================================= */
 
 function createHitText(
     x,
@@ -1870,2683 +2174,469 @@ function createHitText(
 
     hitTexts.push({
 
-        x,
-        y,
+        x: x,
+        y: y,
 
-        text,
+        text: text,
 
-        life: 32,
-        maxLife: 32
+        life: 35,
+
+        maxLife: 35
+
     });
+
 }
 
 
 function updateHitTexts() {
 
     for (
-        let i =
-            hitTexts.length - 1;
-
+        let i = hitTexts.length - 1;
         i >= 0;
-
         i--
     ) {
 
-        const hit =
-            hitTexts[i];
+        hitTexts[i].y -= 0.5;
 
-        hit.life--;
-
-        hit.y -= 0.5;
+        hitTexts[i].life--;
 
         if (
-            hit.life <= 0
+            hitTexts[i].life <= 0
         ) {
 
-            hitTexts.splice(
-                i,
-                1
-            );
+            hitTexts.splice(i, 1);
+
         }
+
     }
+
 }
 
 
 function drawHitTexts() {
 
-    hitTexts.forEach(
-        function(hit) {
+    hitTexts.forEach(function(t) {
 
-            ctx.globalAlpha =
-                hit.life /
-                hit.maxLife;
+        ctx.save();
 
-            ctx.fillStyle =
-                "#fff0b0";
+        ctx.globalAlpha =
+            t.life /
+            t.maxLife;
 
-            ctx.font =
-                "bold 14px Arial";
+        ctx.fillStyle = "#fff";
 
-            ctx.textAlign =
-                "center";
+        ctx.font =
+            "bold 16px Arial";
 
-            ctx.fillText(
-                hit.text,
-                hit.x,
-                hit.y
-            );
+        ctx.textAlign = "center";
 
-            ctx.globalAlpha = 1;
-        }
-    );
-}
-
-
-/* =====================================================
-   UPDATE SHELLS
-===================================================== */
-
-function updateShells() {
-
-    for (
-        let i =
-            shells.length - 1;
-
-        i >= 0;
-
-        i--
-    ) {
-
-        const shell =
-            shells[i];
-
-        shell.oldX =
-            shell.x;
-
-        shell.oldY =
-            shell.y;
-
-        shell.x +=
-            shell.vx;
-
-        shell.y +=
-            shell.vy;
-
-        shell.life--;
-
-        /*
-           BUILDING HIT
-        */
-
-        if (
-            shellHitsObstacle(
-                shell.oldX,
-                shell.oldY,
-                shell.x,
-                shell.y
-            )
-        ) {
-
-            createExplosion(
-                shell.x,
-                shell.y,
-                0.65
-            );
-
-            shells.splice(
-                i,
-                1
-            );
-
-            continue;
-        }
-
-
-        /*
-           OUT OF BOUNDS
-        */
-
-        if (
-            shell.x < 0 ||
-            shell.x >
-                canvas.width ||
-            shell.y < 0 ||
-            shell.y >
-                canvas.height ||
-            shell.life <= 0
-        ) {
-
-            shells.splice(
-                i,
-                1
-            );
-
-            continue;
-        }
-
-
-        /*
-           PLAYER SHELL
-        */
-
-        if (
-            !shell.enemy
-        ) {
-
-            let hit =
-                false;
-
-            for (
-                let j =
-                    enemies.length - 1;
-
-                j >= 0;
-
-                j--
-            ) {
-
-                const enemy =
-                    enemies[j];
-
-                const distance =
-                    Math.hypot(
-                        shell.x -
-                            enemy.x,
-                        shell.y -
-                            enemy.y
-                    );
-
-                if (
-                    distance <
-                    enemy.size
-                ) {
-
-                    const damage =
-                        calculateDamage(
-                            shell,
-                            enemy
-                        );
-
-                    enemy.health -=
-                        damage;
-
-                    createImpact(
-                        shell.x,
-                        shell.y
-                    );
-
-                    createHitSparks(
-                        shell.x,
-                        shell.y
-                    );
-
-                    enemy.fireSmoke =
-                        Math.min(
-                            25,
-                            enemy.fireSmoke +
-                            6
-                        );
-
-                    shells.splice(
-                        i,
-                        1
-                    );
-
-                    hit = true;
-
-
-                    /*
-                       DESTROYED
-                    */
-
-                    if (
-                        enemy.health <= 0
-                    ) {
-
-                        destroyTank(
-                            enemy
-                        );
-
-                        enemies.splice(
-                            j,
-                            1
-                        );
-                    }
-
-                    break;
-                }
-            }
-
-            if (hit) {
-                continue;
-            }
-        }
-
-
-        /*
-           ENEMY SHELL
-        */
-
-        else {
-
-            const distance =
-                Math.hypot(
-                    shell.x -
-                        player.x,
-                    shell.y -
-                        player.y
-                );
-
-            if (
-                distance <
-                player.size
-            ) {
-
-                const damage =
-                    calculateDamage(
-                        shell,
-                        player
-                    );
-
-                player.health -=
-                    damage;
-
-                player.fireSmoke =
-                    Math.min(
-                        25,
-                        player.fireSmoke +
-                        6
-                    );
-
-                createImpact(
-                    shell.x,
-                    shell.y
-                );
-
-                createHitSparks(
-                    shell.x,
-                    shell.y
-                );
-
-                shells.splice(
-                    i,
-                    1
-                );
-
-                if (
-                    player.health <= 0
-                ) {
-
-                    destroyTank(
-                        player
-                    );
-                }
-            }
-        }
-    }
-}
-
-
-/* =====================================================
-   IMPACTS
-===================================================== */
-
-function createImpact(
-    x,
-    y
-) {
-
-    impacts.push({
-
-        x,
-        y,
-
-        life: 18,
-
-        maxLife: 18,
-
-        radius: 10
-    });
-}
-
-
-function updateImpacts() {
-
-    for (
-        let i =
-            impacts.length - 1;
-
-        i >= 0;
-
-        i--
-    ) {
-
-        impacts[i].life--;
-
-        if (
-            impacts[i].life <= 0
-        ) {
-
-            impacts.splice(
-                i,
-                1
-            );
-        }
-    }
-}
-
-
-function drawImpacts() {
-
-    impacts.forEach(
-        function(impact) {
-
-            const progress =
-                1 -
-                impact.life /
-                impact.maxLife;
-
-            const radius =
-                8 +
-                progress * 24;
-
-            ctx.globalAlpha =
-                1 - progress;
-
-            ctx.fillStyle =
-                "#e8c66d";
-
-            ctx.beginPath();
-
-            ctx.arc(
-                impact.x,
-                impact.y,
-                radius,
-                0,
-                Math.PI * 2
-            );
-
-            ctx.fill();
-
-            ctx.fillStyle =
-                "#342b1b";
-
-            ctx.beginPath();
-
-            ctx.arc(
-                impact.x,
-                impact.y,
-                radius * 0.35,
-                0,
-                Math.PI * 2
-            );
-
-            ctx.fill();
-
-            ctx.globalAlpha = 1;
-        }
-    );
-}
-
-
-/* =====================================================
-   HIT SPARKS
-===================================================== */
-
-function createHitSparks(
-    x,
-    y
-) {
-
-    for (
-        let i = 0;
-        i < 8;
-        i++
-    ) {
-
-        const angle =
-            Math.random() *
-            Math.PI *
-            2;
-
-        const speed =
-            1 +
-            Math.random() * 3;
-
-        fireParticles.push({
-
-            x,
-            y,
-
-            vx:
-                Math.cos(angle) *
-                speed,
-
-            vy:
-                Math.sin(angle) *
-                speed,
-
-            life:
-                12 +
-                Math.random() * 10,
-
-            size:
-                2 +
-                Math.random() * 2,
-
-            type:
-                "spark"
-        });
-    }
-}
-
-
-/* =====================================================
-   EXPLOSIONS
-===================================================== */
-
-function createExplosion(
-    x,
-    y,
-    strength = 1
-) {
-
-    explosions.push({
-
-        x,
-        y,
-
-        life:
-            34 * strength,
-
-        maxLife:
-            34 * strength,
-
-        strength
-    });
-
-    screenShake =
-        Math.max(
-            screenShake,
-            9 * strength
+        ctx.fillText(
+            t.text,
+            t.x,
+            t.y
         );
 
-    for (
-        let i = 0;
-        i < 18 * strength;
-        i++
-    ) {
+        ctx.restore();
 
-        const angle =
-            Math.random() *
-            Math.PI *
-            2;
-
-        const speed =
-            1 +
-            Math.random() *
-            4 *
-            strength;
-
-        fireParticles.push({
-
-            x,
-            y,
-
-            vx:
-                Math.cos(angle) *
-                speed,
-
-            vy:
-                Math.sin(angle) *
-                speed,
-
-            life:
-                18 +
-                Math.random() * 25,
-
-            size:
-                3 +
-                Math.random() * 5,
-
-            type:
-                "fire"
-        });
-    }
-
-    for (
-        let i = 0;
-        i < 10 * strength;
-        i++
-    ) {
-
-        const angle =
-            Math.random() *
-            Math.PI *
-            2;
-
-        const speed =
-            0.5 +
-            Math.random() * 2;
-
-        smokeParticles.push({
-
-            x,
-            y,
-
-            vx:
-                Math.cos(angle) *
-                speed,
-
-            vy:
-                Math.sin(angle) *
-                speed -
-
-                0.5,
-
-            life:
-                35 +
-                Math.random() * 35,
-
-            size:
-                8 +
-                Math.random() * 12
-        });
-    }
-}
-
-
-function updateExplosions() {
-
-    for (
-        let i =
-            explosions.length - 1;
-
-        i >= 0;
-
-        i--
-    ) {
-
-        explosions[i].life--;
-
-        if (
-            explosions[i].life <= 0
-        ) {
-
-            explosions.splice(
-                i,
-                1
-            );
-        }
-    }
-}
-
-
-function drawExplosions() {
-
-    explosions.forEach(
-        function(explosion) {
-
-            const progress =
-                1 -
-                explosion.life /
-                explosion.maxLife;
-
-            const radius =
-                10 +
-                progress *
-                60 *
-                explosion.strength;
-
-            ctx.globalAlpha =
-                1 -
-                progress;
-
-            ctx.fillStyle =
-                "#e7c45e";
-
-            ctx.beginPath();
-
-            ctx.arc(
-                explosion.x,
-                explosion.y,
-                radius,
-                0,
-                Math.PI * 2
-            );
-
-            ctx.fill();
-
-            ctx.fillStyle =
-                "#d75c24";
-
-            ctx.beginPath();
-
-            ctx.arc(
-                explosion.x,
-                explosion.y,
-                radius * 0.65,
-                0,
-                Math.PI * 2
-            );
-
-            ctx.fill();
-
-            ctx.fillStyle =
-                "#29251b";
-
-            ctx.beginPath();
-
-            ctx.arc(
-                explosion.x,
-                explosion.y,
-                radius * 0.3,
-                0,
-                Math.PI * 2
-            );
-
-            ctx.fill();
-
-            ctx.globalAlpha = 1;
-        }
-    );
-}
-
-
-/* =====================================================
-   DESTROY TANK
-===================================================== */
-
-function destroyTank(
-    tank
-) {
-
-    if (
-        tank.destroyed
-    ) {
-
-        return;
-    }
-
-    tank.destroyed =
-        true;
-
-    createExplosion(
-        tank.x,
-        tank.y,
-        1.5
-    );
-
-    createExplosion(
-        tank.x +
-        (Math.random() - 0.5) *
-        30,
-
-        tank.y +
-        (Math.random() - 0.5) *
-        30,
-
-        0.8
-    );
-
-    createWreck(
-        tank
-    );
-
-    for (
-        let i = 0;
-        i < 20;
-        i++
-    ) {
-
-        smokeParticles.push({
-
-            x:
-                tank.x +
-                (Math.random() - 0.5) *
-                30,
-
-            y:
-                tank.y +
-                (Math.random() - 0.5) *
-                30,
-
-            vx:
-                (Math.random() - 0.5) *
-                1.5,
-
-            vy:
-                -Math.random() *
-                2,
-
-            life:
-                45 +
-                Math.random() *
-                60,
-
-            size:
-                10 +
-                Math.random() *
-                15
-        });
-    }
-}
-
-
-/* =====================================================
-   WRECKS
-===================================================== */
-
-function createWreck(
-    tank
-) {
-
-    wrecks.push({
-
-        x:
-            tank.x,
-
-        y:
-            tank.y,
-
-        angle:
-            tank.angle,
-
-        size:
-            tank.size,
-
-        faction:
-            tank.faction,
-
-        model:
-            tank.model,
-
-        turretAngle:
-            tank.turretAngle
     });
+
 }
 
+
+/* =========================================================
+   WRECKS
+   ========================================================= */
 
 function drawWrecks() {
 
-    wrecks.forEach(
-        function(wreck) {
+    wrecks.forEach(function(w) {
 
-            ctx.save();
+        ctx.save();
 
-            ctx.translate(
-                wreck.x,
-                wreck.y
-            );
+        ctx.translate(
+            w.x,
+            w.y
+        );
 
-            ctx.rotate(
-                wreck.angle
-            );
+        ctx.rotate(
+            w.angle
+        );
 
-            ctx.globalAlpha =
-                0.9;
+        ctx.fillStyle =
+            "#161616";
 
-            ctx.fillStyle =
-                "#171914";
+        ctx.fillRect(
+            -28,
+            -20,
+            56,
+            40
+        );
 
-            ctx.fillRect(
-                -wreck.size,
-                -wreck.size * 0.55,
-                wreck.size * 2,
-                wreck.size * 1.1
-            );
+        ctx.fillStyle =
+            "#303030";
 
-            ctx.fillStyle =
-                "#34372d";
+        ctx.fillRect(
+            -18,
+            -12,
+            36,
+            24
+        );
 
-            ctx.fillRect(
-                -wreck.size * 0.7,
-                -wreck.size * 0.4,
-                wreck.size * 1.4,
-                wreck.size * 0.8
-            );
+        ctx.fillStyle =
+            "#111";
 
-            ctx.fillStyle =
-                "#11120f";
+        ctx.fillRect(
+            -35,
+            -22,
+            8,
+            44
+        );
 
-            ctx.fillRect(
-                -wreck.size,
-                -wreck.size * 0.75,
-                wreck.size * 2,
-                7
-            );
+        ctx.fillRect(
+            27,
+            -22,
+            8,
+            44
+        );
 
-            ctx.fillRect(
-                -wreck.size,
-                wreck.size * 0.68,
-                wreck.size * 2,
-                7
-            );
+        ctx.restore();
 
-            ctx.restore();
+    });
 
-
-            /*
-               Destroyed turret
-            */
-
-            ctx.save();
-
-            ctx.translate(
-                wreck.x,
-                wreck.y
-            );
-
-            ctx.rotate(
-                wreck.turretAngle
-            );
-
-            ctx.fillStyle =
-                "#24261f";
-
-            ctx.fillRect(
-                -wreck.size * 0.4,
-                -wreck.size * 0.35,
-                wreck.size * 0.8,
-                wreck.size * 0.7
-            );
-
-            ctx.fillStyle =
-                "#151610";
-
-            ctx.fillRect(
-                0,
-                -3,
-                wreck.size * 1.1,
-                6
-            );
-
-            ctx.restore();
-        }
-    );
 }
 
 
-/* =====================================================
-   SMOKE
-===================================================== */
+/* =========================================================
+   MAP DRAWING
+   ========================================================= */
 
-function updateSmoke() {
+function drawBackground() {
 
-    for (
-        let i =
-            smokeParticles.length - 1;
+    if (selectedMap === "trench") {
 
-        i >= 0;
+        ctx.fillStyle = "#657052";
 
-        i--
-    ) {
+        ctx.fillRect(
+            0,
+            0,
+            W,
+            H
+        );
 
-        const smoke =
-            smokeParticles[i];
+        ctx.fillStyle =
+            "rgba(60,50,35,0.35)";
 
-        smoke.x +=
-            smoke.vx;
-
-        smoke.y +=
-            smoke.vy;
-
-        smoke.vy *= 0.98;
-
-        smoke.size *=
-            1.012;
-
-        smoke.life--;
-
-        if (
-            smoke.life <= 0
-        ) {
-
-            smokeParticles.splice(
-                i,
-                1
-            );
-        }
-    }
-}
-
-
-function drawSmoke() {
-
-    smokeParticles.forEach(
-        function(smoke) {
-
-            ctx.globalAlpha =
-                Math.min(
-                    0.5,
-                    smoke.life / 80
-                );
-
-            ctx.fillStyle =
-                "#292b27";
+        for (let i = 0; i < 30; i++) {
 
             ctx.beginPath();
 
             ctx.arc(
-                smoke.x,
-                smoke.y,
-                smoke.size,
+                random(0, W),
+                random(0, H),
+                random(2, 7),
                 0,
                 Math.PI * 2
             );
 
             ctx.fill();
 
-            ctx.globalAlpha = 1;
         }
-    );
-}
 
-
-/* =====================================================
-   FIRE PARTICLES
-===================================================== */
-
-function updateFireParticles() {
-
-    for (
-        let i =
-            fireParticles.length - 1;
-
-        i >= 0;
-
-        i--
-    ) {
-
-        const particle =
-            fireParticles[i];
-
-        particle.x +=
-            particle.vx;
-
-        particle.y +=
-            particle.vy;
-
-        particle.vx *=
-            0.97;
-
-        particle.vy *=
-            0.97;
-
-        particle.life--;
-
-        if (
-            particle.life <= 0
-        ) {
-
-            fireParticles.splice(
-                i,
-                1
-            );
-        }
-    }
-}
-
-
-function drawFireParticles() {
-
-    fireParticles.forEach(
-        function(particle) {
-
-            ctx.globalAlpha =
-                Math.min(
-                    1,
-                    particle.life / 15
-                );
-
-            if (
-                particle.type ===
-                "spark"
-            ) {
-
-                ctx.fillStyle =
-                    "#fff0a0";
-
-                ctx.fillRect(
-                    particle.x,
-                    particle.y,
-                    particle.size,
-                    particle.size
-                );
-            }
-
-            else {
-
-                ctx.fillStyle =
-                    particle.life % 2 === 0
-                    ? "#e87c22"
-                    : "#ffd34e";
-
-                ctx.beginPath();
-
-                ctx.arc(
-                    particle.x,
-                    particle.y,
-                    particle.size,
-                    0,
-                    Math.PI * 2
-                );
-
-                ctx.fill();
-            }
-
-            ctx.globalAlpha = 1;
-        }
-    );
-}
-
-
-/* =====================================================
-   DAMAGED TANK SMOKE
-===================================================== */
-
-function createTankSmoke(
-    tank
-) {
-
-    if (
-        tank.fireSmoke <= 0
-    ) {
-
-        return;
     }
 
-    if (
-        Math.random() > 0.25
-    ) {
 
-        return;
-    }
+    if (selectedMap === "town") {
 
-    smokeParticles.push({
+        ctx.fillStyle = "#777";
 
-        x:
-            tank.x +
-            (Math.random() - 0.5) *
-            tank.size,
-
-        y:
-            tank.y -
-            tank.size * 0.5,
-
-        vx:
-            (Math.random() - 0.5) *
-            0.5,
-
-        vy:
-            -0.5 -
-            Math.random() * 0.7,
-
-        life:
-            25 +
-            Math.random() * 25,
-
-        size:
-            5 +
-            Math.random() * 7
-    });
-}
-
-
-/* =====================================================
-   TRACK MARKS
-===================================================== */
-
-function addTrackMarks(
-    tank
-) {
-
-    tank.trackTimer++;
-
-    if (
-        tank.trackTimer < 5
-    ) {
-
-        return;
-    }
-
-    tank.trackTimer = 0;
-
-    const cos =
-        Math.cos(
-            tank.angle
+        ctx.fillRect(
+            0,
+            0,
+            W,
+            H
         );
 
-    const sin =
-        Math.sin(
-            tank.angle
+        ctx.fillStyle =
+            "rgba(50,50,50,0.25)";
+
+        for (let i = 0; i < 100; i++) {
+
+            ctx.fillRect(
+                random(0, W),
+                random(0, H),
+                random(2, 5),
+                random(2, 5)
+            );
+
+        }
+
+    }
+
+
+    if (selectedMap === "snow") {
+
+        ctx.fillStyle = "#dfe8ed";
+
+        ctx.fillRect(
+            0,
+            0,
+            W,
+            H
         );
 
-    const sideX =
-        -sin *
-        tank.size *
-        0.65;
+        ctx.fillStyle =
+            "rgba(150,170,180,0.2)";
 
-    const sideY =
-        cos *
-        tank.size *
-        0.65;
-
-    const backX =
-        -cos *
-        tank.size *
-        0.5;
-
-    const backY =
-        -sin *
-        tank.size *
-        0.5;
-
-    trackMarks.push({
-
-        x1:
-            tank.x +
-            sideX +
-            backX,
-
-        y1:
-            tank.y +
-            sideY +
-            backY,
-
-        x2:
-            tank.x -
-            sideX +
-            backX,
-
-        y2:
-            tank.y -
-            sideY +
-            backY,
-
-        life: 260
-    });
-}
-
-
-function updateTrackMarks() {
-
-    for (
-        let i =
-            trackMarks.length - 1;
-
-        i >= 0;
-
-        i--
-    ) {
-
-        trackMarks[i].life--;
-
-        if (
-            trackMarks[i].life <= 0
-        ) {
-
-            trackMarks.splice(
-                i,
-                1
-            );
-        }
-    }
-}
-
-
-function drawTrackMarks() {
-
-    ctx.strokeStyle =
-        "rgba(35,35,30,0.35)";
-
-    ctx.lineWidth = 4;
-
-    trackMarks.forEach(
-        function(mark) {
-
-            ctx.globalAlpha =
-                mark.life / 260;
+        for (let i = 0; i < 150; i++) {
 
             ctx.beginPath();
 
-            ctx.moveTo(
-                mark.x1,
-                mark.y1
+            ctx.arc(
+                random(0, W),
+                random(0, H),
+                random(1, 3),
+                0,
+                Math.PI * 2
             );
 
-            ctx.lineTo(
-                mark.x2,
-                mark.y2
-            );
+            ctx.fill();
 
-            ctx.stroke();
         }
-    );
 
-    ctx.globalAlpha = 1;
-}
-
-
-/* =====================================================
-   ENEMY AI
-   STAGE 2 WILL UPGRADE THIS
-===================================================== */
-
-function updateEnemies() {
-
-    if (!player) {
-        return;
     }
 
-    enemies.forEach(
-        function(enemy) {
-
-            const dx =
-                player.x -
-                enemy.x;
-
-            const dy =
-                player.y -
-                enemy.y;
-
-            const distance =
-                Math.hypot(
-                    dx,
-                    dy
-                );
-
-            enemy.turretAngle =
-                Math.atan2(
-                    dy,
-                    dx
-                );
-
-            /*
-               For now all tanks use
-               the simple AI.
-
-               STAGE 2 will make
-               light / medium / heavy
-               behave differently.
-            */
-
-            if (
-                distance > 260
-            ) {
-
-                const moveAngle =
-                    Math.atan2(
-                        dy,
-                        dx
-                    );
-
-                enemy.angle =
-                    moveAngle;
-
-                const moveX =
-                    Math.cos(
-                        moveAngle
-                    ) *
-                    enemy.speed;
-
-                const moveY =
-                    Math.sin(
-                        moveAngle
-                    ) *
-                    enemy.speed;
-
-                if (
-                    !tankHitsObstacle(
-                        enemy,
-                        enemy.x + moveX,
-                        enemy.y
-                    )
-                ) {
-
-                    enemy.x +=
-                        moveX;
-                }
-
-                if (
-                    !tankHitsObstacle(
-                        enemy,
-                        enemy.x,
-                        enemy.y + moveY
-                    )
-                ) {
-
-                    enemy.y +=
-                        moveY;
-                }
-
-                addTrackMarks(
-                    enemy
-                );
-            }
-
-
-            enemy.x =
-                Math.max(
-                    enemy.size,
-                    Math.min(
-                        canvas.width -
-                        enemy.size,
-                        enemy.x
-                    )
-                );
-
-            enemy.y =
-                Math.max(
-                    enemy.size,
-                    Math.min(
-                        canvas.height -
-                        enemy.size,
-                        enemy.y
-                    )
-                );
-
-
-            const now =
-                Date.now();
-
-            if (
-                distance < 700 &&
-                now -
-                enemy.lastShot >=
-                enemy.reload
-            ) {
-
-                if (
-                    !shotBlocked(
-                        enemy.x,
-                        enemy.y,
-                        player.x,
-                        player.y
-                    )
-                ) {
-
-                    enemy.lastShot =
-                        now;
-
-                    createShell(
-                        enemy,
-                        true
-                    );
-
-                    createMuzzleFlash(
-                        enemy
-                    );
-
-                    enemy.fireSmoke =
-                        12;
-                }
-            }
-        }
-    );
 }
 
 
-/* =====================================================
-   SHOT BLOCKED
-===================================================== */
+function drawTrenches() {
 
-function shotBlocked(
-    x1,
-    y1,
-    x2,
-    y2
-) {
+    trenches.forEach(function(t) {
 
-    return !!shellHitsObstacle(
-        x1,
-        y1,
-        x2,
-        y2
-    );
+        ctx.fillStyle = "#3e3427";
+
+        ctx.fillRect(
+            t.x,
+            t.y,
+            t.w,
+            t.h
+        );
+
+        ctx.fillStyle = "#1f1b17";
+
+        ctx.fillRect(
+            t.x,
+            t.y + 8,
+            t.w,
+            t.h - 16
+        );
+
+        ctx.strokeStyle =
+            "#786044";
+
+        ctx.lineWidth = 3;
+
+        ctx.strokeRect(
+            t.x,
+            t.y,
+            t.w,
+            t.h
+        );
+
+    });
+
 }
 
 
-/* =====================================================
-   DRAW MAP
-===================================================== */
+function drawBuildings() {
 
-function drawMap() {
+    buildings.forEach(function(b) {
 
-    if (
-        selectedMap === "town"
-    ) {
+        ctx.fillStyle = "#494949";
 
-        drawTown();
-    }
-
-    else if (
-        selectedMap === "snow"
-    ) {
-
-        drawSnow();
-    }
-
-    else {
-
-        drawTrenches();
-    }
-}
-
-
-/* =====================================================
-   TOWN DRAWING
-===================================================== */
-
-function drawTown() {
-
-    ctx.fillStyle =
-        "#68705a";
-
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    ctx.fillStyle =
-        "#484842";
-
-    ctx.fillRect(
-        0,
-        250,
-        canvas.width,
-        180
-    );
-
-    ctx.fillRect(
-        430,
-        0,
-        180,
-        canvas.height
-    );
-
-    ctx.fillStyle =
-        "#56564f";
-
-    ctx.fillRect(
-        0,
-        250,
-        canvas.width,
-        8
-    );
-
-    ctx.fillRect(
-        0,
-        422,
-        canvas.width,
-        8
-    );
-
-    ctx.fillRect(
-        430,
-        0,
-        8,
-        canvas.height
-    );
-
-    ctx.fillRect(
-        602,
-        0,
-        8,
-        canvas.height
-    );
-
-    ctx.strokeStyle =
-        "#777263";
-
-    ctx.lineWidth = 5;
-
-    ctx.setLineDash([
-        35,
-        25
-    ]);
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        0,
-        340
-    );
-
-    ctx.lineTo(
-        canvas.width,
-        340
-    );
-
-    ctx.stroke();
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        520,
-        0
-    );
-
-    ctx.lineTo(
-        520,
-        canvas.height
-    );
-
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-
-
-    obstacles
-        .filter(
-            o =>
-                o.type ===
-                "building"
-        )
-        .forEach(
-            drawBuilding
+        ctx.fillRect(
+            b.x,
+            b.y,
+            b.w,
+            b.h
         );
 
-    obstacles
-        .filter(
-            o =>
-                o.type ===
-                "rubble"
-        )
-        .forEach(
-            drawRubble
+        ctx.fillStyle = "#303030";
+
+        ctx.fillRect(
+            b.x + 12,
+            b.y + 12,
+            b.w - 24,
+            b.h - 24
         );
 
-    obstacles
-        .filter(
-            o =>
-                o.type ===
-                "wall"
-        )
-        .forEach(
-            drawWall
-        );
-
-    obstacles
-        .filter(
-            o =>
-                o.type ===
-                "wreck"
-        )
-        .forEach(
-            drawWreckObstacle
-        );
-
-    drawTree(
-        370,
-        380
-    );
-
-    drawTree(
-        630,
-        180
-    );
-
-    drawTree(
-        865,
-        350
-    );
-
-    drawTree(
-        250,
-        370
-    );
-}
-
-
-/* =====================================================
-   BUILDINGS
-===================================================== */
-
-function drawBuilding(o) {
-
-    ctx.fillStyle =
-        "#292a24";
-
-    ctx.fillRect(
-        o.x + 7,
-        o.y + 8,
-        o.width,
-        o.height
-    );
-
-    ctx.fillStyle =
-        "#625f50";
-
-    ctx.fillRect(
-        o.x,
-        o.y,
-        o.width,
-        o.height
-    );
-
-    ctx.fillStyle =
-        "#403e35";
-
-    ctx.fillRect(
-        o.x + 5,
-        o.y + 5,
-        o.width - 10,
-        15
-    );
-
-    ctx.fillStyle =
-        "#a79a68";
-
-    for (
-        let x =
-            o.x + 25;
-
-        x <
-            o.x +
-            o.width -
-            15;
-
-        x += 45
-    ) {
+        ctx.fillStyle = "#151515";
 
         for (
-            let y =
-                o.y + 35;
-
-            y <
-                o.y +
-                o.height -
-                15;
-
-            y += 45
+            let x = b.x + 25;
+            x < b.x + b.w - 15;
+            x += 40
         ) {
 
             ctx.fillRect(
                 x,
-                y,
-                20,
-                24
+                b.y + 25,
+                18,
+                25
             );
+
         }
-    }
 
-    ctx.fillStyle =
-        "#322e25";
+        ctx.strokeStyle = "#222";
 
-    ctx.fillRect(
-        o.x +
-        o.width / 2 -
-        12,
+        ctx.lineWidth = 4;
 
-        o.y +
-        o.height -
-        45,
+        ctx.strokeRect(
+            b.x,
+            b.y,
+            b.w,
+            b.h
+        );
 
-        24,
-        45
-    );
+    });
+
 }
 
 
-/* =====================================================
-   RUBBLE
-===================================================== */
+function drawSnowObjects() {
 
-function drawRubble(o) {
+    trees.forEach(function(t) {
 
-    ctx.fillStyle =
-        "#48463e";
-
-    ctx.fillRect(
-        o.x,
-        o.y,
-        o.width,
-        o.height
-    );
-
-    ctx.fillStyle =
-        "#292923";
-
-    for (
-        let x =
-            o.x + 8;
-
-        x <
-            o.x +
-            o.width -
-            5;
-
-        x += 20
-    ) {
+        ctx.fillStyle = "#4c3829";
 
         ctx.fillRect(
-            x,
-            o.y + 8,
-            10,
-            5 +
-            ((x * 7) % 9)
+            t.x - 3,
+            t.y,
+            6,
+            18
         );
-    }
 
-    ctx.fillStyle =
-        "#777366";
-
-    for (
-        let x =
-            o.x + 15;
-
-        x <
-            o.x +
-            o.width -
-            5;
-
-        x += 27
-    ) {
-
-        ctx.fillRect(
-            x,
-            o.y + 35,
-            9,
-            7
-        );
-    }
-}
-
-
-/* =====================================================
-   WALL
-===================================================== */
-
-function drawWall(o) {
-
-    ctx.fillStyle =
-        "#4d493d";
-
-    ctx.fillRect(
-        o.x,
-        o.y,
-        o.width,
-        o.height
-    );
-
-    ctx.strokeStyle =
-        "#81765d";
-
-    ctx.lineWidth = 2;
-
-    for (
-        let x =
-            o.x;
-
-        x <
-            o.x +
-            o.width;
-
-        x += 18
-    ) {
+        ctx.fillStyle = "#31533b";
 
         ctx.beginPath();
 
         ctx.moveTo(
-            x,
-            o.y
+            t.x,
+            t.y - t.r * 2
         );
 
         ctx.lineTo(
-            x,
-            o.y +
-            o.height
+            t.x - t.r,
+            t.y + 10
         );
 
-        ctx.stroke();
-    }
-}
-
-
-/* =====================================================
-   MAP WRECK
-===================================================== */
-
-function drawWreckObstacle(o) {
-
-    ctx.save();
-
-    ctx.translate(
-        o.x +
-        o.width / 2,
-
-        o.y +
-        o.height / 2
-    );
-
-    ctx.rotate(
-        -0.35
-    );
-
-    ctx.fillStyle =
-        "#292b25";
-
-    ctx.fillRect(
-        -35,
-        -14,
-        70,
-        28
-    );
-
-    ctx.fillStyle =
-        "#414238";
-
-    ctx.fillRect(
-        -20,
-        -22,
-        35,
-        25
-    );
-
-    ctx.fillStyle =
-        "#24251e";
-
-    ctx.fillRect(
-        5,
-        -3,
-        40,
-        7
-    );
-
-    ctx.restore();
-}
-
-
-/* =====================================================
-   TREE
-===================================================== */
-
-function drawTree(
-    x,
-    y
-) {
-
-    ctx.fillStyle =
-        "#473a28";
-
-    ctx.fillRect(
-        x - 6,
-        y,
-        12,
-        40
-    );
-
-    ctx.fillStyle =
-        "#303b28";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y - 8,
-        30,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x - 20,
-        y + 4,
-        20,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x + 20,
-        y + 4,
-        20,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-}
-
-
-/* =====================================================
-   TRENCH DRAWING
-===================================================== */
-
-function drawTrenches() {
-
-    ctx.fillStyle =
-        "#756847";
-
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    ctx.fillStyle =
-        "#635638";
-
-    for (
-        let i = 0;
-        i < 70;
-        i++
-    ) {
-
-        const x =
-            (i * 173) %
-            canvas.width;
-
-        const y =
-            (i * 97) %
-            canvas.height;
-
-        ctx.fillRect(
-            x,
-            y,
-            20 + i % 30,
-            5
-        );
-    }
-
-    obstacles
-        .filter(
-            o =>
-                o.type ===
-                "trench"
-        )
-        .forEach(
-            drawTrench
+        ctx.lineTo(
+            t.x + t.r,
+            t.y + 10
         );
 
-    obstacles
-        .filter(
-            o =>
-                o.type ===
-                "bunker"
-        )
-        .forEach(
-            drawBunker
-        );
+        ctx.closePath();
 
-    obstacles
-        .filter(
-            o =>
-                o.type ===
-                "wire"
-        )
-        .forEach(
-            drawWire
-        );
+        ctx.fill();
 
-    obstacles
-        .filter(
-            o =>
-                o.type ===
-                "crater"
-        )
-        .forEach(
-            drawCrater
-        );
+    });
 
-    drawLog(
-        230,
-        230,
-        120
-    );
 
-    drawLog(
-        780,
-        450,
-        100
-    );
-}
+    rocks.forEach(function(r) {
 
+        ctx.fillStyle = "#7b8588";
 
-function drawTrench(o) {
+        ctx.beginPath();
 
-    ctx.fillStyle =
-        "#403a29";
-
-    ctx.fillRect(
-        o.x,
-        o.y,
-        o.width,
-        o.height
-    );
-
-    ctx.fillStyle =
-        "#302d22";
-
-    ctx.fillRect(
-        o.x + 8,
-        o.y + 12,
-        o.width - 16,
-        o.height - 24
-    );
-
-    for (
-        let x =
-            o.x + 8;
-
-        x <
-            o.x +
-            o.width -
-            15;
-
-        x += 27
-    ) {
-
-        ctx.fillStyle =
-            "#a99a66";
-
-        ctx.fillRect(
-            x,
-            o.y - 5,
-            22,
-            13
-        );
-
-        ctx.fillRect(
-            x,
-            o.y +
-            o.height -
-            8,
-            22,
-            13
-        );
-    }
-}
-
-
-function drawBunker(o) {
-
-    ctx.fillStyle =
-        "#37372e";
-
-    ctx.fillRect(
-        o.x,
-        o.y,
-        o.width,
-        o.height
-    );
-
-    ctx.fillStyle =
-        "#514e3f";
-
-    ctx.fillRect(
-        o.x + 8,
-        o.y + 8,
-        o.width - 16,
-        o.height - 16
-    );
-
-    ctx.fillStyle =
-        "#171812";
-
-    ctx.fillRect(
-        o.x + 20,
-        o.y + 25,
-        o.width - 40,
-        12
-    );
-}
-
-
-function drawWire(o) {
-
-    ctx.strokeStyle =
-        "#282923";
-
-    ctx.lineWidth = 3;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        o.x,
-        o.y
-    );
-
-    ctx.lineTo(
-        o.x +
-        o.width,
-        o.y +
-        o.height
-    );
-
-    ctx.stroke();
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        o.x +
-        o.width,
-        o.y
-    );
-
-    ctx.lineTo(
-        o.x,
-        o.y +
-        o.height
-    );
-
-    ctx.stroke();
-}
-
-
-function drawCrater(o) {
-
-    ctx.fillStyle =
-        "#4d432f";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        o.x +
-        o.width / 2,
-
-        o.y +
-        o.height / 2,
-
-        o.width / 2,
-
-        o.height / 2,
-
-        0,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    ctx.fillStyle =
-        "#292820";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        o.x +
-        o.width / 2,
-
-        o.y +
-        o.height / 2,
-
-        o.width / 3,
-
-        o.height / 3,
-
-        0,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-}
-
-
-function drawLog(
-    x,
-    y,
-    length
-) {
-
-    ctx.save();
-
-    ctx.translate(
-        x,
-        y
-    );
-
-    ctx.rotate(
-        -0.15
-    );
-
-    ctx.fillStyle =
-        "#4b3321";
-
-    ctx.fillRect(
-        0,
-        0,
-        length,
-        15
-    );
-
-    ctx.fillStyle =
-        "#725038";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        0,
-        7,
-        8,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    ctx.restore();
-}
-
-
-/* =====================================================
-   SNOW DRAWING
-===================================================== */
-
-function drawSnow() {
-
-    ctx.fillStyle =
-        "#e7edf0";
-
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    ctx.fillStyle =
-        "#d8e2e5";
-
-    for (
-        let y = 0;
-        y < canvas.height;
-        y += 70
-    ) {
-
-        ctx.fillRect(
+        ctx.arc(
+            r.x,
+            r.y,
+            r.r,
             0,
-            y,
-            canvas.width,
-            28
+            Math.PI * 2
         );
+
+        ctx.fill();
+
+    });
+
+
+    cabins.forEach(function(c) {
+
+        ctx.fillStyle = "#654735";
+
+        ctx.fillRect(
+            c.x,
+            c.y,
+            c.w,
+            c.h
+        );
+
+        ctx.fillStyle = "#493226";
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            c.x - 10,
+            c.y
+        );
+
+        ctx.lineTo(
+            c.x + c.w / 2,
+            c.y - 45
+        );
+
+        ctx.lineTo(
+            c.x + c.w + 10,
+            c.y
+        );
+
+        ctx.closePath();
+
+        ctx.fill();
+
+        ctx.fillStyle = "#202020";
+
+        ctx.fillRect(
+            c.x + 20,
+            c.y + 25,
+            25,
+            25
+        );
+
+        ctx.fillRect(
+            c.x + c.w - 45,
+            c.y + 25,
+            25,
+            25
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   TANK DRAWING
+   ========================================================= */
+
+function getTankColor(tank) {
+
+    if (tank.faction === "British") {
+        return "#66704d";
     }
 
-    ctx.fillStyle =
-        "#b8c7c9";
+    if (tank.faction === "German") {
+        return "#6c6a55";
+    }
 
-    ctx.fillRect(
-        0,
-        300,
-        canvas.width,
-        100
-    );
+    return "#4f7049";
 
-    ctx.fillStyle =
-        "#aab9bb";
-
-    ctx.fillRect(
-        0,
-        335,
-        canvas.width,
-        6
-    );
-
-    obstacles
-        .filter(
-            o =>
-                o.type ===
-                "snowCabin"
-        )
-        .forEach(
-            drawSnowCabin
-        );
-
-    obstacles
-        .filter(
-            o =>
-                o.type ===
-                "rock"
-        )
-        .forEach(
-            drawSnowRock
-        );
-
-    const trees = [
-
-        [70, 90],
-        [150, 240],
-        [90, 610],
-        [330, 75],
-        [400, 185],
-        [350, 620],
-        [630, 85],
-        [720, 200],
-        [650, 590],
-        [1000, 90],
-        [970, 270],
-        [1030, 620],
-        [570, 120],
-        [850, 390],
-        [300, 430],
-        [780, 610],
-        [450, 350],
-        [1020, 390]
-
-    ];
-
-    trees.forEach(
-        function(point) {
-
-            drawSnowTree(
-                point[0],
-                point[1]
-            );
-        }
-    );
 }
 
 
-function drawSnowTree(
-    x,
-    y
-) {
+function drawTank(tank) {
 
-    ctx.fillStyle =
-        "#5b4733";
-
-    ctx.fillRect(
-        x - 5,
-        y + 10,
-        10,
-        38
-    );
-
-    ctx.fillStyle =
-        "#294936";
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        x,
-        y - 35
-    );
-
-    ctx.lineTo(
-        x - 25,
-        y + 8
-    );
-
-    ctx.lineTo(
-        x + 25,
-        y + 8
-    );
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        x,
-        y - 15
-    );
-
-    ctx.lineTo(
-        x - 31,
-        y + 28
-    );
-
-    ctx.lineTo(
-        x + 31,
-        y + 28
-    );
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        x,
-        y + 5
-    );
-
-    ctx.lineTo(
-        x - 36,
-        y + 45
-    );
-
-    ctx.lineTo(
-        x + 36,
-        y + 45
-    );
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    ctx.fillStyle =
-        "#edf3f4";
-
-    ctx.fillRect(
-        x - 20,
-        y - 3,
-        40,
-        5
-    );
-
-    ctx.fillRect(
-        x - 25,
-        y + 19,
-        50,
-        5
-    );
-
-    ctx.fillRect(
-        x - 30,
-        y + 39,
-        60,
-        5
-    );
-}
-
-
-function drawSnowCabin(o) {
-
-    ctx.fillStyle =
-        "#dce4e5";
-
-    ctx.fillRect(
-        o.x + 5,
-        o.y + 7,
-        o.width,
-        o.height
-    );
-
-    ctx.fillStyle =
-        "#674b35";
-
-    ctx.fillRect(
-        o.x,
-        o.y + 8,
-        o.width,
-        o.height - 8
-    );
-
-    ctx.fillStyle =
-        "#4b3527";
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        o.x - 8,
-        o.y + 10
-    );
-
-    ctx.lineTo(
-        o.x +
-        o.width / 2,
-        o.y - 18
-    );
-
-    ctx.lineTo(
-        o.x +
-        o.width + 8,
-        o.y + 10
-    );
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    ctx.fillStyle =
-        "#f1f5f5";
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        o.x - 8,
-        o.y + 10
-    );
-
-    ctx.lineTo(
-        o.x +
-        o.width / 2,
-        o.y - 25
-    );
-
-    ctx.lineTo(
-        o.x +
-        o.width + 8,
-        o.y + 10
-    );
-
-    ctx.lineTo(
-        o.x +
-        o.width,
-        o.y + 5
-    );
-
-    ctx.lineTo(
-        o.x +
-        o.width / 2,
-        o.y - 14
-    );
-
-    ctx.lineTo(
-        o.x,
-        o.y + 5
-    );
-
-    ctx.closePath();
-
-    ctx.fill();
-
-    ctx.fillStyle =
-        "#a9d0d7";
-
-    ctx.fillRect(
-        o.x + 20,
-        o.y + 30,
-        24,
-        20
-    );
-
-    ctx.fillRect(
-        o.x +
-        o.width -
-        44,
-        o.y + 30,
-        24,
-        20
-    );
-
-    ctx.fillStyle =
-        "#39291f";
-
-    ctx.fillRect(
-        o.x +
-        o.width / 2 -
-        12,
-
-        o.y +
-        o.height -
-        42,
-
-        24,
-        42
-    );
-}
-
-
-function drawSnowRock(o) {
-
-    ctx.fillStyle =
-        "#89999c";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        o.x +
-        o.width / 2,
-
-        o.y +
-        o.height / 2,
-
-        o.width / 2,
-
-        o.height / 2,
-
-        0,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    ctx.fillStyle =
-        "#dce5e6";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        o.x +
-        o.width * 0.42,
-
-        o.y +
-        o.height * 0.32,
-
-        o.width * 0.3,
-
-        o.height * 0.18,
-
-        0,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-}
-
-
-/* =====================================================
-   TANK DRAWING
-===================================================== */
-
-function drawTank(
-    tank
-) {
-
-    if (
-        tank.destroyed
-    ) {
-
+    if (!tank || tank.destroyed) {
         return;
     }
 
@@ -4558,586 +2648,69 @@ function drawTank(
     );
 
     ctx.rotate(
-        tank.angle
+        tank.hullAngle
     );
 
-    drawTankHull(
-        tank
+
+    /* tracks */
+
+    ctx.fillStyle = "#1b1b1b";
+
+    ctx.fillRect(
+        -28,
+        -23,
+        56,
+        10
     );
 
-    ctx.restore();
-
-
-    ctx.save();
-
-    ctx.translate(
-        tank.x,
-        tank.y
+    ctx.fillRect(
+        -28,
+        13,
+        56,
+        10
     );
+
+
+    /* hull */
+
+    ctx.fillStyle =
+        getTankColor(tank);
+
+    ctx.fillRect(
+        -23,
+        -15,
+        46,
+        30
+    );
+
+
+    ctx.fillStyle =
+        "rgba(255,255,255,0.08)";
+
+    ctx.fillRect(
+        -20,
+        -12,
+        40,
+        7
+    );
+
+
+    /* turret */
 
     ctx.rotate(
-        tank.turretAngle
-    );
-
-    drawTurret(
-        tank
-    );
-
-    ctx.restore();
-
-
-    /*
-       HEALTH BAR
-    */
-
-    const barWidth =
-        tank.size * 2.3;
-
-    ctx.fillStyle =
-        "#201f18";
-
-    ctx.fillRect(
-        tank.x -
-        barWidth / 2,
-
-        tank.y -
-        tank.size -
-        15,
-
-        barWidth,
-        7
+        tank.turretAngle -
+        tank.hullAngle
     );
 
     ctx.fillStyle =
-        tank.health <
-        tank.maxHealth *
-        0.25
-        ? "#c94b32"
-        : "#d5c45e";
-
-    ctx.fillRect(
-        tank.x -
-        barWidth / 2,
-
-        tank.y -
-        tank.size -
-        15,
-
-        barWidth *
-        Math.max(
-            0,
-            tank.health /
-            tank.maxHealth
-        ),
-
-        7
-    );
-}
-
-
-/* =====================================================
-   TANK HULL
-===================================================== */
-
-function drawTankHull(
-    tank
-) {
-
-    const s =
-        tank.size;
-
-    let colour;
-
-    if (
-        tank.faction ===
-        "british"
-    ) {
-
-        colour =
-            "#53633b";
-    }
-
-    else if (
-        tank.faction ===
-        "german"
-    ) {
-
-        colour =
-            "#77724e";
-    }
-
-    else {
-
-        colour =
-            "#4d6738";
-    }
-
-
-    /*
-       SHADOW
-    */
-
-    ctx.fillStyle =
-        "rgba(0,0,0,0.35)";
-
-    ctx.fillRect(
-        -s - 4,
-        -s + 5,
-        s * 2 + 8,
-        s * 1.7
-    );
-
-
-    /*
-       TRACKS
-    */
-
-    ctx.fillStyle =
-        "#20231d";
-
-    ctx.fillRect(
-        -s,
-        -s * 0.78,
-        s * 2,
-        s * 0.28
-    );
-
-    ctx.fillRect(
-        -s,
-        s * 0.50,
-        s * 2,
-        s * 0.28
-    );
-
-
-    /*
-       TRACK WHEELS
-    */
-
-    ctx.fillStyle =
-        "#77745d";
-
-    for (
-        let x =
-            -s + 7;
-
-        x < s;
-
-        x += 11
-    ) {
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            -s * 0.64,
-            4,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-
-        ctx.beginPath();
-
-        ctx.arc(
-            x,
-            s * 0.64,
-            4,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fill();
-    }
-
-
-    /*
-       HULL
-    */
-
-    ctx.fillStyle =
-        colour;
-
-    switch (
-        tank.model
-    ) {
-
-        case "tetrarch":
-
-            ctx.fillRect(
-                -s * 0.72,
-                -s * 0.48,
-                s * 1.45,
-                s * 0.95
-            );
-
-            break;
-
-        case "cromwell":
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                -s,
-                -s * 0.48
-            );
-
-            ctx.lineTo(
-                s * 0.85,
-                -s * 0.42
-            );
-
-            ctx.lineTo(
-                s,
-                s * 0.48
-            );
-
-            ctx.lineTo(
-                -s,
-                s * 0.48
-            );
-
-            ctx.closePath();
-
-            ctx.fill();
-
-            break;
-
-        case "churchill":
-
-            ctx.fillRect(
-                -s * 1.05,
-                -s * 0.58,
-                s * 2.1,
-                s * 1.15
-            );
-
-            break;
-
-        case "panzer2":
-
-            ctx.fillRect(
-                -s * 0.72,
-                -s * 0.42,
-                s * 1.45,
-                s * 0.84
-            );
-
-            break;
-
-        case "panzer4":
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                -s * 0.95,
-                -s * 0.5
-            );
-
-            ctx.lineTo(
-                s * 0.9,
-                -s * 0.5
-            );
-
-            ctx.lineTo(
-                s,
-                s * 0.5
-            );
-
-            ctx.lineTo(
-                -s * 0.95,
-                s * 0.5
-            );
-
-            ctx.closePath();
-
-            ctx.fill();
-
-            break;
-
-        case "tiger":
-
-            ctx.fillRect(
-                -s * 1.08,
-                -s * 0.62,
-                s * 2.15,
-                s * 1.25
-            );
-
-            break;
-
-        case "t70":
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                -s * 0.8,
-                -s * 0.45
-            );
-
-            ctx.lineTo(
-                s * 0.8,
-                -s * 0.45
-            );
-
-            ctx.lineTo(
-                s * 0.95,
-                s * 0.4
-            );
-
-            ctx.lineTo(
-                -s * 0.9,
-                s * 0.4
-            );
-
-            ctx.closePath();
-
-            ctx.fill();
-
-            break;
-
-        case "t34":
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                -s,
-                -s * 0.5
-            );
-
-            ctx.lineTo(
-                s * 0.75,
-                -s * 0.6
-            );
-
-            ctx.lineTo(
-                s,
-                s * 0.35
-            );
-
-            ctx.lineTo(
-                -s * 0.9,
-                s * 0.5
-            );
-
-            ctx.closePath();
-
-            ctx.fill();
-
-            break;
-
-        case "is2":
-
-            ctx.fillRect(
-                -s * 1.08,
-                -s * 0.6,
-                s * 2.16,
-                s * 1.2
-            );
-
-            break;
-    }
-}
-
-
-/* =====================================================
-   TURRET
-===================================================== */
-
-function drawTurret(
-    tank
-) {
-
-    const s =
-        tank.size;
-
-    let colour;
-
-    if (
-        tank.faction ===
-        "british"
-    ) {
-
-        colour =
-            "#657448";
-    }
-
-    else if (
-        tank.faction ===
-        "german"
-    ) {
-
-        colour =
-            "#8b855d";
-    }
-
-    else {
-
-        colour =
-            "#5d7845";
-    }
-
-    ctx.fillStyle =
-        colour;
-
-
-    switch (
-        tank.model
-    ) {
-
-        case "tetrarch":
-
-            ctx.fillRect(
-                -s * 0.42,
-                -s * 0.35,
-                s * 0.7,
-                s * 0.7
-            );
-
-            break;
-
-        case "cromwell":
-
-            ctx.fillRect(
-                -s * 0.45,
-                -s * 0.42,
-                s * 0.9,
-                s * 0.84
-            );
-
-            break;
-
-        case "churchill":
-
-            ctx.fillRect(
-                -s * 0.5,
-                -s * 0.48,
-                s,
-                s * 0.96
-            );
-
-            break;
-
-        case "panzer2":
-
-            ctx.fillRect(
-                -s * 0.38,
-                -s * 0.38,
-                s * 0.72,
-                s * 0.72
-            );
-
-            break;
-
-        case "panzer4":
-
-            ctx.fillRect(
-                -s * 0.48,
-                -s * 0.43,
-                s * 0.9,
-                s * 0.86
-            );
-
-            break;
-
-        case "tiger":
-
-            ctx.fillRect(
-                -s * 0.52,
-                -s * 0.5,
-                s * 1.05,
-                s
-            );
-
-            break;
-
-        case "t70":
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                -s * 0.4,
-                -s * 0.4
-            );
-
-            ctx.lineTo(
-                s * 0.35,
-                -s * 0.28
-            );
-
-            ctx.lineTo(
-                s * 0.4,
-                s * 0.4
-            );
-
-            ctx.lineTo(
-                -s * 0.4,
-                s * 0.3
-            );
-
-            ctx.closePath();
-
-            ctx.fill();
-
-            break;
-
-        case "t34":
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                -s * 0.48,
-                -s * 0.4
-            );
-
-            ctx.lineTo(
-                s * 0.4,
-                -s * 0.38
-            );
-
-            ctx.lineTo(
-                s * 0.45,
-                s * 0.4
-            );
-
-            ctx.lineTo(
-                -s * 0.5,
-                s * 0.35
-            );
-
-            ctx.closePath();
-
-            ctx.fill();
-
-            break;
-
-        case "is2":
-
-            ctx.fillRect(
-                -s * 0.52,
-                -s * 0.5,
-                s * 1.05,
-                s
-            );
-
-            break;
-    }
-
-
-    /*
-       TURRET CENTRE
-    */
-
-    ctx.fillStyle =
-        "#34382a";
+        getTankColor(tank);
 
     ctx.beginPath();
 
     ctx.arc(
         0,
         0,
-        s * 0.25,
+        15,
         0,
         Math.PI * 2
     );
@@ -5145,575 +2718,296 @@ function drawTurret(
     ctx.fill();
 
 
-    drawCannon(
-        tank
+    /* gun */
+
+    ctx.fillStyle = "#202020";
+
+    ctx.fillRect(
+        8,
+        -3,
+        34,
+        6
     );
 
-    drawTankMarkings(
-        tank
-    );
-}
 
+    /* hit flash */
 
-/* =====================================================
-   CANNON
-===================================================== */
+    if (tank.hitFlash > 0) {
 
-function drawCannon(
-    tank
-) {
+        ctx.fillStyle =
+            "rgba(255,255,255,0.5)";
 
-    const s =
-        tank.size;
+        ctx.fillRect(
+            -25,
+            -17,
+            50,
+            34
+        );
 
-    let length =
-        s * 1.3;
-
-    let width = 6;
-
-    switch (
-        tank.model
-    ) {
-
-        case "tetrarch":
-            length = s * 1.15;
-            width = 5;
-            break;
-
-        case "cromwell":
-            length = s * 1.55;
-            width = 6;
-            break;
-
-        case "churchill":
-            length = s * 1.45;
-            width = 8;
-            break;
-
-        case "panzer2":
-            length = s * 1.1;
-            width = 5;
-            break;
-
-        case "panzer4":
-            length = s * 1.6;
-            width = 6;
-            break;
-
-        case "tiger":
-            length = s * 1.85;
-            width = 9;
-            break;
-
-        case "t70":
-            length = s * 1.25;
-            width = 5;
-            break;
-
-        case "t34":
-            length = s * 1.65;
-            width = 7;
-            break;
-
-        case "is2":
-            length = s * 1.9;
-            width = 9;
-            break;
     }
+
+    ctx.restore();
+
+
+    /* health bar */
+
+    const barWidth = 50;
+
+    const hpRatio =
+        clamp(
+            tank.hp /
+            tank.maxHp,
+            0,
+            1
+        );
+
+    ctx.fillStyle = "#111";
+
+    ctx.fillRect(
+        tank.x - barWidth / 2,
+        tank.y - 40,
+        barWidth,
+        6
+    );
 
     ctx.fillStyle =
-        "#242820";
+        hpRatio > 0.5 ?
+        "#48c44c" :
+        hpRatio > 0.25 ?
+        "#d7b53c" :
+        "#d64535";
 
     ctx.fillRect(
-        0,
-        -width / 2,
-        length,
-        width
+        tank.x - barWidth / 2,
+        tank.y - 40,
+        barWidth * hpRatio,
+        6
     );
 
-    ctx.fillRect(
-        length - 7,
-        -width / 2 - 2,
-        10,
-        width + 4
-    );
 }
 
 
-/* =====================================================
-   MARKINGS
-===================================================== */
-
-function drawTankMarkings(
-    tank
-) {
-
-    const s =
-        tank.size;
-
-    if (
-        tank.faction ===
-        "british"
-    ) {
-
-        ctx.strokeStyle =
-            "#ddd7ba";
-
-        ctx.lineWidth = 3;
-
-        ctx.beginPath();
-
-        ctx.arc(
-            -s * 0.35,
-            0,
-            s * 0.15,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.stroke();
-    }
-
-    else if (
-        tank.faction ===
-        "german"
-    ) {
-
-        ctx.fillStyle =
-            "#24251e";
-
-        ctx.fillRect(
-            -s * 0.15,
-            -4,
-            s * 0.3,
-            8
-        );
-
-        ctx.fillRect(
-            -4,
-            -s * 0.15,
-            8,
-            s * 0.3
-        );
-    }
-
-    else {
-
-        ctx.fillStyle =
-            "#c7c7bd";
-
-        ctx.fillRect(
-            -s * 0.38,
-            -3,
-            s * 0.76,
-            6
-        );
-
-        ctx.fillRect(
-            -3,
-            -s * 0.38,
-            6,
-            s * 0.76
-        );
-    }
-}
-
-
-/* =====================================================
-   SHELL DRAWING
-===================================================== */
-
-function drawShells() {
-
-    shells.forEach(
-        function(shell) {
-
-            /*
-               SHELL TRAIL
-            */
-
-            ctx.strokeStyle =
-                "#d6b65c";
-
-            ctx.lineWidth = 3;
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                shell.x -
-                shell.vx * 1.5,
-
-                shell.y -
-                shell.vy * 1.5
-            );
-
-            ctx.lineTo(
-                shell.x,
-                shell.y
-            );
-
-            ctx.stroke();
-
-
-            /*
-               SHELL
-            */
-
-            ctx.save();
-
-            ctx.translate(
-                shell.x,
-                shell.y
-            );
-
-            ctx.rotate(
-                Math.atan2(
-                    shell.vy,
-                    shell.vx
-                )
-            );
-
-            ctx.fillStyle =
-                "#d0b45d";
-
-            ctx.fillRect(
-                -7,
-                -3,
-                14,
-                6
-            );
-
-            ctx.beginPath();
-
-            ctx.moveTo(
-                7,
-                -3
-            );
-
-            ctx.lineTo(
-                12,
-                0
-            );
-
-            ctx.lineTo(
-                7,
-                3
-            );
-
-            ctx.closePath();
-
-            ctx.fill();
-
-            ctx.fillStyle =
-                "#50472e";
-
-            ctx.fillRect(
-                -8,
-                -3,
-                4,
-                6
-            );
-
-            ctx.restore();
-        }
-    );
-}
-
-
-/* =====================================================
+/* =========================================================
    UI
-===================================================== */
+   ========================================================= */
 
 function updateUI() {
 
-    document
-        .getElementById(
-            "playerHealth"
-        )
-        .textContent =
+    document.getElementById(
+        "playerHealth"
+    ).textContent =
         Math.max(
             0,
-            Math.floor(
-                player.health
-            )
+            Math.round(player.hp)
         );
 
-    document
-        .getElementById(
-            "enemyCount"
-        )
-        .textContent =
-        enemies.length;
+    document.getElementById(
+        "enemiesLeft"
+    ).textContent =
+        enemies.filter(function(e) {
+            return !e.destroyed;
+        }).length;
+
 }
 
 
-/* =====================================================
+/* =========================================================
    GAME STATE
-===================================================== */
+   ========================================================= */
 
 function checkGameState() {
 
     if (
-        player.health <= 0
+        player &&
+        player.hp <= 0
     ) {
 
         gameRunning = false;
 
-        document
-            .getElementById(
-                "battleMessage"
-            )
-            .textContent =
-            "💀 YOUR TANK HAS BEEN DESTROYED";
-
-        document
-            .getElementById(
-                "restartButton"
-            )
-            .style.display =
-            "block";
+        document.getElementById(
+            "battleMessage"
+        ).innerHTML =
+            "TANK DESTROYED<br>" +
+            "<button onclick='location.reload()'>" +
+            "RESTART" +
+            "</button>";
 
         return;
+
     }
 
 
     if (
-        enemies.length === 0
+        enemies.length > 0 &&
+        enemies.every(function(e) {
+            return e.destroyed;
+        })
     ) {
 
         gameRunning = false;
 
-        document
-            .getElementById(
-                "battleMessage"
-            )
-            .textContent =
-            "🏆 VICTORY! ENEMY FORCES DESTROYED";
+        document.getElementById(
+            "battleMessage"
+        ).innerHTML =
+            "VICTORY!<br>" +
+            "<button onclick='location.reload()'>" +
+            "PLAY AGAIN" +
+            "</button>";
 
-        document
-            .getElementById(
-                "restartButton"
-            )
-            .style.display =
-            "block";
     }
+
 }
 
 
-/* =====================================================
+/* =========================================================
    SCREEN SHAKE
-===================================================== */
+   ========================================================= */
 
 function updateScreenShake() {
 
-    screenShake *= 0.88;
+    if (screenShake > 0) {
 
-    if (
-        screenShake < 0.1
-    ) {
+        screenShake *= 0.86;
 
-        screenShake = 0;
-    }
-}
-
-
-/* =====================================================
-   GAME LOOP
-===================================================== */
-
-function gameLoop() {
-
-    if (!gameRunning) {
-
-        /*
-           We still draw the final
-           explosion/wreck state.
-        */
-
-        drawEverything();
-
-        return;
-    }
-
-
-    movePlayer();
-
-    aimPlayer();
-
-    updateEnemies();
-
-    updateShells();
-
-    updateImpacts();
-
-    updateExplosions();
-
-    updateSmoke();
-
-    updateFireParticles();
-
-    updateMuzzleFlashes();
-
-    updateTrackMarks();
-
-    updateHitTexts();
-
-
-    createTankSmoke(
-        player
-    );
-
-    enemies.forEach(
-        function(enemy) {
-
-            createTankSmoke(
-                enemy
-            );
+        if (screenShake < 0.2) {
+            screenShake = 0;
         }
-    );
 
-
-    drawEverything();
-
-    updateUI();
-
-    checkGameState();
-
-    updateScreenShake();
-
-
-    if (gameRunning) {
-
-        requestAnimationFrame(
-            gameLoop
-        );
     }
+
 }
 
 
-/* =====================================================
+/* =========================================================
    DRAW EVERYTHING
-===================================================== */
+   ========================================================= */
 
 function drawEverything() {
 
     ctx.save();
 
-
-    /*
-       SCREEN SHAKE
-    */
-
-    if (
-        screenShake > 0
-    ) {
+    if (screenShake > 0) {
 
         ctx.translate(
-            (Math.random() - 0.5) *
-            screenShake,
-
-            (Math.random() - 0.5) *
-            screenShake
+            random(
+                -screenShake,
+                screenShake
+            ),
+            random(
+                -screenShake,
+                screenShake
+            )
         );
+
     }
 
+    drawBackground();
 
-    /*
-       MAP
-    */
+    if (selectedMap === "trench") {
+        drawTrenches();
+    }
 
-    drawMap();
+    if (selectedMap === "town") {
+        drawBuildings();
+    }
 
-
-    /*
-       TRACKS
-    */
+    if (selectedMap === "snow") {
+        drawSnowObjects();
+    }
 
     drawTrackMarks();
 
-
-    /*
-       WRECKS
-    */
-
     drawWrecks();
-
-
-    /*
-       SHELLS
-    */
-
-    drawShells();
-
-
-    /*
-       IMPACTS
-    */
-
-    drawImpacts();
-
-
-    /*
-       TANKS
-    */
-
-    enemies.forEach(
-        function(enemy) {
-
-            drawTank(
-                enemy
-            );
-        }
-    );
-
-
-    if (
-        player &&
-        !player.destroyed
-    ) {
-
-        drawTank(
-            player
-        );
-    }
-
-
-    /*
-       FIRE
-    */
-
-    drawFireParticles();
-
-
-    /*
-       SMOKE
-    */
 
     drawSmoke();
 
-
-    /*
-       EXPLOSIONS
-    */
+    drawFireParticles();
 
     drawExplosions();
 
-
-    /*
-       MUZZLE FLASH
-    */
+    drawImpacts();
 
     drawMuzzleFlashes();
 
+    if (player) {
+        drawTank(player);
+    }
 
-    /*
-       HIT TEXT
-    */
+    enemies.forEach(function(enemy) {
+        drawTank(enemy);
+    });
 
     drawHitTexts();
 
-
     ctx.restore();
+
+}
+
+
+/* =========================================================
+   GAME LOOP
+   ========================================================= */
+
+function gameLoop() {
+
+    if (gameRunning) {
+
+        movePlayer();
+
+        aimPlayer();
+
+        updateEnemies();
+
+        updateShells();
+
+        checkGameState();
+
+    }
+
+    // Effects keep updating after the battle ends so the
+    // destruction explosion can finish instead of freezing.
+    updateImpacts();
+    updateExplosions();
+    updateSmoke();
+    updateFireParticles();
+    updateMuzzleFlashes();
+    updateTrackMarks();
+    updateHitTexts();
+
+    if (player && !player.destroyed) {
+        createTankSmoke(player);
+    }
+
+    enemies.forEach(
+        function(enemy) {
+            if (!enemy.destroyed) {
+                createTankSmoke(enemy);
+            }
+        }
+    );
+
+    drawEverything();
+
+    if (player) {
+        updateUI();
+    }
+
+    updateScreenShake();
+
+    const effectsRunning =
+        impacts.length > 0 ||
+        explosions.length > 0 ||
+        smokeParticles.length > 0 ||
+        fireParticles.length > 0 ||
+        muzzleFlashes.length > 0 ||
+        hitTexts.length > 0;
+
+    if (gameRunning || effectsRunning) {
+        requestAnimationFrame(
+            gameLoop
+        );
+    }
+
 }
 
 </script>

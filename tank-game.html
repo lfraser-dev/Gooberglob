@@ -2924,32 +2924,47 @@ function createTankSmoke(
         return;
     }
 
+    // Put the smoke at the rear of the tank instead of above its centre.
+    // The tank faces along tank.angle, so the rear is the negative direction.
+    const backX =
+        -Math.cos(tank.angle) *
+        tank.size * 0.65;
+
+    const backY =
+        -Math.sin(tank.angle) *
+        tank.size * 0.65;
+
     smokeParticles.push({
 
         x:
             tank.x +
+            backX +
             (Math.random() - 0.5) *
-            tank.size,
+            tank.size * 0.35,
 
         y:
-            tank.y -
-            tank.size * 0.5,
+            tank.y +
+            backY +
+            (Math.random() - 0.5) *
+            tank.size * 0.35,
 
         vx:
-            (Math.random() - 0.5) *
-            0.5,
+            -Math.cos(tank.angle) * 0.2 +
+            (Math.random() - 0.5) * 0.35,
 
         vy:
-            -0.5 -
-            Math.random() * 0.7,
+            -Math.sin(tank.angle) * 0.2 -
+            0.25 -
+            Math.random() * 0.45,
 
         life:
-            25 +
-            Math.random() * 25,
+            20 +
+            Math.random() * 20,
 
+        // Smaller smoke so it reads more like a little exhaust puff.
         size:
-            5 +
-            Math.random() * 7
+            3 +
+            Math.random() * 4
     });
 }
 

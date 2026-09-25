@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Gooberglob - Tank Battle</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #1d2118;
+            color: #eee5c5;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            padding: 18px;
+            background: #3f472b;
+            color: #eee5c5;
+            font-family: Impact, "Arial Black", sans-serif;
+            letter-spacing: 4px;
+            text-shadow: 3px 3px #15180f;
+        }
+
+        #menu {
+            max-width: 900px;
+            margin: 25px auto;
+            padding: 25px;
+            background: #c5b783;
+            border: 5px solid #59633b;
+            color: #24251d;
+            box-shadow: 8px 8px #11140e;
+        }
+
+        .section {
+            margin: 25px 0;
+        }
+
+        .section h2 {
+            margin-bottom: 15px;
+            font-family: "Arial Black", sans-serif;
+        }
+
+        .choices {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        button {
+            background: #59633b;
+            color: #eee5c5;
+            border: 4px solid #292d20;
+            padding: 13px 20px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 4px 4px #292d20;
+        }
+
+        button:hover {
+            background: #707b49;
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px #292d20;
+        }
+
+        button.selected {
+            background: #8b7545;
+            border-color: #eee5c5;
+        }
+
+        #startButton {
+            margin-top: 15px;
+            font-size: 22px;
+            padding: 15px 40px;
+        }
+
+        #gameArea {
+            display: none;
+            padding: 15px;
+        }
+
+        #gameInfo {
+            max-width: 1000px;
+            margin: 0 auto 10px auto;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .infoBox {
+            background: #3f472b;
+            padding: 10px 15px;
+            border: 3px solid #59633b;
+            font-weight: bold;
+        }
+
+        #gameCanvas {
+            border: 5px solid #59633b;
+            background: #777;
+            max-width: 100%;
+            height: auto;
+            cursor: crosshair;
+        }
+
+        #battleMessage {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px;
+        }
+
+        #restartButton {
+            display: none;
+            margin: 10px auto;
+        }
+
+        .tankCard {
+            min-width: 160px;
+        }
+
+        .tankCard small {
+            display: block;
+            margin-top: 6px;
+        }
+
+        #controls {
+            margin: 10px;
+            color: #c5b783;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>★ GOOBERGLOB ★</h1>
+
+<!-- =========================
+     MAIN MENU
+========================= -->
+
+<div id="menu">
+
+    <h2>⚔️ TANK COMMAND ⚔️</h2>
+    <p>Choose your side, tank and battlefield.</p>
+
+    <!-- FACTION -->
+    <div class="section">
+        <h2>1. Choose Your Faction</h2>
+
+        <div class="choices">
+
+            <button
+                id="britishButton"
+                onclick="chooseFaction('british')">
+                🇬🇧 BRITISH
+            </button>
+
+            <button
+                id="germanButton"
+                onclick="chooseFaction('german')">
+                🇩🇪 GERMAN
+            </button>
+
+        </div>
+    </div>
+
+    <!-- TANK -->
+    <div class="section">
+
+        <h2>2. Choose Your Tank</h2>
+
+        <div id="tankChoices" class="choices">
+
+            <p>Choose a faction first.</p>
+
+        </div>
+
+    </div>
+
+    <!-- MAP -->
+    <div class="section">
+
+        <h2>3. Choose Battlefield</h2>
+
+        <div class="choices">
+
+            <button
+                id="trenchButton"
+                onclick="chooseMap('trenches')">
+                🪖 TRENCHES
+            </button>
+
+            <button
+                id="townButton"
+                onclick="chooseMap('town')">
+                🏘️ TOWN
+            </button>
+
+        </div>
+
+    </div>
+
+    <button id="startButton" onclick="startGame()">
+        🚀 START BATTLE
+    </button>
+
+</div>
+
+
+<!-- =========================
+     GAME
+========================= -->
+
+<div id="gameArea">
+
+    <div id="gameInfo">
+
+        <div class="infoBox">
+            Tank:
+            <span id="tankName">---</span>
+        </div>
+
+        <div class="infoBox">
+            HP:
+            <span id="playerHealth">---</span>
+        </div>
+
+        <div class="infoBox">
+            Enemies:
+            <span id="enemyCount">---</span>
+        </div>
+
+    </div>
+
+    <div id="battleMessage">
+        BATTLE!
+    </div>
+
+    <canvas
+        id="gameCanvas"
+        width="1000"
+        height="650">
+    </canvas>
+
+    <div id="controls">
+        WASD = Move &nbsp; | &nbsp;
+        Mouse = Aim &nbsp; | &nbsp;
+        Click / SPACE = Fire
+    </div>
+
+    <button id="restartButton" onclick="location.reload()">
+        🔄 RETURN TO MENU
+    </button>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   GOOBERGLOB TANK GAME
+   ========================================================= */
+
+
+/* =========================================================
+   GAME DATA
+
+   This is where we can add more tanks later.
+========================================================= */
+
+const tanks = {
+
+    british: {
+
+        light: {
+            name: "Tetrarch",
+            className: "Light",
+            health: 90,
+            speed: 3.8,
+            damage: 18,
+            reload: 450,
+            size: 25
+        },
+
+        medium: {
+            name: "Cromwell",
+            className: "Medium",
+            health: 130,
+            speed: 3,
+            damage: 25,
+            reload: 600,
+            size: 29
+        },
+
+        heavy: {
+            name: "Churchill",
+            className: "Heavy",
+            health: 190,
+            speed: 2,
+            damage: 38,
+            reload: 800,
+            size: 34
+        }
+
+    },
+
+    german: {
+
+        light: {
+            name: "Panzer II",
+            className: "Light",
+            health: 85,
+            speed: 4,
+            damage: 17,
+            reload: 430,
+            size: 25
+        },
+
+        medium: {
+            name: "Panzer IV",
+            className: "Medium",
+            health: 135,
+            speed: 3,
+            damage: 26,
+            reload: 600,
+            size: 29
+        },
+
+        heavy: {
+            name: "Tiger I",
+            className: "Heavy",
+            health: 210,
+            speed: 1.8,
+            damage: 42,
+            reload: 850,
+            size: 35
+        }
+
+    }
+
+};
+
+
+/* =========================================================
+   GAME VARIABLES
+========================================================= */
+
+let selectedFaction = null;
+let selectedTankClass = null;
+let selectedMap = null;
+
+let player;
+let enemies = [];
+let bullets = [];
+
+let keys = {};
+
+let mouse = {
+    x: 500,
+    y: 325
+};
+
+let gameRunning = false;
+
+let lastShot = 0;
+
+
+/* =========================================================
+   CANVAS
+========================================================= */
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+
+/* =========================================================
+   MENU - FACTION
+========================================================= */
+
+function chooseFaction(faction) {
+
+    selectedFaction = faction;
+
+    selectedTankClass = null;
+
+    document
+        .getElementById("britishButton")
+        .classList.remove("selected");
+
+    document
+        .getElementById("germanButton")
+        .classList.remove("selected");
+
+    document
+        .getElementById(faction + "Button")
+        .classList.add("selected");
+
+    createTankButtons();
+
+}
+
+
+/* =========================================================
+   MENU - TANK SELECTION
+========================================================= */
+
+function createTankButtons() {
+
+    const container = document.getElementById("tankChoices");
+
+    container.innerHTML = "";
+
+    const factionTanks = tanks[selectedFaction];
+
+    for (const tankClass in factionTanks) {
+
+        const tank = factionTanks[tankClass];
+
+        const button = document.createElement("button");
+
+        button.className = "tankCard";
+
+        button.innerHTML =
+            tank.name +
+            "<small>" +
+            tank.className +
+            "<br>" +
+            "❤️ " + tank.health +
+            " | ⚡ " + tank.speed +
+            "</small>";
+
+        button.onclick = function() {
+
+            selectedTankClass = tankClass;
+
+            document
+                .querySelectorAll(".tankCard")
+                .forEach(b => b.classList.remove("selected"));
+
+            button.classList.add("selected");
+
+        };
+
+        container.appendChild(button);
+
+    }
+
+}
+
+
+/* =========================================================
+   MENU - MAP
+========================================================= */
+
+function chooseMap(map) {
+
+    selectedMap = map;
+
+    document
+        .getElementById("trenchButton")
+        .classList.remove("selected");
+
+    document
+        .getElementById("townButton")
+        .classList.remove("selected");
+
+    document
+        .getElementById(
+            map === "trenches"
+                ? "trenchButton"
+                : "townButton"
+        )
+        .classList.add("selected");
+
+}
+
+
+/* =========================================================
+   START GAME
+========================================================= */
+
+function startGame() {
+
+    if (!selectedFaction) {
+        alert("Choose British or German first!");
+        return;
+    }
+
+    if (!selectedTankClass) {
+        alert("Choose a tank first!");
+        return;
+    }
+
+    if (!selectedMap) {
+        alert("Choose a battlefield first!");
+        return;
+    }
+
+    document.getElementById("menu").style.display = "none";
+
+    document.getElementById("gameArea").style.display = "block";
+
+    createBattle();
+
+    gameRunning = true;
+
+    gameLoop();
+
+}
+
+
+/* =========================================================
+   CREATE BATTLE
+========================================================= */
+
+function createBattle() {
+
+    const tankData =
+        tanks[selectedFaction][selectedTankClass];
+
+    player = {
+
+        x: 150,
+        y: 325,
+
+        angle: 0,
+
+        health: tankData.health,
+        maxHealth: tankData.health,
+
+        speed: tankData.speed,
+        damage: tankData.damage,
+
+        reload: tankData.reload,
+
+        size: tankData.size,
+
+        name: tankData.name,
+
+        faction: selectedFaction
+
+    };
+
+
+    document.getElementById("tankName").textContent =
+        player.name;
+
+
+    createEnemies();
+
+}
+
+
+/* =========================================================
+   CREATE ENEMIES
+========================================================= */
+
+function createEnemies() {
+
+    enemies = [];
+
+    const enemyFaction =
+        selectedFaction === "british"
+            ? "german"
+            : "british";
+
+
+    const enemyTypes = [
+        "light",
+        "medium",
+        "heavy"
+    ];
+
+
+    for (let i = 0; i < 3; i++) {
+
+        const type =
+            enemyTypes[i];
+
+        const data =
+            tanks[enemyFaction][type];
+
+
+        enemies.push({
+
+            x: 700 + Math.random() * 180,
+
+            y: 120 + Math.random() * 420,
+
+            angle: Math.PI,
+
+            health: data.health,
+
+            maxHealth: data.health,
+
+            speed: data.speed * 0.45,
+
+            damage: data.damage,
+
+            reload: data.reload + 400,
+
+            size: data.size,
+
+            name: data.name,
+
+            faction: enemyFaction,
+
+            lastShot: 0
+
+        });
+
+    }
+
+}
+
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+window.addEventListener("keydown", function(event) {
+
+    keys[event.key.toLowerCase()] = true;
+
+    if (event.code === "Space") {
+
+        event.preventDefault();
+
+        shoot();
+
+    }
+
+});
+
+
+window.addEventListener("keyup", function(event) {
+
+    keys[event.key.toLowerCase()] = false;
+
+});
+
+
+/* =========================================================
+   MOUSE
+========================================================= */
+
+canvas.addEventListener("mousemove", function(event) {
+
+    const rect = canvas.getBoundingClientRect();
+
+    mouse.x =
+        (event.clientX - rect.left)
+        * canvas.width / rect.width;
+
+    mouse.y =
+        (event.clientY - rect.top)
+        * canvas.height / rect.height;
+
+});
+
+
+canvas.addEventListener("mousedown", function() {
+
+    shoot();
+
+});
+
+
+/* =========================================================
+   PLAYER MOVEMENT
+========================================================= */
+
+function movePlayer() {
+
+    if (!player) return;
+
+
+    let dx = 0;
+    let dy = 0;
+
+
+    if (keys["w"]) dy -= 1;
+
+    if (keys["s"]) dy += 1;
+
+    if (keys["a"]) dx -= 1;
+
+    if (keys["d"]) dx += 1;
+
+
+    if (dx !== 0 || dy !== 0) {
+
+        const length =
+            Math.sqrt(dx * dx + dy * dy);
+
+        dx /= length;
+        dy /= length;
+
+
+        player.x += dx * player.speed;
+
+        player.y += dy * player.speed;
+
+    }
+
+
+    /* Keep tank inside battlefield */
+
+    player.x =
+        Math.max(player.size,
+            Math.min(
+                canvas.width - player.size,
+                player.x
+            )
+        );
+
+    player.y =
+        Math.max(player.size,
+            Math.min(
+                canvas.height - player.size,
+                player.y
+            )
+        );
+
+}
+
+
+/* =========================================================
+   PLAYER AIM
+========================================================= */
+
+function aimPlayer() {
+
+    player.angle =
+        Math.atan2(
+            mouse.y - player.y,
+            mouse.x - player.x
+        );
+
+}
+
+
+/* =========================================================
+   SHOOT
+========================================================= */
+
+function shoot() {
+
+    if (!gameRunning) return;
+
+    const now = Date.now();
+
+    if (now - lastShot < player.reload) {
+        return;
+    }
+
+    lastShot = now;
+
+
+    bullets.push({
+
+        x:
+            player.x +
+            Math.cos(player.angle)
+            * player.size,
+
+        y:
+            player.y +
+            Math.sin(player.angle)
+            * player.size,
+
+        vx:
+            Math.cos(player.angle) * 8,
+
+        vy:
+            Math.sin(player.angle) * 8,
+
+        damage: player.damage,
+
+        enemy: false
+
+    });
+
+}
+
+
+/* =========================================================
+   ENEMY AI
+========================================================= */
+
+function updateEnemies() {
+
+    enemies.forEach(enemy => {
+
+        const dx =
+            player.x - enemy.x;
+
+        const dy =
+            player.y - enemy.y;
+
+        const distance =
+            Math.sqrt(dx * dx + dy * dy);
+
+
+        enemy.angle =
+            Math.atan2(dy, dx);
+
+
+        /* Move toward player */
+
+        if (distance > 230) {
+
+            enemy.x +=
+                Math.cos(enemy.angle)
+                * enemy.speed;
+
+            enemy.y +=
+                Math.sin(enemy.angle)
+                * enemy.speed;
+
+        }
+
+
+        /* Shoot */
+
+        const now = Date.now();
+
+        if (
+            distance < 600 &&
+            now - enemy.lastShot > enemy.reload
+        ) {
+
+            enemy.lastShot = now;
+
+            bullets.push({
+
+                x:
+                    enemy.x +
+                    Math.cos(enemy.angle)
+                    * enemy.size,
+
+                y:
+                    enemy.y +
+                    Math.sin(enemy.angle)
+                    * enemy.size,
+
+                vx:
+                    Math.cos(enemy.angle) * 5,
+
+                vy:
+                    Math.sin(enemy.angle) * 5,
+
+                damage: enemy.damage,
+
+                enemy: true
+
+            });
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   BULLETS
+========================================================= */
+
+function updateBullets() {
+
+    bullets.forEach(bullet => {
+
+        bullet.x += bullet.vx;
+
+        bullet.y += bullet.vy;
+
+    });
+
+
+    /* Remove bullets outside map */
+
+    bullets =
+        bullets.filter(bullet =>
+            bullet.x > 0 &&
+            bullet.x < canvas.width &&
+            bullet.y > 0 &&
+            bullet.y < canvas.height
+        );
+
+
+    /* Bullet collision */
+
+    bullets.forEach((bullet, bulletIndex) => {
+
+
+        if (!bullet.enemy) {
+
+            enemies.forEach((enemy, enemyIndex) => {
+
+                const dx =
+                    bullet.x - enemy.x;
+
+                const dy =
+                    bullet.y - enemy.y;
+
+                const distance =
+                    Math.sqrt(dx * dx + dy * dy);
+
+
+                if (distance < enemy.size) {
+
+                    enemy.health -= bullet.damage;
+
+                    bullets.splice(
+                        bulletIndex,
+                        1
+                    );
+
+
+                    if (enemy.health <= 0) {
+
+                        enemies.splice(
+                            enemyIndex,
+                            1
+                        );
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+        else {
+
+            const dx =
+                bullet.x - player.x;
+
+            const dy =
+                bullet.y - player.y;
+
+            const distance =
+                Math.sqrt(dx * dx + dy * dy);
+
+
+            if (distance < player.size) {
+
+                player.health -= bullet.damage;
+
+                bullets.splice(
+                    bulletIndex,
+                    1
+                );
+
+            }
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   DRAW MAP
+========================================================= */
+
+function drawMap() {
+
+    if (selectedMap === "trenches") {
+
+        drawTrenches();
+
+    }
+
+    else if (selectedMap === "town") {
+
+        drawTown();
+
+    }
+
+}
+
+
+/* =========================================================
+   TRENCH MAP
+========================================================= */
+
+function drawTrenches() {
+
+    ctx.fillStyle = "#817852";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    /* Mud */
+
+    ctx.fillStyle = "#675d3d";
+
+    for (let i = 0; i < 30; i++) {
+
+        const x =
+            (i * 137) % canvas.width;
+
+        const y =
+            (i * 83) % canvas.height;
+
+        ctx.fillRect(
+            x,
+            y,
+            40,
+            8
+        );
+
+    }
+
+
+    /* Trenches */
+
+    ctx.fillStyle = "#3d3826";
+
+    ctx.fillRect(
+        0,
+        90,
+        1000,
+        65
+    );
+
+    ctx.fillRect(
+        0,
+        495,
+        1000,
+        65
+    );
+
+
+    /* Sandbags */
+
+    ctx.fillStyle = "#b3a36d";
+
+    for (let x = 20; x < 980; x += 45) {
+
+        ctx.fillRect(
+            x,
+            72,
+            32,
+            18
+        );
+
+        ctx.fillRect(
+            x,
+            560,
+            32,
+            18
+        );
+
+    }
+
+
+    /* Wooden barriers */
+
+    ctx.strokeStyle = "#4d3825";
+
+    ctx.lineWidth = 7;
+
+    for (let x = 100; x < 900; x += 180) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(x, 170);
+
+        ctx.lineTo(x + 50, 220);
+
+        ctx.stroke();
+
+        ctx.beginPath();
+
+        ctx.moveTo(x + 50, 170);
+
+        ctx.lineTo(x, 220);
+
+        ctx.stroke();
+
+    }
+
+}
+
+
+/* =========================================================
+   TOWN MAP
+========================================================= */
+
+function drawTown() {
+
+    ctx.fillStyle = "#8d8774";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    /* Roads */
+
+    ctx.fillStyle = "#55534a";
+
+    ctx.fillRect(
+        0,
+        270,
+        canvas.width,
+        120
+    );
+
+    ctx.fillRect(
+        440,
+        0,
+        120,
+        canvas.height
+    );
+
+
+    /* Buildings */
+
+    const buildings = [
+
+        [40, 40, 180, 160],
+        [280, 40, 120, 160],
+
+        [620, 40, 160, 170],
+        [830, 70, 120, 120],
+
+        [40, 430, 170, 150],
+        [270, 450, 130, 130],
+
+        [620, 440, 180, 150],
+        [850, 420, 110, 150]
+
+    ];
+
+
+    ctx.fillStyle = "#504d43";
+
+    buildings.forEach(building => {
+
+        ctx.fillRect(
+            building[0],
+            building[1],
+            building[2],
+            building[3]
+        );
+
+    });
+
+
+    /* Windows */
+
+    ctx.fillStyle = "#b8a76d";
+
+    buildings.forEach(building => {
+
+        for (
+            let x = building[0] + 20;
+            x < building[0] + building[2] - 15;
+            x += 45
+        ) {
+
+            for (
+                let y = building[1] + 25;
+                y < building[1] + building[3] - 15;
+                y += 45
+            ) {
+
+                ctx.fillRect(
+                    x,
+                    y,
+                    18,
+                    20
+                );
+
+            }
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   DRAW TANK
+========================================================= */
+
+function drawTank(tank) {
+
+    ctx.save();
+
+    ctx.translate(
+        tank.x,
+        tank.y
+    );
+
+    ctx.rotate(tank.angle);
+
+
+    /* Tank tracks */
+
+    ctx.fillStyle = "#22251c";
+
+    ctx.fillRect(
+        -tank.size,
+        -tank.size * 0.8,
+        tank.size * 2,
+        tank.size * 0.35
+    );
+
+    ctx.fillRect(
+        -tank.size,
+        tank.size * 0.45,
+        tank.size * 2,
+        tank.size * 0.35
+    );
+
+
+    /* Tank body */
+
+    if (tank.faction === "british") {
+
+        ctx.fillStyle = "#53613b";
+
+    }
+
+    else {
+
+        ctx.fillStyle = "#777052";
+
+    }
+
+
+    ctx.fillRect(
+        -tank.size * 0.75,
+        -tank.size * 0.55,
+        tank.size * 1.5,
+        tank.size * 1.1
+    );
+
+
+    /* Turret */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        0,
+        tank.size * 0.55,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    /* Cannon */
+
+    ctx.fillStyle = "#24251d";
+
+    ctx.fillRect(
+        0,
+        -4,
+        tank.size * 1.4,
+        8
+    );
+
+
+    ctx.restore();
+
+
+    /* Health bar */
+
+    const barWidth =
+        tank.size * 2;
+
+    const healthPercent =
+        Math.max(
+            0,
+            tank.health / tank.maxHealth
+        );
+
+
+    ctx.fillStyle = "#241f18";
+
+    ctx.fillRect(
+        tank.x - barWidth / 2,
+        tank.y - tank.size - 12,
+        barWidth,
+        7
+    );
+
+
+    ctx.fillStyle = "#d6c56c";
+
+    ctx.fillRect(
+        tank.x - barWidth / 2,
+        tank.y - tank.size - 12,
+        barWidth * healthPercent,
+        7
+    );
+
+}
+
+
+/* =========================================================
+   DRAW BULLETS
+========================================================= */
+
+function drawBullets() {
+
+    bullets.forEach(bullet => {
+
+        ctx.fillStyle =
+            bullet.enemy
+                ? "#c7b36a"
+                : "#eee5c5";
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            bullet.x,
+            bullet.y,
+            5,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+    });
+
+}
+
+
+/* =========================================================
+   UI
+========================================================= */
+
+function updateUI() {
+
+    document.getElementById(
+        "playerHealth"
+    ).textContent =
+        Math.max(
+            0,
+            Math.floor(player.health)
+        );
+
+
+    document.getElementById(
+        "enemyCount"
+    ).textContent =
+        enemies.length;
+
+}
+
+
+/* =========================================================
+   GAME STATE
+========================================================= */
+
+function checkGameState() {
+
+    if (player.health <= 0) {
+
+        gameRunning = false;
+
+        document.getElementById(
+            "battleMessage"
+        ).textContent =
+            "💀 YOUR TANK WAS DESTROYED!";
+
+
+        document.getElementById(
+            "restartButton"
+        ).style.display = "block";
+
+        return;
+
+    }
+
+
+    if (enemies.length === 0) {
+
+        gameRunning = false;
+
+        document.getElementById(
+            "battleMessage"
+        ).textContent =
+            "🏆 VICTORY! ENEMY FORCES DESTROYED!";
+
+
+        document.getElementById(
+            "restartButton"
+        ).style.display = "block";
+
+    }
+
+}
+
+
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+function gameLoop() {
+
+    if (!gameRunning) return;
+
+
+    /* Update */
+
+    movePlayer();
+
+    aimPlayer();
+
+    updateEnemies();
+
+    updateBullets();
+
+
+    /* Draw */
+
+    drawMap();
+
+    drawBullets();
+
+    enemies.forEach(drawTank);
+
+    drawTank(player);
+
+
+    /* UI */
+
+    updateUI();
+
+    checkGameState();
+
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+
+</script>
+
+</body>
+</html>

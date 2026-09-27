@@ -2230,7 +2230,9 @@ function createBattle() {
                 ? { x: 150, y: canvas.height * 0.50 }
                 : selectedMap === "bocage"
                     ? { x: 70, y: 300 }
-                    : { x: 130, y: 350 };
+                    : selectedMap === "town"
+                        ? { x: 150, y: 820 }
+                        : { x: 130, y: 350 };
 
     player = {
 
@@ -2430,186 +2432,66 @@ function createCampaignAllies(){
 ===================================================== */
 
 function createTownMap() {
-
-    /*
-       RUINED TOWN LAYOUT
-       The collision rectangles stay simple, but the layout is
-       arranged around two proper streets so the map reads like
-       a bombed-out WWII town instead of a collection of boxes.
-    */
-
-    // North-west block
-    addObstacle(
-        35, 35, 185, 155,
-        "building"
-    );
-
-    addObstacle(
-        245, 55, 150, 130,
-        "building"
-    );
-
-    // North-east block
-    addObstacle(
-        690, 40, 175, 150,
-        "building"
-    );
-
-    addObstacle(
-        900, 55, 155, 185,
-        "building"
-    );
-
-    // South-west block
-    addObstacle(
-        35, 475, 175, 175,
-        "building"
-    );
-
-    addObstacle(
-        240, 505, 150, 125,
-        "building"
-    );
-
-    // South-east block
-    addObstacle(
-        690, 490, 180, 155,
-        "building"
-    );
-
-    addObstacle(
-        900, 450, 160, 195,
-        "building"
-    );
-
-    addObstacle(
-        275, 275, 125, 20,
-        "wall"
-    );
-
-    addObstacle(
-        700, 275, 135, 20,
-        "wall"
-    );
-
-    // Rubble piles beside the vertical street.
-    // These are decorative/solid rubble from the original city layout.
-    // Burned-out vehicles left in the streets
-    addObstacle(
-        610, 390, 78, 36,
-        "wreck"
-    );
-
-    addObstacle(
-        315, 385, 62, 30,
-        "wreck"
-    );
-
-    addObstacle(
-        760, 315, 65, 30,
-        "wreck"
-    );
-    if (selectedGameMode === 'skirmish') {
-        addObstacle(1140, 55, 155, 130, "building");
-        addObstacle(1320, 40, 180, 150, "building");
-        addObstacle(1510, 250, 70, 120, "wall");
-        addObstacle(1180, 500, 170, 145, "building");
-        addObstacle(1380, 470, 150, 170, "building");
-        addObstacle(1120, 330, 70, 30, "wreck");
-        addObstacle(1280, 300, 78, 36, "wreck");
-        addObstacle(1480, 420, 62, 30, "wreck");
-    }
-}
-
-
-/* =====================================================
-   TRENCH MAP
-===================================================== */
-
-function createTrenchMap() {
-    // SKIRMISH TRENCH FRONT:
-    // Two fortified team sides with a deliberately open no-man's-land in the
-    // middle. Existing prop sizes are kept; we simply add more props across
-    // the larger 2400x1500 battlefield.
+    // FULL CITY SKIRMISH: dense urban battlefield across the entire 2400x1500 world.
     if (selectedGameMode === "skirmish") {
-        // LEFT / FRIENDLY defensive belts.
-        const leftTrenches = [
-            [90, 80, 70, 470], [90, 780, 70, 640],
-            [330, 40, 70, 520], [330, 860, 70, 560],
-            [570, 120, 70, 430], [570, 900, 70, 500]
+        // Buildings form city blocks on BOTH sides and throughout the centre.
+        // Clear roads are deliberately left between every block.
+        const buildings = [
+            // WEST / friendly districts
+            [40,40,230,190],[330,45,210,175],[40,300,190,190],[300,285,240,205],
+            [40,610,220,180],[315,600,225,195],[40,930,205,190],[300,920,245,205],
+            [40,1240,230,190],[330,1230,215,200],
+            // WEST-CENTRE districts
+            [650,40,220,185],[925,45,185,170],[650,300,205,180],[910,285,190,200],
+            [650,930,210,190],[915,915,185,205],[650,1240,220,190],[925,1225,180,210],
+            // EAST-CENTRE districts
+            [1425,40,220,185],[1695,45,200,170],[1425,300,210,180],[1685,285,210,200],
+            [1425,930,210,190],[1685,915,210,205],[1425,1240,220,190],[1695,1225,200,210],
+            // EAST / enemy districts
+            [1985,40,230,190],[2270,45,90,175],[1985,300,220,190],[2265,285,95,205],
+            [1985,610,225,180],[2265,600,95,195],[1985,930,220,190],[2265,915,95,205],
+            [1985,1240,230,190],[2265,1225,95,210],
+            // Extra central city blocks around the civic area
+            [1035,40,175,170],[1235,40,175,170],
+            [1030,930,175,185],[1235,930,175,185]
         ];
+        buildings.forEach(b => addObstacle(b[0], b[1], b[2], b[3], "building"));
 
-        // RIGHT / ENEMY defensive belts.
-        const rightTrenches = [
-            [2240, 80, 70, 470], [2240, 780, 70, 640],
-            [2000, 40, 70, 520], [2000, 860, 70, 560],
-            [1760, 120, 70, 430], [1760, 900, 70, 500]
-        ];
+        // Central civic square and Town Hall. Roads remain open around it.
+        addObstacle(1080,575,240,190,"townhall");
+        addObstacle(1010,500,55,120,"wall");
+        addObstacle(1335,500,55,120,"wall");
+        addObstacle(1010,790,55,120,"wall");
+        addObstacle(1335,790,55,120,"wall");
 
-        leftTrenches.concat(rightTrenches).forEach(function(t) {
-            addObstacle(t[0], t[1], t[2], t[3], "trench");
-        });
-
-        // Bunkers sit behind and between trench sections.
+        // Smaller shops, apartments, churches/utility ruins and walls fill gaps.
         [
-            [205, 250], [205, 1030], [445, 650], [445, 1180],
-            [2115, 250], [2115, 1030], [1875, 650], [1875, 1180]
-        ].forEach(function(pos) {
-            addObstacle(pos[0], pos[1], 115, 70, "bunker");
-        });
+            [565,235,95,95],[565,975,95,95],[785,235,85,90],[785,1120,85,90],
+            [1530,235,95,95],[1530,975,95,95],[1760,235,85,90],[1760,1120,85,90],
+            [1040,260,75,105],[1285,260,75,105],[1040,1160,75,105],[1285,1160,75,105],
+            [760,700,100,45],[1540,700,100,45],[890,700,80,45],[1425,700,80,45]
+        ].forEach(w => addObstacle(w[0],w[1],w[2],w[3],"ruin"));
 
-        // Defensive wire on both sides, leaving the centre open.
+        // Burned-out vehicles and rubble along the streets.
         [
-            [145, 610, 180, 22], [390, 610, 150, 22], [630, 600, 130, 22],
-            [2070, 610, 180, 22], [1860, 610, 150, 22], [1640, 600, 100, 22],
-            [145, 700, 150, 22], [2100, 700, 150, 22]
-        ].forEach(function(w) {
-            addObstacle(w[0], w[1], w[2], w[3], "wire");
-        });
-
-        // No-man's-land: craters and scattered cover, but no continuous
-        // trench/bunker wall so both teams have a real open battlefield.
-        [
-            [820, 220, 70, 50], [1030, 430, 65, 45], [1280, 250, 80, 55],
-            [1510, 470, 65, 45], [920, 820, 75, 52], [1170, 1030, 70, 50],
-            [1430, 900, 75, 52], [1650, 1120, 70, 48], [1090, 1350, 65, 45],
-            [1370, 1260, 70, 48]
-        ].forEach(function(c) {
-            addObstacle(c[0], c[1], c[2], c[3], "crater");
-        });
-
-        // Wrecks/debris throughout the battlefield. They use the existing
-        // wreck renderer, so they stay the same physical size as before.
-        [
-            [760, 520], [980, 680], [1180, 520], [1450, 650], [1610, 780],
-            [900, 1120], [1300, 1180], [1540, 1040], [1080, 250], [1580, 280],
-            [720, 930], [1690, 360]
-        ].forEach(function(pos) {
-            addObstacle(pos[0], pos[1], 70, 38, "wreck");
-        });
-
+            [565,390,72,34],[850,390,72,34],[1460,390,72,34],[1770,390,72,34],[
+            [570,820,72,34],[850,820,72,34],[1460,820,72,34],[1770,820,72,34],
+            [260,550,72,34],[2070,550,72,34],[260,850,72,34],[2070,850,72,34],
+            [600,1160,72,34],[840,1160,72,34],[1500,1160,72,34],[1800,1160,72,34],
+            [980,430,65,30],[1360,430,65,30],[980,875,65,30],[1360,875,65,30]
+        ].forEach(w => addObstacle(w[0],w[1],w[2],w[3],"wreck"));
         return;
     }
 
-    // Original-size non-skirmish trench map.
-    addObstacle(0, 120, 300, 55, "trench");
-    addObstacle(360, 100, 280, 55, "trench");
-    addObstacle(700, 125, 400, 55, "trench");
-    addObstacle(0, 520, 260, 55, "trench");
-    addObstacle(320, 545, 310, 55, "trench");
-    addObstacle(700, 515, 400, 55, "trench");
-    addObstacle(350, 220, 115, 70, "bunker");
-    addObstacle(690, 360, 125, 75, "bunker");
-    addObstacle(120, 315, 170, 22, "wire");
-    addObstacle(820, 300, 180, 22, "wire");
-    addObstacle(430, 400, 70, 50, "crater");
-    addObstacle(570, 230, 65, 45, "crater");
+    // Original compact town layout for non-Skirmish modes.
+    [
+        [35,35,185,155],[245,55,150,130],[690,40,175,150],[900,55,160,185],
+        [35,475,175,175],[240,505,150,125],[690,490,180,155],[900,450,160,195]
+    ].forEach(b => addObstacle(b[0],b[1],b[2],b[3],"building"));
+    addObstacle(275,275,125,20,"wall"); addObstacle(700,275,135,20,"wall");
+    addObstacle(610,390,78,36,"wreck"); addObstacle(315,385,62,30,"wreck"); addObstacle(760,315,65,30,"wreck");
 }
 
-
-/* =====================================================
-   SNOW MAP
-===================================================== */
 
 function createSnowMap() {
 
@@ -3325,12 +3207,19 @@ function createAllies() {
                 [260, 650],
                 [430, 520]
             ]
-            : [
-                [230, 250],
-                [250, 350],
-                [230, 450],
-                [350, 550]
-            ];
+            : selectedMap === "town"
+                ? [
+                    [600, 330],
+                    [600, 610],
+                    [600, 900],
+                    [600, 1180]
+                ]
+                : [
+                    [230, 250],
+                    [250, 350],
+                    [230, 450],
+                    [350, 550]
+                ];
 
         for (let i = 0; i < 4; i++) {
             const type = allyTypes[i];
@@ -3583,7 +3472,40 @@ function updateAllies() {
             }
         });
 
-        const combatPriorityRange = 520;
+        // SKIRMISH: allies have their own battlefield jobs. They seek enemy
+        // tanks even when the player is nowhere near them, fight their
+        // assigned opponent, and then converge to help nearby allies.
+        if (selectedGameMode === "skirmish") {
+            let skirmishTarget = null;
+            let bestSkirmishScore = Infinity;
+
+            enemies.forEach(function(enemy) {
+                if (enemy.destroyed) return;
+                const d = Math.hypot(enemy.x - ally.x, enemy.y - ally.y);
+                const threatenedAlly = allies.some(function(other) {
+                    return other !== ally && !other.destroyed &&
+                        Math.hypot(enemy.x - other.x, enemy.y - other.y) < 360;
+                });
+                let score = d;
+                if (threatenedAlly) score -= 180;
+                // Spread the first few allies across different opponents so
+                // the battle starts as several 1v1s instead of a dog-pile.
+                if (allyIndex > 0 && allies[allyIndex - 1] &&
+                    allies[allyIndex - 1].aiTarget === enemy) score += 260;
+                if (score < bestSkirmishScore) {
+                    bestSkirmishScore = score;
+                    skirmishTarget = enemy;
+                }
+            });
+
+            if (skirmishTarget) {
+                ally.aiTarget = skirmishTarget;
+                ally.aiTargetUntil = now + 5000;
+                bestEnemy = skirmishTarget;
+            }
+        }
+
+        const combatPriorityRange = selectedGameMode === "skirmish" ? 1300 : 520;
         let fightingNearbyEnemy = false;
 
         if (bestEnemy) {
@@ -3593,7 +3515,11 @@ function updateAllies() {
             );
 
             // Keep a target locked for a short period if it is still useful.
-            if (enemyDistance <= combatPriorityRange || ally.aiTarget === bestEnemy) {
+            if (selectedGameMode === "skirmish") {
+                ally.aiTarget = bestEnemy;
+                ally.aiTargetUntil = now + 5000;
+                fightingNearbyEnemy = enemyDistance <= combatPriorityRange;
+            } else if (enemyDistance <= combatPriorityRange || ally.aiTarget === bestEnemy) {
                 ally.aiTarget = bestEnemy;
                 ally.aiTargetUntil = now + 1200;
                 fightingNearbyEnemy = enemyDistance <= combatPriorityRange;
@@ -3610,7 +3536,28 @@ function updateAllies() {
         let objective = null;
         let campaignBunkerTarget = null;
 
-        if (selectedGameMode === "campaign" && playerAlive) {
+        if (selectedGameMode === "skirmish" && fightingNearbyEnemy && bestEnemy) {
+            const enemyAngle = Math.atan2(bestEnemy.y - ally.y, bestEnemy.x - ally.x);
+            const enemyDistance = Math.hypot(bestEnemy.x - ally.x, bestEnemy.y - ally.y);
+            const preferredRange = ally.className === "light" ? 230 : 280;
+
+            if (enemyDistance > preferredRange + 45) {
+                targetX = bestEnemy.x;
+                targetY = bestEnemy.y;
+            } else if (enemyDistance < preferredRange - 55) {
+                targetX = ally.x - Math.cos(enemyAngle) * 80;
+                targetY = ally.y - Math.sin(enemyAngle) * 80;
+            } else {
+                const strafe = ally.followSide * Math.PI / 2;
+                targetX = ally.x + Math.cos(enemyAngle + strafe) * 55;
+                targetY = ally.y + Math.sin(enemyAngle + strafe) * 55;
+            }
+        } else if (selectedGameMode === "skirmish" && playerAlive) {
+            // If no opponent is currently close enough to fight, move toward
+            // the centre battle line rather than attaching to the player.
+            targetX = SKIRMISH_WORLD_WIDTH * 0.50;
+            targetY = ally.y + (player.y - ally.y) * 0.12;
+        } else if (selectedGameMode === "campaign" && playerAlive) {
             const heading = Number.isFinite(player.angle) ? player.angle : -Math.PI / 2;
             const behindAngle = heading + Math.PI;
             const sideOffset = ally.followSide * 58;
@@ -3861,9 +3808,11 @@ function createEnemies() {
     ) {
 
         preferred = [
-            [850, 300],
-            [980, 350],
-            [850, 420]
+            [1900, 300],
+            [1900, 600],
+            [1900, 900],
+            [1900, 1200],
+            [2220, 750]
         ];
     }
 
@@ -3907,7 +3856,7 @@ function createEnemies() {
         // defensive line. Do not use the generic Point Control spawner here:
         // that routine can fall back to a map-wide search and put enemies
         // beside the player.
-        const spawn = (selectedGameMode === "skirmish" && selectedMap === "trenches")
+        const spawn = (selectedGameMode === "skirmish" && (selectedMap === "trenches" || selectedMap === "town"))
             ? findSpawnPoint(preferred[i], data.size, null, "enemy")
             : findPointControlSpawn("enemy", i, data.size, null);
 
@@ -6402,8 +6351,15 @@ function updateEnemies() {
 
         friendlyTargets.forEach(function(target) {
             const d = Math.hypot(target.x - enemy.x, target.y - enemy.y);
-            if (d < nearestCombatDistance) {
-                nearestCombatDistance = d;
+            let score = d;
+            if (selectedGameMode === "skirmish" && target === player) {
+                // Do not make the player the automatic focus target.
+                // AI tanks first engage nearby allied tanks; the player is
+                // selected when genuinely closer or when the player intervenes.
+                score += 220;
+            }
+            if (score < nearestCombatDistance) {
+                nearestCombatDistance = score;
                 combatTarget = target;
             }
         });
@@ -6461,9 +6417,30 @@ function updateEnemies() {
             objectiveActive = false;
         }
 
+        // SKIRMISH: enemies have their own battlefield engagements too.
+        // They seek allied tanks rather than automatically marching at the
+        // player, keep separate 1v1s when possible, and assist a nearby
+        // friendly enemy tank after their own target is destroyed.
+        if (selectedGameMode === "skirmish" && combatTarget) {
+            const combatAngle = Math.atan2(combatTarget.y - enemy.y, combatTarget.x - enemy.x);
+            const preferredRange = enemy.aiRole === "light" ? 240 : 300;
+            if (nearestCombatDistance > preferredRange + 55) {
+                targetX = combatTarget.x;
+                targetY = combatTarget.y;
+            } else if (nearestCombatDistance < preferredRange - 55) {
+                targetX = enemy.x - Math.cos(combatAngle) * 75;
+                targetY = enemy.y - Math.sin(combatAngle) * 75;
+            } else {
+                const strafe = enemy.aiSide * Math.PI / 2;
+                targetX = enemy.x + Math.cos(combatAngle + strafe) * 55;
+                targetY = enemy.y + Math.sin(combatAngle + strafe) * 55;
+            }
+            objectiveActive = false;
+        }
+
         // Normal tank-role movement is only used when there is no active
         // Point Control objective.
-        if (!objectiveActive && enemy.aiRole === "light") {
+        if (selectedGameMode !== "skirmish" && !objectiveActive && enemy.aiRole === "light") {
             const flankDistance = 250;
             const forwardDistance = 90;
             const sideAngle = toPlayerAngle + enemy.aiSide * Math.PI / 2;
@@ -6477,7 +6454,7 @@ function updateEnemies() {
                 targetY = player.y + Math.sin(orbitAngle) * 260;
             }
         }
-        else if (!objectiveActive && enemy.aiRole === "medium") {
+        else if (selectedGameMode !== "skirmish" && !objectiveActive && enemy.aiRole === "medium") {
             const desiredDistance = 300;
             const strafeAngle = toPlayerAngle + enemy.aiSide * Math.PI / 2;
 
@@ -6494,7 +6471,7 @@ function updateEnemies() {
                 targetY = player.y + Math.sin(strafeAngle) * desiredDistance;
             }
         }
-        else if (!objectiveActive) {
+        else if (selectedGameMode !== "skirmish" && !objectiveActive) {
             const attackDistance = 300;
             if (playerDistance > attackDistance) {
                 targetX = player.x;
@@ -7106,6 +7083,26 @@ function drawTown() {
         mapY(44)
     );
 
+    // Extra avenues across the enlarged Skirmish city.
+    if (selectedGameMode === "skirmish") {
+        ctx.fillStyle = "#454640";
+        [265, 650, 1045, 1235].forEach(y => ctx.fillRect(0, mapY(y), canvas.width, mapY(92)));
+        [455, 805, 1160, 1540, 1885].forEach(x => ctx.fillRect(mapX(x), 0, mapX(92), canvas.height));
+
+        ctx.fillStyle = "#3b3c38";
+        [265, 650, 1045, 1235].forEach(y => ctx.fillRect(0, mapY(y + 25), canvas.width, mapY(42)));
+        [455, 805, 1160, 1540, 1885].forEach(x => ctx.fillRect(mapX(x + 25), 0, mapX(42), canvas.height));
+
+        // Central civic square around the town hall.
+        ctx.fillStyle = "#77766b";
+        ctx.fillRect(mapX(1010), mapY(505), mapX(400), mapY(370));
+        ctx.fillStyle = "#5d5d56";
+        ctx.fillRect(mapX(1040), mapY(535), mapX(340), mapY(310));
+        ctx.strokeStyle = "#858378";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(mapX(1040), mapY(535), mapX(340), mapY(310));
+    }
+
     // Buildings and street debris.
     obstacles
         .filter(
@@ -7116,6 +7113,10 @@ function drawTown() {
         .forEach(
             drawBuilding
         );
+
+    obstacles
+        .filter(o => o.type === "townhall")
+        .forEach(drawTownHall);
 
     obstacles
         .filter(
@@ -7182,6 +7183,51 @@ function drawTown() {
     );
 }
 
+
+function drawTownHall(o) {
+    const x = o.x, y = o.y, w = o.width, h = o.height;
+    ctx.save();
+    // Broad civic building with a recognisable central tower.
+    ctx.fillStyle = "#30312c";
+    ctx.fillRect(x + 12, y + 14, w, h);
+    ctx.fillStyle = "#777364";
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = "#4b4a41";
+    ctx.fillRect(x + 8, y + 12, w - 16, h - 20);
+
+    // Front portico.
+    ctx.fillStyle = "#8b8774";
+    ctx.fillRect(x + 38, y + 70, w - 76, h - 92);
+    for (let i = 0; i < 5; i++) {
+        const px = x + 58 + i * ((w - 116) / 4);
+        ctx.fillStyle = "#5b594d";
+        ctx.fillRect(px, y + 82, 12, h - 116);
+    }
+    ctx.fillStyle = "#34352f";
+    ctx.fillRect(x + w / 2 - 26, y + h - 58, 52, 36);
+
+    // Clock tower / civic roof.
+    ctx.fillStyle = "#625f50";
+    ctx.fillRect(x + w / 2 - 42, y - 58, 84, 70);
+    ctx.fillStyle = "#393a34";
+    ctx.beginPath();
+    ctx.moveTo(x + w / 2 - 52, y - 58);
+    ctx.lineTo(x + w / 2, y - 92);
+    ctx.lineTo(x + w / 2 + 52, y - 58);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#d0c7a2";
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y - 25, 18, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#45453e"; ctx.lineWidth = 3; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + w / 2, y - 25); ctx.lineTo(x + w / 2, y - 37); ctx.moveTo(x + w / 2, y - 25); ctx.lineTo(x + w / 2 + 9, y - 20); ctx.stroke();
+
+    // Civic sign.
+    ctx.fillStyle = "#c5b98c";
+    ctx.font = "bold 18px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("TOWN HALL", x + w / 2, y + 52);
+    ctx.restore();
+}
 
 function drawTownCrater(
     x,

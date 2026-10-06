@@ -762,17 +762,6 @@ const tanks = {
         }
 ,
 
-        tortoise: {
-            name: "Tortoise",
-            className: "SUPER-HEAVY",
-            health: 445,
-            speed: 0.88,
-            damage: 92,
-            reload: 5000,
-            size: 53,
-            armor: 0.28,
-            model: "tortoise"
-        }
 
     },
 
@@ -828,17 +817,6 @@ const tanks = {
         }
 ,
 
-        maus: {
-            name: "Maus",
-            className: "SUPER-HEAVY",
-            health: 535,
-            speed: 0.72,
-            damage: 108,
-            reload: 5200,
-            size: 55,
-            armor: 0.20,
-            model: "maus"
-        }
 
     },
 
@@ -893,18 +871,6 @@ const tanks = {
             ability: "OVERPRESSURE SHELL"
         },
 
-        t35: {
-            name: "T-35",
-            className: "SUPER-HEAVY",
-            health: 390,
-            speed: 1.05,
-            damage: 82,
-            reload: 3600,
-            size: 50,
-            armor: 0.34,
-            model: "t35",
-            ability: "ALL TURRETS"
-        }
 
     },
 
@@ -944,8 +910,7 @@ const tanks = {
             size: 36,
             armor: 0.46,
             model: "pershing"
-        }
-,
+        },
 
         calliope: {
             name: "M4 Calliope",
@@ -1004,12 +969,10 @@ function getTankAbility(data) {
     if (data.ability === "FLAMETHROWER") return "flame";
     if (data.ability === "FLAK BURST") return "flak";
     if (data.ability === "OVERPRESSURE SHELL") return "overpressure";
-    if (data.ability === "ALL TURRETS") return "t35";
     const cls = String(data.className || "").toUpperCase();
     if (cls === "LIGHT") return "smoke";
     if (cls === "MEDIUM") return "repair";
     if (cls === "HEAVY") return "armor";
-    if (cls === "SUPER-HEAVY") return "armor";
     return null;
 }
 
@@ -1021,8 +984,7 @@ function getAbilityInfo(ability) {
         missile: { name: "MISSILE VOLLEY", badge: "E · MISSILES", text: "Fires a sweeping volley of curved rockets that flare outward and then converge on your cursor." },
         flame: { name: "FLAMETHROWER", badge: "E · FLAME", text: "Projects a short-range cone of fire toward your cursor. It can damage several tanks at once and is especially dangerous at close range." },
         flak: { name: "FLAK BURST", badge: "E · 3-ROUND BURST", text: "Fires three rapid shells toward your cursor with a small blast radius. The tank has a fast normal reload and medium-light shell damage." },
-        overpressure: { name: "OVERPRESSURE SHELL", badge: "E · HE BLAST", text: "Fires one huge explosive shell toward your cursor. It has a large blast radius and can damage multiple tanks around the impact point." },
-        t35: { name: "ALL TURRETS", badge: "E · ALL TURRETS", text: "The T-35 normally cycles through its five turrets, firing one turret at a time. E fires every turret together in a devastating full-volley." }
+        overpressure: { name: "OVERPRESSURE SHELL", badge: "E · HE BLAST", text: "Fires one huge explosive shell toward your cursor. It has a large blast radius and can damage multiple tanks around the impact point." }
     };
     return info[ability] || { name: "NO ABILITY", badge: "NONE", text: "This tank has no special ability." };
 }
@@ -1353,6 +1315,7 @@ function applyPointControlCanvasSize() {
     document.getElementById('gameArea').style.overflowX = '';
     cameraX = 0;
     cameraY = 0;
+    canvas.style.transform = 'translate3d(0px,0px,0px)';
     mouse.x = skirmish ? SKIRMISH_VIEW_WIDTH / 2 : canvas.width / 2;
     mouse.y = skirmish ? SKIRMISH_VIEW_HEIGHT / 2 : canvas.height / 2;
     if (skirmish) updateCamera();
@@ -1867,6 +1830,12 @@ function startCampaignLanding() {
     document.getElementById("killFeed").style.display = "none";
     document.getElementById("radioText").style.display = "none";
 
+    // Reset the canvas to the normal campaign camera/size BEFORE the intro
+    // starts. This prevents the large Skirmish canvas/camera from making the
+    // D-Day cutscene appear zoomed-in or shifted when Campaign is entered.
+    applyPointControlCanvasSize();
+    canvas.style.transform = 'translate3d(0px,0px,0px)';
+
     campaignCutsceneRunning = true;
     campaignCutsceneStart = performance.now();
     if (campaignCutsceneFrame) cancelAnimationFrame(campaignCutsceneFrame);
@@ -1890,6 +1859,10 @@ function drawCampaignCutscene(now) {
     const horizon=h*.10, waterline=h*.30, beachBottom=h*.98;
      const bunkerTop=h*.78;
     ctx.clearRect(0,0,w,h); ctx.save();
+    // Slightly widen the horizontal framing so the full right side of the landing
+    // scene remains visible without enlarging any objects.
+    ctx.translate(w*0.04,0);
+    ctx.scale(0.92,1);
 
     // Stormy sky.
     const sky=ctx.createLinearGradient(0,0,0,h*.30);
@@ -2034,7 +2007,7 @@ function drawCampaignCutscene(now) {
     const tankRuns=[
         {start:9.15, sx:w*.50, ex:w*.50, ey:bunkerTop-92, scale:.42},
         {start:10.35, sx:w*.20, ex:w*.37, ey:bunkerTop-88, scale:.34},
-        {start:10.65, sx:w*.80, ex:w*.63, ey:bunkerTop-88, scale:.34}
+        {start:10.65, sx:w*.80, ex:w*.63, ey:bunkerTop-88, scale:.38}
     ];
     tankRuns.forEach((tr,i)=>{
         if(elapsed<=tr.start) return;
@@ -3524,15 +3497,8 @@ function createAllies() {
             const c = String(tanks[selectedFaction][k].className || '').toUpperCase();
             return c === 'SPECIALIST';
         });
-        const superHeavyTypes = Object.keys(tanks[selectedFaction]).filter(function(k) {
-            return String(tanks[selectedFaction][k].className || '').toUpperCase() === 'SUPER-HEAVY';
-        });
         const allyTypes = ["medium", "light", "medium", "light"];
-        // Allies can field the faction's super-heavy. It is uncommon enough
-        // to keep normal battles intact, but common enough to actually see it.
-        if (superHeavyTypes.length && Math.random() < 0.35) {
-            allyTypes[Math.floor(Math.random() * allyTypes.length)] = superHeavyTypes[Math.floor(Math.random() * superHeavyTypes.length)];
-        } else if (specialistTypes.length && Math.random() < 0.70) {
+        if (specialistTypes.length && Math.random() < 0.70) {
             allyTypes[Math.floor(Math.random() * allyTypes.length)] = specialistTypes[Math.floor(Math.random() * specialistTypes.length)];
         }
         const preferred = selectedMap === "trenches"
@@ -4173,22 +4139,14 @@ function createEnemies() {
         enemyFaction = "british";
     }
 
-    // SKIRMISH normally uses light/medium enemies, but the AI can now field
-    // specialist tanks too.  If the enemy faction has a super-heavy, there is
-    // also a small chance that one of the five enemies becomes it.
+    // Skirmish uses normal light/medium enemies, with occasional specialists.
     const normalTypes = ["light", "medium", "light", "medium", "light"];
     const specialistTypes = Object.keys(tanks[enemyFaction]).filter(function(k) {
         return String(tanks[enemyFaction][k].className || '').toUpperCase() === 'SPECIALIST';
     });
-    const superHeavyTypes = Object.keys(tanks[enemyFaction]).filter(function(k) {
-        return String(tanks[enemyFaction][k].className || '').toUpperCase() === 'SUPER-HEAVY';
-    });
     const types = (selectedGameMode === "skirmish" ? normalTypes : ["light", "medium", "light"]).slice();
     if (selectedGameMode === "skirmish") {
-        // Give the opposing AI access to specialists and, less often, a super-heavy.
-        if (superHeavyTypes.length && Math.random() < 0.35) {
-            types[Math.floor(Math.random() * types.length)] = superHeavyTypes[Math.floor(Math.random() * superHeavyTypes.length)];
-        } else if (specialistTypes.length && Math.random() < 0.75) {
+        if (specialistTypes.length && Math.random() < 0.75) {
             types[Math.floor(Math.random() * types.length)] = specialistTypes[Math.floor(Math.random() * specialistTypes.length)];
         }
     }
@@ -4973,12 +4931,16 @@ function getT35TurretProfile(index) {
 
 function getT35TurretPositions(tank) {
     const s = tank.size;
+    // T-35-inspired layout: the two smaller 45 mm turrets sit toward the
+    // front, while the large main turret is set farther back. The two tiny
+    // MG turrets sit toward the rear corners, matching the stepped silhouette
+    // of the reference design. +X is the tank's forward direction.
     return [
-        { x: 0, y: 0 },
-        { x:  s * .56, y: -s * .44 },
-        { x: -s * .56, y: -s * .44 },
-        { x: -s * .58, y:  s * .40 },
-        { x:  s * .58, y:  s * .40 }
+        { x: -s * .28, y: 0 },
+        { x:  s * .55, y: -s * .43 },
+        { x:  s * .55, y:  s * .43 },
+        { x: -s * .62, y: -s * .42 },
+        { x: -s * .62, y:  s * .42 }
     ];
 }
 
@@ -5591,7 +5553,7 @@ function createShell(
         options.angle != null ? options.angle : tank.turretAngle;
 
     const barrelLength =
-        options.barrelLength != null ? options.barrelLength : tank.size * 1.7;
+        options.barrelLength != null ? options.barrelLength : tank.size * 1.35;
 
     const shellX =
         tank.x +
@@ -6198,8 +6160,15 @@ function segmentHitsTank(x1, y1, x2, y2, tank) {
     let t = len2 > 0 ? ((tank.x - x1) * dx + (tank.y - y1) * dy) / len2 : 0;
     t = Math.max(0, Math.min(1, t));
     const px = x1 + dx * t, py = y1 + dy * t;
-    const radius = (tank.size || 20) * 0.82;
-    return Math.hypot(tank.x - px, tank.y - py) <= radius ? t : Infinity;
+    // Use a generous, continuous hit radius so fast shells cannot visually pass
+    // through a tank because the projectile crosses it between frames.
+    const radius = Math.max(18, (tank.size || 20) * 0.98);
+    if (Math.hypot(tank.x - px, tank.y - py) <= radius) return t;
+
+    // Also test the shell's swept segment against the tank's circular hull.
+    // This catches edge hits reliably even on large/fast battlefields.
+    const expanded = radius + Math.hypot(dx, dy) * 0.08;
+    return Math.hypot(tank.x - px, tank.y - py) <= expanded ? t : Infinity;
 }
 
 function updateShells() {
@@ -10266,7 +10235,40 @@ function drawTankHull(tank) {
     ctx.fillStyle=colour;ctx.strokeStyle='rgba(15,17,13,.8)';ctx.lineWidth=Math.max(1.5,s*.045);ctx.beginPath();
     switch(tank.model){
       case 'tetrarch':case 'panzer2':case 't70':case 'm3stuart':ctx.moveTo(-s*.76,-s*.42);ctx.lineTo(s*.58,-s*.44);ctx.lineTo(s*.86,-s*.16);ctx.lineTo(s*.76,s*.40);ctx.lineTo(-s*.72,s*.40);ctx.lineTo(-s*.86,s*.10);break;
-      case 't35':ctx.moveTo(-s*1.12,-s*.58);ctx.lineTo(s*.90,-s*.58);ctx.lineTo(s*1.12,-s*.30);ctx.lineTo(s*1.04,s*.38);ctx.lineTo(s*.82,s*.58);ctx.lineTo(-s*1.08,s*.55);break;
+      case 't35':
+        // Distinctive Soviet T-35 hull: long riveted chassis, stepped glacis,
+        // broad track guards and a heavy rear engine deck.
+        ctx.moveTo(-s*1.22,-s*.58);
+        ctx.lineTo(-s*.72,-s*.70);
+        ctx.lineTo(s*.82,-s*.66);
+        ctx.lineTo(s*1.16,-s*.40);
+        ctx.lineTo(s*1.10,s*.38);
+        ctx.lineTo(s*.78,s*.62);
+        ctx.lineTo(-s*1.16,s*.58);
+        ctx.lineTo(-s*1.28,s*.25);
+        ctx.closePath();
+        // broad fender silhouette
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle='rgba(24,29,20,.48)';
+        ctx.beginPath();
+        ctx.moveTo(-s*1.16,-s*.58); ctx.lineTo(-s*.72,-s*.78); ctx.lineTo(s*.78,-s*.74);
+        ctx.lineTo(s*1.10,-s*.48); ctx.lineTo(s*.92,-s*.30); ctx.lineTo(-s*.98,-s*.34); ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,.08)';
+        ctx.beginPath();
+        ctx.moveTo(-s*.68,-s*.38); ctx.lineTo(s*.58,-s*.38); ctx.lineTo(s*.78,-s*.17); ctx.lineTo(s*.56,s*.02); ctx.lineTo(-s*.62,s*.02); ctx.closePath();
+        ctx.fill();
+        // rear engine-deck slats
+        ctx.strokeStyle='rgba(20,22,17,.55)'; ctx.lineWidth=Math.max(1,s*.025);
+        for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(s*.58+i*s*.07,-s*.46);ctx.lineTo(s*.82+i*s*.07,-s*.25);ctx.stroke();}
+        // hull rivets
+        ctx.fillStyle='#a09a72';
+        for(let i=-5;i<=5;i++){
+          const rx=-s*.92+i*s*.18;
+          ctx.beginPath();ctx.arc(rx,-s*.57,s*.025,0,Math.PI*2);ctx.fill();
+          ctx.beginPath();ctx.arc(rx,s*.54,s*.025,0,Math.PI*2);ctx.fill();
+        }
+        break;
       case 'tortoise':ctx.moveTo(-s*1.18,-s*.60);ctx.lineTo(s*1.02,-s*.60);ctx.lineTo(s*1.18,-s*.30);ctx.lineTo(s*1.10,s*.46);ctx.lineTo(s*.78,s*.62);ctx.lineTo(-s*1.12,s*.58);break;
       case 'maus':ctx.moveTo(-s*1.14,-s*.62);ctx.lineTo(s*.92,-s*.62);ctx.lineTo(s*1.16,-s*.34);ctx.lineTo(s*1.10,s*.44);ctx.lineTo(s*.82,s*.62);ctx.lineTo(-s*1.10,s*.60);break;
       case 't28':ctx.moveTo(-s*1.22,-s*.64);ctx.lineTo(s*1.20,-s*.64);ctx.lineTo(s*1.28,-s*.38);ctx.lineTo(s*1.20,s*.50);ctx.lineTo(-s*1.18,s*.56);break;
@@ -10322,44 +10324,78 @@ function drawMausTurret(tank) {
 }
 
 function drawT35Turrets(tank) {
+    // Historically styled T-35: long boxy hull, one large central 76 mm turret,
+    // two medium 45 mm turrets and two tiny MG turrets.  The silhouette is kept
+    // readable at the game's small scale rather than looking like a generic tank.
     const s = tank.size;
     if (!tank.t35TurretAngles) tank.t35TurretAngles = [tank.turretAngle || tank.angle || 0, tank.turretAngle || tank.angle || 0, tank.turretAngle || tank.angle || 0, tank.turretAngle || tank.angle || 0, tank.turretAngle || tank.angle || 0];
     const positions = getT35TurretPositions(tank);
-    const colour = '#5d7845';
+    const green = tank.faction === 'soviet' ? '#4f6738' : '#536b3d';
+    const lightGreen = '#65784a';
+    const dark = '#20271b';
+    const metal = '#2a3024';
 
-    // Main turret: large, raised central turret with a long 76 mm barrel.
+    // Main turret: tall, nearly circular/rounded polygon with a prominent mantlet.
     ctx.save();
-    ctx.translate(0, 0);
     ctx.rotate(getT35TurretAngle(tank, 0) - (tank.angle || 0));
-    ctx.fillStyle = 'rgba(0,0,0,.25)';
-    ctx.beginPath(); ctx.roundRect(-s*.53,-s*.46,s*1.06,s*.86,s*.16); ctx.fill();
-    ctx.fillStyle = colour; ctx.strokeStyle = 'rgba(15,17,13,.86)'; ctx.lineWidth = Math.max(1.5,s*.04);
-    ctx.beginPath(); ctx.roundRect(-s*.50,-s*.42,s*1.0,s*.78,s*.14); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#303229'; ctx.beginPath(); ctx.arc(s*.28,0,s*.10,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#242820'; ctx.fillRect(s*.20,-s*.075,s*1.58,s*.15);
-    ctx.fillRect(s*1.68,-s*.105,s*.12,s*.21);
+    ctx.fillStyle='rgba(0,0,0,.30)';
+    ctx.beginPath(); ctx.ellipse(0,s*.08,s*.58,s*.49,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=green; ctx.strokeStyle=dark; ctx.lineWidth=Math.max(1.5,s*.045);
+    ctx.beginPath();
+    ctx.moveTo(-s*.48,-s*.38); ctx.lineTo(-s*.30,-s*.52); ctx.lineTo(s*.30,-s*.52);
+    ctx.lineTo(s*.48,-s*.32); ctx.lineTo(s*.45,s*.30); ctx.lineTo(s*.27,s*.46);
+    ctx.lineTo(-s*.31,s*.44); ctx.lineTo(-s*.49,s*.27); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    // Turret roof and commander cupola.
+    ctx.fillStyle=lightGreen; ctx.beginPath(); ctx.ellipse(0,-s*.27,s*.22,s*.12,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#30372a'; ctx.beginPath(); ctx.arc(0,-s*.28,s*.075,0,Math.PI*2); ctx.fill();
+    // Main 76.2 mm gun and broad mantlet.
+    ctx.fillStyle='#343b2d'; ctx.beginPath(); ctx.roundRect(s*.18,-s*.14,s*.32,s*.28,s*.07); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=metal; ctx.fillRect(s*.43,-s*.075,s*1.45,s*.15);
+    ctx.fillRect(s*1.82,-s*.105,s*.16,s*.21);
+    // Small Soviet star.
+    ctx.save();
+    ctx.translate(0,-s*.52); ctx.fillStyle='#bd3026'; ctx.strokeStyle='#e1c34f'; ctx.lineWidth=Math.max(1,s*.015);
+    ctx.beginPath(); for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2===0?s*.10:s*.043;ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);} ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.restore();
     ctx.restore();
 
-    // Four secondary turrets are drawn in the hull's local coordinates, then
-    // each turret rotates independently toward the same aim point.
-    positions.slice(1).forEach(function(pos, n) {
-        const index = n + 1;
-        const is45 = index === 1 || index === 3;
-        ctx.save();
-        ctx.translate(pos.x, pos.y);
-        ctx.rotate(getT35TurretAngle(tank, index) - (tank.angle || 0));
-        const r = is45 ? s*.205 : s*.17;
-        ctx.fillStyle = colour;
-        ctx.strokeStyle = 'rgba(15,17,13,.86)';
-        ctx.lineWidth = Math.max(1.2,s*.03);
-        ctx.beginPath(); ctx.roundRect(-r,-r*.72,r*2,r*1.44,r*.22); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = '#242820';
-        const barrel = is45 ? s*.92 : s*.55;
-        const width = is45 ? s*.075 : s*.045;
-        ctx.fillRect(r*.15,-width/2,barrel,width);
-        ctx.fillRect(r*.15+barrel-width*.2,-width*.7,width*1.4,width*1.4);
+    // Two 45 mm turrets sit ahead and behind the main turret on the left/right line.
+    positions.slice(1,3).forEach(function(pos,n) {
+        const index=n+1;
+        ctx.save(); ctx.translate(pos.x,pos.y);
+        ctx.rotate(getT35TurretAngle(tank,index)-(tank.angle||0));
+        const r=s*.24;
+        ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(0,s*.07,r*1.15,r*.82,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle=green; ctx.strokeStyle=dark; ctx.lineWidth=Math.max(1.2,s*.032);
+        ctx.beginPath(); ctx.moveTo(-r,-r*.58); ctx.lineTo(-r*.45,-r*.82); ctx.lineTo(r*.55,-r*.75); ctx.lineTo(r,r*.58); ctx.lineTo(-r*.82,r*.68); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle=lightGreen; ctx.beginPath(); ctx.arc(-r*.08,-r*.12,r*.23,0,Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle=metal; ctx.fillRect(r*.10,-s*.045,s*.88,s*.09); ctx.fillRect(r*.91,-s*.062,s*.12,s*.124);
         ctx.restore();
     });
+
+    // Two tiny MG turrets at the opposite corners.
+    [3,4].forEach(function(index) {
+        const pos=positions[index];
+        ctx.save(); ctx.translate(pos.x,pos.y);
+        ctx.rotate(getT35TurretAngle(tank,index)-(tank.angle||0));
+        const r=s*.145;
+        ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(0,s*.05,r*1.15,r*.80,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle=green; ctx.strokeStyle=dark; ctx.lineWidth=Math.max(1,s*.028);
+        ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle=lightGreen; ctx.beginPath(); ctx.arc(-r*.12,-r*.12,r*.24,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle=metal; ctx.fillRect(r*.05,-s*.028,s*.50,s*.056);
+        ctx.restore();
+    });
+
+    // Rear engine deck details, characteristic long fenders and tow fittings.
+    ctx.save();
+    ctx.fillStyle='rgba(20,24,17,.55)';
+    for(let i=-2;i<=2;i++){ ctx.fillRect(-s*.28+i*s*.12,s*.47,s*.07,s*.13); }
+    ctx.fillStyle='#2b3325';
+    ctx.fillRect(-s*.96,-s*.73,s*.18,s*.12); ctx.fillRect(s*.78,-s*.73,s*.18,s*.12);
+    ctx.fillRect(-s*.96,s*.61,s*.18,s*.12); ctx.fillRect(s*.78,s*.61,s*.18,s*.12);
+    ctx.restore();
 }
 
 function drawTurret(tank) {

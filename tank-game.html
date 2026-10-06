@@ -553,7 +553,7 @@ button.selected {
 
 <div id="pointControlScreen" style="display:none;">
     <h2>🏁 POINT CONTROL 🏁</h2>
-    <p>Build your team, choose the battlefield and prepare for a large objective battle.</p>
+    <p>Build your 5-tank team, choose the battlefield and prepare for a large objective battle.</p>
 
     <div class="section">
         <h2>1. Choose Your Faction</h2>
@@ -581,7 +581,17 @@ button.selected {
     </div>
 
     <div class="section">
-        <h2>5. Choose Battlefield</h2>
+        <h2>5. Choose Ally 3 Tank</h2>
+        <div id="pcAlly3Choices" class="choices"><p>Choose your faction first.</p></div>
+    </div>
+
+    <div class="section">
+        <h2>6. Choose Ally 4 Tank</h2>
+        <div id="pcAlly4Choices" class="choices"><p>Choose your faction first.</p></div>
+    </div>
+
+    <div class="section">
+        <h2>7. Choose Battlefield</h2>
         <div class="choices">
             <button id="pcTrenchButton" onclick="choosePointControlMap('trenches')">🪖 TRENCH FRONT</button>
             <button id="pcTownButton" onclick="choosePointControlMap('town')">🏘️ RUINED TOWN</button>
@@ -591,17 +601,9 @@ button.selected {
     </div>
 
     <div class="section">
-        <h2>6. Battlefield Size</h2>
-        <div class="choices">
-            <button id="pcStandardSizeButton" onclick="choosePointControlSize('standard')">📏 STANDARD</button>
-            <button id="pcLargeSizeButton" onclick="choosePointControlSize('large')">🗺️ LARGE</button>
-        </div>
-    </div>
-
-    <div class="section">
         <h2>7. Battle Objective</h2>
         <p>🏁 Capture and hold the control points to score points for your team.</p>
-        <strong>TEAM: YOU + 2 ALLIES</strong>
+        <strong>TEAM: YOU + 4 ALLIES</strong>
     </div>
 
     <button onclick="startGame()">🚀 START POINT CONTROL</button>
@@ -1036,7 +1038,8 @@ let selectedSkinFaction = "british";
 
 let pointControlAlly1Class = null;
 let pointControlAlly2Class = null;
-let pointControlBattlefieldSize = null;
+let pointControlAlly3Class = null;
+let pointControlAlly4Class = null;
 
 let controlPoints = [];
 let pointControlScores = { friendly: 0, enemy: 0 };
@@ -1294,36 +1297,34 @@ let cameraX = 0;
 let cameraY = 0;
 
 function applyPointControlCanvasSize() {
-    const large =
-        selectedGameMode === "pointControl" &&
-        pointControlBattlefieldSize === "large";
-    const skirmish = selectedGameMode === "skirmish";
+    // Point Control now uses the same full battlefield size as Skirmish.
+    const largeBattlefield = selectedGameMode === "skirmish" || selectedGameMode === "pointControl";
 
-    canvas.width = skirmish
+    canvas.width = largeBattlefield
         ? SKIRMISH_WORLD_WIDTH
-        : large ? LARGE_CANVAS_WIDTH : STANDARD_CANVAS_WIDTH;
-    canvas.height = skirmish
+        : STANDARD_CANVAS_WIDTH;
+    canvas.height = largeBattlefield
         ? SKIRMISH_WORLD_HEIGHT
-        : large ? LARGE_CANVAS_HEIGHT : STANDARD_CANVAS_HEIGHT;
+        : STANDARD_CANVAS_HEIGHT;
 
-    canvas.classList.toggle('skirmishExpanded', skirmish);
+    canvas.classList.toggle('skirmishExpanded', largeBattlefield);
     const viewport = document.getElementById('canvasViewport');
     if (viewport) {
-        viewport.style.width = (skirmish ? SKIRMISH_VIEW_WIDTH : canvas.width) + 'px';
-        viewport.style.height = (skirmish ? SKIRMISH_VIEW_HEIGHT : canvas.height) + 'px';
+        viewport.style.width = (largeBattlefield ? SKIRMISH_VIEW_WIDTH : canvas.width) + 'px';
+        viewport.style.height = (largeBattlefield ? SKIRMISH_VIEW_HEIGHT : canvas.height) + 'px';
     }
     document.getElementById('gameArea').style.overflowX = '';
     cameraX = 0;
     cameraY = 0;
     canvas.style.transform = 'translate3d(0px,0px,0px)';
-    mouse.x = skirmish ? SKIRMISH_VIEW_WIDTH / 2 : canvas.width / 2;
-    mouse.y = skirmish ? SKIRMISH_VIEW_HEIGHT / 2 : canvas.height / 2;
-    if (skirmish) updateCamera();
-    if (!skirmish) setMinimapExpanded(false);
+    mouse.x = largeBattlefield ? SKIRMISH_VIEW_WIDTH / 2 : canvas.width / 2;
+    mouse.y = largeBattlefield ? SKIRMISH_VIEW_HEIGHT / 2 : canvas.height / 2;
+    if (largeBattlefield) updateCamera();
+    if (!largeBattlefield) setMinimapExpanded(false);
 }
 
 function updateCamera() {
-    if (selectedGameMode !== 'skirmish' || !player) {
+    if ((selectedGameMode !== 'skirmish' && selectedGameMode !== 'pointControl') || !player) {
         cameraX = 0;
         cameraY = 0;
         canvas.style.transform = 'translate3d(0px,0px,0px)';
@@ -1341,12 +1342,12 @@ function updateCamera() {
 
 function mapX(value) {
     // Keep all existing skirmish props at their original pixel size.
-    if (selectedGameMode === 'skirmish') return value;
+    if (selectedGameMode === 'skirmish' || selectedGameMode === 'pointControl') return value;
     return value * canvas.width / STANDARD_CANVAS_WIDTH;
 }
 
 function mapY(value) {
-    if (selectedGameMode === 'skirmish') return value;
+    if (selectedGameMode === 'skirmish' || selectedGameMode === 'pointControl') return value;
     return value * canvas.height / STANDARD_CANVAS_HEIGHT;
 }
 
@@ -1550,6 +1551,8 @@ function choosePointControlFaction(faction) {
     selectedTankClass = null;
     pointControlAlly1Class = null;
     pointControlAlly2Class = null;
+    pointControlAlly3Class = null;
+    pointControlAlly4Class = null;
 
     document.getElementById("pcBritishButton").classList.remove("selected");
     document.getElementById("pcGermanButton").classList.remove("selected");
@@ -1567,6 +1570,14 @@ function choosePointControlFaction(faction) {
 
     createPointControlTankChoices("pcAlly2Choices", function(type) {
         pointControlAlly2Class = type;
+    });
+
+    createPointControlTankChoices("pcAlly3Choices", function(type) {
+        pointControlAlly3Class = type;
+    });
+
+    createPointControlTankChoices("pcAlly4Choices", function(type) {
+        pointControlAlly4Class = type;
     });
 }
 
@@ -1601,12 +1612,6 @@ function choosePointControlMap(map) {
     document.getElementById(id).classList.add("selected");
 }
 
-function choosePointControlSize(size) {
-    pointControlBattlefieldSize = size;
-    document.getElementById("pcStandardSizeButton").classList.remove("selected");
-    document.getElementById("pcLargeSizeButton").classList.remove("selected");
-    document.getElementById(size === "large" ? "pcLargeSizeButton" : "pcStandardSizeButton").classList.add("selected");
-}
 
 function returnToMainMenu() {
     gameRunning = false;
@@ -2330,15 +2335,11 @@ function startGame() {
     }
 
     if (selectedGameMode === "pointControl") {
-        if (!pointControlAlly1Class || !pointControlAlly2Class) {
-            alert("Choose both ally tanks first!");
+        if (!pointControlAlly1Class || !pointControlAlly2Class || !pointControlAlly3Class || !pointControlAlly4Class) {
+            alert("Choose all four ally tanks first!");
             return;
         }
 
-        if (!pointControlBattlefieldSize) {
-            alert("Choose a battlefield size first!");
-            return;
-        }
     }
 
     document
@@ -2565,8 +2566,8 @@ function addObstacle(
     type
 ) {
 
-    const scaleX = selectedGameMode === 'skirmish' ? 1 : canvas.width / STANDARD_CANVAS_WIDTH;
-    const scaleY = selectedGameMode === 'skirmish' ? 1 : canvas.height / STANDARD_CANVAS_HEIGHT;
+    const scaleX = (selectedGameMode === 'skirmish' || selectedGameMode === 'pointControl') ? 1 : canvas.width / STANDARD_CANVAS_WIDTH;
+    const scaleY = (selectedGameMode === 'skirmish' || selectedGameMode === 'pointControl') ? 1 : canvas.height / STANDARD_CANVAS_HEIGHT;
 
     obstacles.push({
         x: x * scaleX,
@@ -2707,9 +2708,9 @@ function createCampaignAllies(){
 ===================================================== */
 
 function createTownMap() {
-    // Dense city: buildings sit INSIDE city blocks, while wide avenues stay clear.
-    // The roads are also used as guaranteed tank spawn lanes.
-    if (selectedGameMode === "skirmish") {
+    // Dense city: the same full 2400x1500 town is used by Skirmish and Point Control.
+    // Buildings sit INSIDE city blocks, while wide avenues stay clear.
+
         const buildings = [
             // Top row
             [35,35,175,175,"building"], [245,45,175,150,"shop"],
@@ -2769,15 +2770,6 @@ function createTownMap() {
             [500,1180,70,32,"wreck"], [905,1175,70,32,"wreck"],
             [1570,1175,70,32,"wreck"], [1970,1180,70,32,"wreck"]
         ].forEach(w => addObstacle(w[0],w[1],w[2],w[3],w[4]));
-        return;
-    }
-
-    [
-        [35,35,185,155],[245,55,150,130],[690,40,175,150],[900,55,160,185],
-        [35,475,175,175],[240,505,150,125],[690,490,180,155],[900,450,160,195]
-    ].forEach(b => addObstacle(b[0],b[1],b[2],b[3],"building"));
-    addObstacle(275,275,125,20,"wall"); addObstacle(700,275,135,20,"wall");
-    addObstacle(610,390,78,36,"wreck"); addObstacle(315,385,62,30,"wreck"); addObstacle(760,315,65,30,"wreck");
 }
 
 function createSnowMap() {
@@ -3132,52 +3124,33 @@ function findSpawnPoint(
 ===================================================== */
 
 function getPointControlSpawn(team, index) {
-
-    const large = pointControlBattlefieldSize === "large";
-
-    if (large) {
-        const friendly = selectedMap === "bocage" ? [
-            { x: canvas.width * 0.06, y: canvas.height * 0.34 },
-            { x: canvas.width * 0.10, y: canvas.height * 0.20 },
-            { x: canvas.width * 0.10, y: canvas.height * 0.58 }
-        ] : [
-            { x: canvas.width * 0.08, y: canvas.height * 0.50 },
-            { x: canvas.width * 0.12, y: canvas.height * 0.28 },
-            { x: canvas.width * 0.12, y: canvas.height * 0.72 }
-        ];
-
-        const enemy = selectedMap === "bocage" ? [
-            { x: canvas.width * 0.94, y: canvas.height * 0.66 },
-            { x: canvas.width * 0.90, y: canvas.height * 0.22 },
-            { x: canvas.width * 0.90, y: canvas.height * 0.80 }
-        ] : [
-            { x: canvas.width * 0.92, y: canvas.height * 0.50 },
-            { x: canvas.width * 0.88, y: canvas.height * 0.28 },
-            { x: canvas.width * 0.88, y: canvas.height * 0.72 }
-        ];
-
-        const list = team === "friendly" ? friendly : enemy;
-        return list[index % list.length];
-    }
-
-    const friendly = selectedMap === "bocage" ? [
-        { x: 70, y: 300 },
-        { x: 70, y: 470 },
-        { x: 90, y: 180 }
+    // Point Control uses the same full 2400x1500 battlefield as Skirmish.
+    const friendly = selectedMap === "trenches" ? [
+        { x: 260, y: 250 }, { x: 330, y: 390 }, { x: 260, y: 650 },
+        { x: 430, y: 520 }, { x: 360, y: 780 }
+    ] : selectedMap === "town" ? [
+        { x: 180, y: 310 }, { x: 300, y: 310 }, { x: 180, y: 700 },
+        { x: 300, y: 700 }, { x: 420, y: 500 }
+    ] : selectedMap === "snow" ? [
+        { x: 280, y: 505 }, { x: 380, y: 505 }, { x: 250, y: 850 },
+        { x: 420, y: 850 }, { x: 520, y: 650 }
     ] : [
-        { x: 130, y: 350 },
-        { x: 180, y: 250 },
-        { x: 180, y: 450 }
+        { x: 150, y: 330 }, { x: 150, y: 470 }, { x: 250, y: 570 },
+        { x: 250, y: 650 }, { x: 350, y: 500 }
     ];
 
-    const enemy = selectedMap === "bocage" ? [
-        { x: 1030, y: 470 },
-        { x: 1030, y: 180 },
-        { x: 1000, y: 620 }
+    const enemy = selectedMap === "trenches" ? [
+        { x: 2180, y: 190 }, { x: 2280, y: 400 }, { x: 2140, y: 620 },
+        { x: 1980, y: 310 }, { x: 1990, y: 760 }
+    ] : selectedMap === "town" ? [
+        { x: 2050, y: 310 }, { x: 2180, y: 310 }, { x: 2050, y: 700 },
+        { x: 2180, y: 700 }, { x: 2280, y: 1100 }
+    ] : selectedMap === "snow" ? [
+        { x: 1980, y: 505 }, { x: 2090, y: 505 }, { x: 2200, y: 505 },
+        { x: 1980, y: 850 }, { x: 2160, y: 850 }
     ] : [
-        { x: 970, y: 350 },
-        { x: 920, y: 250 },
-        { x: 920, y: 450 }
+        { x: 2300, y: 350 }, { x: 2300, y: 500 }, { x: 2300, y: 650 },
+        { x: 2300, y: 850 }, { x: 2300, y: 1000 }
     ];
 
     const list = team === "friendly" ? friendly : enemy;
@@ -3320,22 +3293,14 @@ function updateRespawns() {
 }
 
 function createControlPoints() {
-
-    const large = pointControlBattlefieldSize === "large";
-
-    if (large) {
-        controlPoints = [
-            { name: "A", x: canvas.width * 0.20, y: canvas.height * 0.50, radius: 70, progress: 0, owner: "neutral" },
-            { name: "B", x: canvas.width * 0.50, y: canvas.height * 0.50, radius: 70, progress: 0, owner: "neutral" },
-            { name: "C", x: canvas.width * 0.80, y: canvas.height * 0.50, radius: 70, progress: 0, owner: "neutral" }
-        ];
-    } else {
-        controlPoints = [
-            { name: "A", x: 300, y: 350, radius: 58, progress: 0, owner: "neutral" },
-            { name: "B", x: 550, y: 350, radius: 58, progress: 0, owner: "neutral" },
-            { name: "C", x: 800, y: 350, radius: 58, progress: 0, owner: "neutral" }
-        ];
-    }
+    // Point Control uses the same 2400x1500 battlefield as Skirmish.
+    // Spread the objectives across the whole battlefield so they feel like
+    // proper frontline objectives instead of being bunched in the middle.
+    controlPoints = [
+        { name: "A", x: canvas.width * 0.18, y: canvas.height * 0.50, radius: 92, progress: 0, owner: "neutral" },
+        { name: "B", x: canvas.width * 0.50, y: canvas.height * 0.50, radius: 92, progress: 0, owner: "neutral" },
+        { name: "C", x: canvas.width * 0.82, y: canvas.height * 0.50, radius: 92, progress: 0, owner: "neutral" }
+    ];
 }
 
 function updateControlPoints() {
@@ -3421,12 +3386,22 @@ function drawControlPoints() {
         ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
         ctx.fill();
 
+        // Strong outer ring + inner dashed ring makes objectives easier to read
+        // against busy battlefield terrain.
         ctx.globalAlpha = 0.95;
         ctx.strokeStyle = ring;
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.arc(point.x, point.y, point.radius, 0, Math.PI * 2);
         ctx.stroke();
+
+        ctx.globalAlpha = 0.75;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([12, 8]);
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, point.radius - 12, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
 
         // Capture progress bar: left = enemy, centre = neutral, right = friendly.
         ctx.fillStyle = "#202018";
@@ -3557,11 +3532,19 @@ function createAllies() {
 
     if (selectedGameMode !== "pointControl") return;
 
-    const allyTypes = [pointControlAlly1Class, pointControlAlly2Class];
-    for (let i = 0; i < 2; i++) {
+    // Point Control = 5 friendly tanks total: player + 4 allies.
+    const allyTypes = [pointControlAlly1Class, pointControlAlly2Class, pointControlAlly3Class, pointControlAlly4Class];
+    for (let i = 0; i < 4; i++) {
         const type = allyTypes[i];
         const data = tanks[selectedFaction][type];
-        const spawn = findPointControlSpawn("friendly", i, data.size, null);
+        const preferred = selectedMap === "trenches"
+            ? [[260,250],[330,390],[260,650],[430,520]]
+            : selectedMap === "town"
+                ? [[180,310],[300,310],[180,700],[300,700]]
+                : selectedMap === "snow"
+                    ? [[280,505],[380,505],[250,850],[420,850]]
+                    : [[150,330],[150,470],[250,570],[250,650]];
+        const spawn = findSpawnPoint(preferred[i], data.size, null, "friendly");
         allies.push({
             x: spawn.x, y: spawn.y, angle: 0, turretAngle: 0,
             health: Math.round(data.health * ALLY_HEALTH_MULT),
@@ -3575,8 +3558,8 @@ function createAllies() {
             componentDamage: { engine: 0, tracks: 0, turret: 0, gun: 0 },
             componentBroken: { engine: false, tracks: false, turret: false, gun: false },
             componentFlash: { engine: 0, tracks: 0, turret: 0, gun: 0 },
-            followSide: i === 0 ? -1 : 1, team: "friendly", respawnAt: 0,
-            aiRole: i === 0 ? "escort" : "objective", aiTarget: null, aiTargetUntil: 0, abilityType: getTankAbility(data), abilityCooldownUntil: 0, armorLockUntil: 0, t35TurretIndex: 0, t35LastShotAt: [0,0,0,0,0], t35TurretAngles: [0,0,0,0,0]
+            followSide: i % 2 === 0 ? -1 : 1, team: "friendly", respawnAt: 0,
+            aiRole: i === 0 || i === 2 ? "escort" : "objective", aiTarget: null, aiTargetUntil: 0, abilityType: getTankAbility(data), abilityCooldownUntil: 0, armorLockUntil: 0, t35TurretIndex: 0, t35LastShotAt: [0,0,0,0,0], t35TurretAngles: [0,0,0,0,0]
         });
     }
 }
@@ -3828,7 +3811,7 @@ function updateAllies() {
             }
         }
 
-        const combatPriorityRange = selectedGameMode === "skirmish" ? 1300 : 520;
+        const combatPriorityRange = selectedGameMode === "skirmish" ? 1300 : (selectedGameMode === "pointControl" ? 900 : 520);
         let fightingNearbyEnemy = false;
 
         if (bestEnemy) {
@@ -3915,7 +3898,42 @@ function updateAllies() {
                 + Math.sin(behindAngle) * followDistance
                 + Math.sin(heading + Math.PI / 2) * sideOffset;
         } else if (!fightingNearbyEnemy) {
-            if (ally.aiRole === "escort" && playerAlive) {
+            // POINT CONTROL allies do NOT follow the player. Every allied tank
+            // gets its own objective lane and heads for an uncaptured point.
+            // This keeps the team spread across the battlefield and makes the
+            // AI actively play the objective instead of forming a convoy.
+            if (selectedGameMode === "pointControl") {
+                let candidates = controlPoints.filter(function(point) {
+                    return point.owner !== "friendly";
+                });
+
+                if (candidates.length > 1) {
+                    candidates = candidates.filter(function(point) {
+                        return !allies.some(function(other) {
+                            return other !== ally && !other.destroyed &&
+                                other.objectiveTarget === point &&
+                                Math.hypot(other.x - point.x, other.y - point.y) < 260;
+                        });
+                    });
+                    if (candidates.length === 0) {
+                        candidates = controlPoints.filter(function(point) {
+                            return point.owner !== "friendly";
+                        });
+                    }
+                }
+
+                candidates.sort(function(a, b) {
+                    return Math.hypot(a.x - ally.x, a.y - ally.y) -
+                           Math.hypot(b.x - ally.x, b.y - ally.y);
+                });
+
+                objective = candidates[0] || controlPoints[allyIndex % Math.max(1, controlPoints.length)] || null;
+                ally.objectiveTarget = objective;
+                if (objective) {
+                    targetX = objective.x;
+                    targetY = objective.y;
+                }
+            } else if (ally.aiRole === "escort" && playerAlive) {
                 const side = ally.followSide * Math.PI / 2;
                 const followAngle = playerAngle + side;
                 const followDistance = distance > 240 ? 105 : 135;
@@ -4144,7 +4162,7 @@ function createEnemies() {
     const specialistTypes = Object.keys(tanks[enemyFaction]).filter(function(k) {
         return String(tanks[enemyFaction][k].className || '').toUpperCase() === 'SPECIALIST';
     });
-    const types = (selectedGameMode === "skirmish" ? normalTypes : ["light", "medium", "light"]).slice();
+    const types = (selectedGameMode === "skirmish" || selectedGameMode === "pointControl" ? normalTypes : ["light", "medium", "light"]).slice();
     if (selectedGameMode === "skirmish") {
         if (specialistTypes.length && Math.random() < 0.75) {
             types[Math.floor(Math.random() * types.length)] = specialistTypes[Math.floor(Math.random() * specialistTypes.length)];
@@ -4174,35 +4192,25 @@ function createEnemies() {
         selectedMap === "snow"
     ) {
 
-        preferred = selectedGameMode === "skirmish"
-            ? [
-                [1980, 505], [2090, 505], [2200, 505],
-                [1980, 850], [2160, 850]
-            ]
-            : [
-                [1000, 120], [930, 350], [1000, 620]
-            ];
+        preferred = [
+            [1980, 505], [2090, 505], [2200, 505],
+            [1980, 850], [2160, 850]
+        ];
     }
 
     else if (selectedMap === "bocage") {
-        preferred = selectedGameMode === "skirmish"
-            ? [[2300,350],[2300,500],[2300,650],[2300,850],[2300,1000]]
-            : [[970,180],[970,350],[970,520]];
+        preferred = [[2300,350],[2300,500],[2300,650],[2300,850],[2300,1000]];
     }
 
     else {
 
-        preferred = selectedGameMode === "skirmish" && selectedMap === "trenches"
+        preferred = selectedMap === "trenches"
             ? [
                 [2180, 190], [2280, 400], [2140, 620], [1980, 310], [1990, 760]
             ]
-            : selectedGameMode === "skirmish"
-                ? [
-                    [1400, 130], [1450, 280], [1400, 430], [1450, 580], [1350, 700]
-                ]
-                : [
-                    [930, 130], [870, 350], [950, 570]
-                ];
+            : [
+                [1400, 130], [1450, 280], [1400, 430], [1450, 580], [1350, 700]
+            ];
     }
 
     for (
@@ -4219,7 +4227,7 @@ function createEnemies() {
         // defensive line. Do not use the generic Point Control spawner here:
         // that routine can fall back to a map-wide search and put enemies
         // beside the player.
-        const spawn = (selectedGameMode === "skirmish" && (selectedMap === "trenches" || selectedMap === "town" || selectedMap === "snow" || selectedMap === "bocage"))
+        const spawn = (selectedMap === "trenches" || selectedMap === "town" || selectedMap === "snow" || selectedMap === "bocage")
             ? findSpawnPoint(preferred[i], data.size, null, "enemy")
             : findPointControlSpawn("enemy", i, data.size, null);
 
@@ -4310,8 +4318,8 @@ function setMinimapExpanded(expanded) {
 }
 
 function drawMinimap() {
-    if (!minimapCanvas || !minimapCtx || selectedGameMode !== 'skirmish') {
-        if (minimapPanel) minimapPanel.style.display = selectedGameMode === 'skirmish' ? '' : 'none';
+    if (!minimapCanvas || !minimapCtx || (selectedGameMode !== 'skirmish' && selectedGameMode !== 'pointControl')) {
+        if (minimapPanel) minimapPanel.style.display = (selectedGameMode === 'skirmish' || selectedGameMode === 'pointControl') ? '' : 'none';
         return;
     }
     minimapPanel.style.display = '';
@@ -4387,6 +4395,37 @@ function drawMinimap() {
             minimapCtx.beginPath();
             minimapCtx.arc(p[0] * sx, p[1] * sy, minimapExpanded ? 2.6 : 1.8, 0, Math.PI * 2);
             minimapCtx.fill();
+        });
+    }
+
+    // Point Control objectives are always visible on the minimap.
+    // They use the same world coordinates as the battlefield, so the markers
+    // stay accurate while the camera moves around the 2400x1500 map.
+    if (selectedGameMode === 'pointControl') {
+        controlPoints.forEach(function(point) {
+            if (!point) return;
+            const px = point.x * sx;
+            const py = point.y * sy;
+            let color = '#d5c77a';
+            if (point.owner === 'friendly') color = '#6fa85b';
+            if (point.owner === 'enemy') color = '#b34d43';
+
+            minimapCtx.globalAlpha = 0.24;
+            minimapCtx.fillStyle = color;
+            minimapCtx.beginPath();
+            minimapCtx.arc(px, py, Math.max(7, point.radius * sx), 0, Math.PI * 2);
+            minimapCtx.fill();
+            minimapCtx.globalAlpha = 1;
+            minimapCtx.strokeStyle = color;
+            minimapCtx.lineWidth = 2;
+            minimapCtx.beginPath();
+            minimapCtx.arc(px, py, Math.max(5, point.radius * sx), 0, Math.PI * 2);
+            minimapCtx.stroke();
+            minimapCtx.fillStyle = '#f4edc7';
+            minimapCtx.font = minimapExpanded ? 'bold 13px monospace' : 'bold 9px monospace';
+            minimapCtx.textAlign = 'center';
+            minimapCtx.textBaseline = 'middle';
+            minimapCtx.fillText(point.name, px, py);
         });
     }
 
@@ -4514,7 +4553,7 @@ canvas.addEventListener(
         const viewport = document.getElementById('canvasViewport');
         const rect = (viewport || canvas).getBoundingClientRect();
         mouse.active = true;
-        if (selectedGameMode === 'skirmish') {
+        if (selectedGameMode === 'skirmish' || selectedGameMode === 'pointControl') {
             mouse.x = (event.clientX - rect.left) + cameraX;
             mouse.y = (event.clientY - rect.top) + cameraY;
         } else {
@@ -11618,7 +11657,7 @@ function drawCampaignPrepOverlay(){
 
 function drawEverything() {
 
-    if (selectedGameMode === 'skirmish') updateCamera();
+    if (selectedGameMode === 'skirmish' || selectedGameMode === 'pointControl') updateCamera();
     ctx.save();
 
 

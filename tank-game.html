@@ -406,22 +406,49 @@ button.selected {
 }
 
 .skinPreview {
-    width: 90px;
-    height: 48px;
+    width: 170px;
+    height: 92px;
     margin: 4px auto 10px;
     border: 4px solid #292d20;
     position: relative;
     overflow: hidden;
+    background: radial-gradient(circle at 50% 35%, rgba(255,255,255,.09), transparent 38%), #22271d;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.08), 0 4px 0 #171a13;
 }
-
+.skinPreview::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 35px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--skin-body, #59634b);
+    border: 3px solid rgba(12,15,11,.9);
+    box-shadow: 0 8px 0 rgba(0,0,0,.28), inset 0 0 0 7px var(--skin-accent, #343c2c);
+    transform: skewX(-7deg);
+}
 .skinPreview::after {
     content: "";
     position: absolute;
-    left: 13px;
-    right: 13px;
-    top: 20px;
-    height: 8px;
-    background: rgba(20,20,16,0.65);
+    left: 67px;
+    top: 21px;
+    width: 42px;
+    height: 26px;
+    border-radius: 9px 9px 5px 5px;
+    background: var(--skin-body, #59634b);
+    border: 3px solid rgba(12,15,11,.9);
+    box-shadow: 34px 9px 0 -13px #252a20;
+}
+.skinPreview .previewBarrel {
+    position:absolute; left:101px; top:29px; width:52px; height:7px;
+    background:#252a21; border:2px solid #10130f; transform:rotate(-5deg);
+    transform-origin:left center;
+}
+.skinPreview .previewMark {
+    position:absolute; left:48px; top:45px; width:15px; height:15px;
+    border-radius:50%; background:rgba(215,205,160,.85); border:2px solid rgba(25,28,20,.7);
+    z-index:3;
 }
 
 .skinOwned {
@@ -1008,29 +1035,31 @@ function closeAbilityModal() {
 }
 
 const SKINS = {
-    british_classic: { faction: "british", name: "Classic British", cost: 0, body: "#53633b", accent: "#303b24" },
-    british_desert: { faction: "british", name: "Desert Khaki", cost: 100, body: "#a28a5b", accent: "#5f5236" },
-    british_winter: { faction: "british", name: "Winter Whitewash", cost: 150, body: "#c9c7b8", accent: "#59624e" },
-    british_normandy: { faction: "british", name: "Normandy Mud", cost: 200, body: "#665744", accent: "#332b23" },
-    british_royal: { faction: "british", name: "Royal Armoured", cost: 300, body: "#3f5938", accent: "#b49a57" },
+    // Each skin now has a real battlefield treatment: paint + disruptive pattern + markings.
+    // The pattern is drawn directly onto the player's hull/turret, so it is visible in combat.
+    british_classic: { faction: "british", name: "Classic British", cost: 0, body: "#53633b", accent: "#303b24", pattern: "plain", mark: "none" },
+    british_desert: { faction: "british", name: "Desert Khaki", cost: 100, body: "#a28a5b", accent: "#5f5236", pattern: "desert", mark: "roundel" },
+    british_winter: { faction: "british", name: "Winter Whitewash", cost: 150, body: "#c9c7b8", accent: "#59624e", pattern: "whitewash", mark: "roundel" },
+    british_normandy: { faction: "british", name: "Normandy Mud", cost: 200, body: "#665744", accent: "#332b23", pattern: "mud", mark: "roundel" },
+    british_royal: { faction: "british", name: "Royal Armoured", cost: 300, body: "#3f5938", accent: "#b49a57", pattern: "royal", mark: "crown" },
 
-    german_classic: { faction: "german", name: "Classic Dunkelgelb", cost: 0, body: "#77724e", accent: "#4c4930" },
-    german_winter: { faction: "german", name: "Winter Camouflage", cost: 150, body: "#d0ccb9", accent: "#6b6b5b" },
-    german_eastern: { faction: "german", name: "Eastern Front Mud", cost: 200, body: "#665744", accent: "#3c3025" },
-    german_ambush: { faction: "german", name: "Ambush Camo", cost: 300, body: "#687044", accent: "#4a3f2d" },
-    german_green: { faction: "german", name: "Late-War Green", cost: 400, body: "#4f5b3f", accent: "#2d3425" },
+    german_classic: { faction: "german", name: "Classic Dunkelgelb", cost: 0, body: "#77724e", accent: "#4c4930", pattern: "plain", mark: "none" },
+    german_winter: { faction: "german", name: "Winter Camouflage", cost: 150, body: "#d0ccb9", accent: "#6b6b5b", pattern: "whitewash", mark: "cross" },
+    german_eastern: { faction: "german", name: "Eastern Front Mud", cost: 200, body: "#665744", accent: "#3c3025", pattern: "mud", mark: "cross" },
+    german_ambush: { faction: "german", name: "Ambush Camo", cost: 300, body: "#687044", accent: "#4a3f2d", pattern: "ambush", mark: "cross" },
+    german_green: { faction: "german", name: "Late-War Green", cost: 400, body: "#4f5b3f", accent: "#2d3425", pattern: "green", mark: "cross" },
 
-    soviet_classic: { faction: "soviet", name: "Classic Green", cost: 0, body: "#4d6738", accent: "#2d3e23" },
-    soviet_winter: { faction: "soviet", name: "Winter Whitewash", cost: 150, body: "#c7c7b8", accent: "#59604f" },
-    soviet_muddy: { faction: "soviet", name: "Muddy Front", cost: 200, body: "#66533d", accent: "#382d21" },
-    soviet_parade: { faction: "soviet", name: "Parade Green", cost: 300, body: "#3f6339", accent: "#263a25" },
-    soviet_wintergreen: { faction: "soviet", name: "Winter Green", cost: 400, body: "#53684b", accent: "#d0cdbd" },
+    soviet_classic: { faction: "soviet", name: "Classic Green", cost: 0, body: "#4d6738", accent: "#2d3e23", pattern: "plain", mark: "star" },
+    soviet_winter: { faction: "soviet", name: "Winter Whitewash", cost: 150, body: "#c7c7b8", accent: "#59604f", pattern: "whitewash", mark: "star" },
+    soviet_muddy: { faction: "soviet", name: "Muddy Front", cost: 200, body: "#66533d", accent: "#382d21", pattern: "mud", mark: "star" },
+    soviet_parade: { faction: "soviet", name: "Parade Green", cost: 300, body: "#3f6339", accent: "#263a25", pattern: "parade", mark: "star" },
+    soviet_wintergreen: { faction: "soviet", name: "Winter Green", cost: 400, body: "#53684b", accent: "#d0cdbd", pattern: "wintergreen", mark: "star" },
 
-    american_classic: { faction: "american", name: "Olive Drab", cost: 0, body: "#59634b", accent: "#343c2c" },
-    american_normandy: { faction: "american", name: "Normandy Dust", cost: 150, body: "#9b875e", accent: "#5d5037" },
-    american_winter: { faction: "american", name: "Winter Whitewash", cost: 200, body: "#c7c7bb", accent: "#59604f" },
-    american_muddy: { faction: "american", name: "Muddy Veteran", cost: 300, body: "#665744", accent: "#332b23" },
-    american_field: { faction: "american", name: "Field Camo", cost: 400, body: "#53634b", accent: "#8b7444" }
+    american_classic: { faction: "american", name: "Olive Drab", cost: 0, body: "#59634b", accent: "#343c2c", pattern: "plain", mark: "none" },
+    american_normandy: { faction: "american", name: "Normandy Dust", cost: 150, body: "#9b875e", accent: "#5d5037", pattern: "invasion", mark: "star" },
+    american_winter: { faction: "american", name: "Winter Whitewash", cost: 200, body: "#c7c7bb", accent: "#59604f", pattern: "whitewash", mark: "star" },
+    american_muddy: { faction: "american", name: "Muddy Veteran", cost: 300, body: "#665744", accent: "#332b23", pattern: "mud", mark: "star" },
+    american_field: { faction: "american", name: "Field Camo", cost: 400, body: "#53634b", accent: "#8b7444", pattern: "field", mark: "star" }
 };
 
 let progression = loadProgression();
@@ -1478,7 +1507,7 @@ function renderSkinChoices() {
             ? "FREE"
             : (progression.ownedSkins.includes(id) ? "OWNED" : "— " + skin.cost + " 🪙");
 
-        button.innerHTML = '<div class="skinPreview" style="background:' + previewBody + '; box-shadow: inset 0 0 0 8px ' + previewAccent + '"></div>' +
+        button.innerHTML = '<div class="skinPreview" style="--skin-body:' + previewBody + ';--skin-accent:' + previewAccent + '"><span class="previewBarrel"></span><span class="previewMark"></span></div>' +
             '<strong>' + skin.name + ' — ' + priceText + '</strong><div class="skinOwned">' +
             (progression.equippedSkins[activeFaction.id] === id ? "EQUIPPED" : progression.ownedSkins.includes(id) ? "Click to equip" : "Click to buy") +
             '</div>';
@@ -10261,6 +10290,86 @@ function drawTank(
    TANK HULL
 ===================================================== */
 
+function getPlayerSkin(tank) {
+    if (!tank || tank !== player || !progression || !progression.equippedSkins) return null;
+    return SKINS[progression.equippedSkins[tank.faction]] || null;
+}
+
+function drawSkinHullDetails(tank) {
+    const skin = getPlayerSkin(tank);
+    if (!skin || skin.pattern === "plain") return;
+    const s = tank.size;
+    ctx.save();
+    ctx.globalAlpha = 0.92;
+    ctx.beginPath();
+    ctx.roundRect(-s*0.92, -s*0.52, s*1.84, s*1.04, s*0.16);
+    ctx.clip();
+
+    if (skin.pattern === "desert" || skin.pattern === "field" || skin.pattern === "green") {
+        ctx.fillStyle = skin.pattern === "desert" ? "rgba(73,61,37,.46)" : "rgba(35,52,29,.44)";
+        for (let i=-3;i<=3;i++) {
+            ctx.save(); ctx.translate(i*s*.30,0); ctx.rotate(-0.22);
+            ctx.fillRect(-s*.10,-s*.80,s*.20,s*1.6); ctx.restore();
+        }
+    } else if (skin.pattern === "whitewash") {
+        ctx.fillStyle = "rgba(242,241,226,.66)";
+        ctx.fillRect(-s*1.1,-s*.42,s*2.2,s*.18);
+        ctx.fillRect(-s*.65,s*.16,s*1.45,s*.16);
+        ctx.fillStyle = "rgba(55,61,48,.34)";
+        ctx.fillRect(-s*1.0,-s*.03,s*.52,s*.11);
+        ctx.fillRect(s*.20,-s*.44,s*.60,s*.10);
+    } else if (skin.pattern === "mud") {
+        ctx.fillStyle = "rgba(39,30,22,.55)";
+        for (let i=0;i<8;i++) {
+            const x=-s*.95+i*s*.26;
+            ctx.beginPath(); ctx.ellipse(x, s*(i%2 ? .22 : -.18), s*.14, s*.07, -0.3, 0, Math.PI*2); ctx.fill();
+        }
+    } else if (skin.pattern === "ambush") {
+        ctx.fillStyle = "rgba(42,52,31,.72)";
+        for (let i=0;i<18;i++) {
+            const x=-s*.9+(i%6)*s*.34, y=-s*.38+Math.floor(i/6)*s*.38;
+            ctx.beginPath(); ctx.arc(x,y,s*.07,0,Math.PI*2); ctx.fill();
+        }
+        ctx.fillStyle = "rgba(88,67,38,.62)";
+        for (let i=0;i<10;i++) { ctx.beginPath(); ctx.arc(-s*.75+(i%5)*s*.38,-s*.18+Math.floor(i/5)*s*.42,s*.045,0,Math.PI*2); ctx.fill(); }
+    } else if (skin.pattern === "royal" || skin.pattern === "parade") {
+        ctx.strokeStyle = skin.pattern === "royal" ? "rgba(195,164,83,.68)" : "rgba(190,55,42,.65)";
+        ctx.lineWidth = Math.max(2,s*.055);
+        ctx.beginPath(); ctx.moveTo(-s*1.0,s*.36); ctx.lineTo(s*.90,-s*.36); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-s*.90,s*.48); ctx.lineTo(s*1.0,-s*.26); ctx.stroke();
+    } else if (skin.pattern === "wintergreen") {
+        ctx.fillStyle = "rgba(220,218,193,.48)";
+        for (let i=-2;i<=2;i++) { ctx.fillRect(-s*.95+i*s*.42,-s*.50,s*.15,s*1.0); }
+    } else if (skin.pattern === "invasion") {
+        ctx.fillStyle = "rgba(236,230,202,.82)";
+        ctx.fillRect(-s*.74,-s*.70,s*.18,s*1.40);
+        ctx.fillRect(-s*.32,-s*.70,s*.18,s*1.40);
+        ctx.fillRect(s*.10,-s*.70,s*.18,s*1.40);
+    }
+    ctx.restore();
+
+    // Strong, readable faction marking on the hull.
+    if (skin.mark && skin.mark !== "none") {
+        ctx.save();
+        ctx.translate(-s*.48, -s*.02);
+        const r=s*.13;
+        if (skin.mark === "star") {
+            ctx.fillStyle="#c13a2e"; ctx.strokeStyle="#e1c85b"; ctx.lineWidth=Math.max(1,s*.015);
+            ctx.beginPath(); for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2===0?r:r*.43;ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);} ctx.closePath();ctx.fill();ctx.stroke();
+        } else if (skin.mark === "roundel") {
+            ctx.fillStyle="#eee7ca";ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle="#b33b31";ctx.beginPath();ctx.arc(0,0,r*.55,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle="#233c64";ctx.beginPath();ctx.arc(0,0,r*.27,0,Math.PI*2);ctx.fill();
+        } else if (skin.mark === "cross") {
+            ctx.fillStyle="#d5d0b8";ctx.fillRect(-r*.7,-r*.22,r*1.4,r*.44);ctx.fillRect(-r*.22,-r*.7,r*.44,r*1.4);
+        } else if (skin.mark === "crown") {
+            ctx.fillStyle="#d3b55c";ctx.strokeStyle="#3a3020";ctx.lineWidth=1;
+            ctx.beginPath();ctx.moveTo(-r,-r*.35);ctx.lineTo(-r*.55,r*.45);ctx.lineTo(0,r*.05);ctx.lineTo(r*.55,r*.45);ctx.lineTo(r,-r*.35);ctx.lineTo(r*.35,-r*.02);ctx.lineTo(0,-r*.45);ctx.lineTo(-r*.35,-r*.02);ctx.closePath();ctx.fill();ctx.stroke();
+        }
+        ctx.restore();
+    }
+}
+
 function drawTankHull(tank) {
     const s=tank.size;
     let colour = tank.faction==='british' ? '#53633b' : tank.faction==='german' ? '#77724e' : tank.faction==='american' ? '#59634b' : '#4d6738';
@@ -10318,6 +10427,7 @@ function drawTankHull(tank) {
     ctx.fillStyle='rgba(255,255,255,.10)';ctx.beginPath();ctx.moveTo(-s*.55,-s*.32);ctx.lineTo(s*.52,-s*.32);ctx.lineTo(s*.70,-s*.10);ctx.lineTo(s*.48,s*.08);ctx.lineTo(-s*.55,s*.08);ctx.closePath();ctx.fill();
     ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.moveTo(s*.42,-s*.44);ctx.lineTo(s*.96,-s*.20);ctx.lineTo(s*.90,s*.32);ctx.lineTo(s*.45,s*.43);ctx.closePath();ctx.fill();
     ctx.strokeStyle='rgba(20,22,17,.45)';ctx.lineWidth=Math.max(1,s*.025);for(const y of [-s*.22,s*.18]){ctx.beginPath();ctx.moveTo(-s*.62,y);ctx.lineTo(-s*.20,y);ctx.stroke();}
+    drawSkinHullDetails(tank);
 }
 
 
@@ -10455,6 +10565,17 @@ function drawTurret(tank) {
     if (tank.model === 'calliope') drawCalliopeRack(tank);
     if (tank.model === 'flakpanzer') drawFlakRack(tank);
     if (tank.model === 'crocodile') drawCrocodileNozzle(tank);
+    const turretSkin = getPlayerSkin(tank);
+    if (turretSkin && turretSkin.pattern !== 'plain') {
+        ctx.save();
+        ctx.globalAlpha = 0.55;
+        ctx.strokeStyle = turretSkin.pattern === 'invasion' || turretSkin.pattern === 'whitewash' ? '#eee8d2' : turretSkin.accent;
+        ctx.lineWidth = Math.max(2, s*.06);
+        if (turretSkin.pattern === 'invasion') { ctx.beginPath(); ctx.moveTo(-s*.30,-s*.45); ctx.lineTo(-s*.30,s*.45); ctx.moveTo(s*.05,-s*.45); ctx.lineTo(s*.05,s*.45); ctx.stroke(); }
+        else if (turretSkin.pattern === 'whitewash') { ctx.beginPath(); ctx.moveTo(-s*.42,-s*.10); ctx.lineTo(s*.42,-s*.10); ctx.moveTo(-s*.20,s*.22); ctx.lineTo(s*.38,s*.22); ctx.stroke(); }
+        else { ctx.beginPath(); ctx.moveTo(-s*.42,s*.25); ctx.lineTo(s*.42,-s*.25); ctx.stroke(); }
+        ctx.restore();
+    }
     drawCannon(tank);
 }
 

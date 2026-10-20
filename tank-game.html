@@ -4085,6 +4085,710 @@ function ddShot4(t, w, h) {
     return Math.max(f1 > .8 ? .35 * (f1 - .8) / .2 : 0, f2 > .8 ? .35 * (f2 - .8) / .2 : 0, u > hitT && u < hitT + .14 ? .42 * (1 - (u - hitT) / .14) : 0);
 }
 
+/* ===== DDP BEGIN (painted 2D D-Day cinematic) ===== */
+const DDP = { P: null, q: 2, ema: 0, last: 0, cool: 0 };
+function ddpCv(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function ddpR(n) { return cs2R(n + 91.7); }
+function ddpPuff(rgb) { const c = ddpCv(128, 128), g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(' + rgb + ',1)'); gr.addColorStop(.45, 'rgba(' + rgb + ',.55)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return c; }
+function ddpBuild() {
+    const P = {};
+    P.dark = ddpPuff('18,16,15'); P.smoke = ddpPuff('52,49,45'); P.grey = ddpPuff('142,140,134'); P.white = ddpPuff('240,240,234'); P.fire = ddpPuff('255,148,48'); P.dust = ddpPuff('170,146,106'); P.warm = ddpPuff('255,196,120');
+    // overcast cloud tiles (tileable horizontally)
+    function cloudTile(seed, n, ymin, ymax, rmin, rmax, aMul, dk) {
+        const c = ddpCv(1600, 360), g = c.getContext('2d');
+        for (let i = 0; i < n; i++) {
+            const x = ddpR(seed + i * 3.1) * 1600, y = ymin + ddpR(seed + i * 7.7) * (ymax - ymin), r = rmin + ddpR(seed + i * 5.3) * (rmax - rmin), a = (.08 + ddpR(seed + i * 2.2) * .22) * aMul;
+            const pick = ddpR(seed + i * 1.7); const tex = pick < dk ? P.smoke : (pick < .75 ? P.grey : P.white);
+            for (const dx of [-1600, 0, 1600]) { g.globalAlpha = a; g.drawImage(tex, x + dx - r * 1.4, y - r * .45, r * 2.8, r * .9); }
+        }
+        return c;
+    }
+    P.cloudA = cloudTile(1, 150, 120, 340, 60, 190, 1, .35);
+    P.cloudB = cloudTile(40, 90, 40, 220, 90, 260, .8, .5);
+    // light shafts
+    const S = 512, rc = ddpCv(S, S), rg = rc.getContext('2d'); rg.translate(S / 2, S / 2);
+    for (let i = 0; i < 40; i++) {
+        const a = ddpR(i * 2.3) * Math.PI * 2, wd = .012 + ddpR(i + 7) * .05, al = .05 + ddpR(i + 3) * .14, R = S / 2;
+        const x1 = Math.cos(a - wd) * R, y1 = Math.sin(a - wd) * R, x2 = Math.cos(a + wd) * R, y2 = Math.sin(a + wd) * R;
+        const lg = rg.createLinearGradient(0, 0, Math.cos(a) * R, Math.sin(a) * R); lg.addColorStop(0, 'rgba(255,214,150,' + al + ')'); lg.addColorStop(1, 'rgba(255,214,150,0)');
+        rg.fillStyle = lg; rg.beginPath(); rg.moveTo(0, 0); rg.lineTo(x1, y1); rg.lineTo(x2, y2); rg.closePath(); rg.fill();
+    }
+    P.rays = rc;
+    // wet-steel scratches texture for boats / bunker
+    const sc = ddpCv(256, 128), sg = sc.getContext('2d');
+    for (let i = 0; i < 260; i++) { sg.strokeStyle = 'rgba(' + (ddpR(i) < .5 ? '255,255,255' : '0,0,0') + ',' + (.03 + ddpR(i + 1) * .07) + ')'; sg.lineWidth = .6 + ddpR(i + 2); const x = ddpR(i + 3) * 256, y = ddpR(i + 4) * 128; sg.beginPath(); sg.moveTo(x, y); sg.lineTo(x + (ddpR(i + 5) - .5) * 60, y + (ddpR(i + 6) - .5) * 4); sg.stroke(); }
+    P.scratch = sc;
+    // film dust specks
+    DDP.P = P;
+}
+function ddpEnsure() { if (!DDP.P) ddpBuild(); return DDP.P; }
+function ddpMix(a, b, k) { return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]; }
+function ddpRGB(c, a) { return 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + (a === undefined ? 1 : a) + ')'; }
+
+/* ---------- sky & sea ---------- */
+function ddpSky(hz, t, pan, sx, heat, dim) {
+    const P = ddpEnsure(), top = ddpMix([58, 72, 84], [38, 44, 50], dim || 0), mid = ddpMix([132, 148, 152], [96, 100, 100], dim || 0);
+    const g = ctx.createLinearGradient(0, hz - 760, 0, hz); g.addColorStop(0, ddpRGB(top)); g.addColorStop(.55, ddpRGB(mid)); g.addColorStop(.86, 'rgb(212,196,164)'); g.addColorStop(1, 'rgb(236,208,160)');
+    ctx.fillStyle = g; ctx.fillRect(-600, hz - 900, 2800, 900 + 4);
+    // sun bleed
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const sy = hz - 70, sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, 640); sg.addColorStop(0, 'rgba(255,214,150,.78)'); sg.addColorStop(.18, 'rgba(255,170,100,.34)'); sg.addColorStop(.6, 'rgba(255,130,70,.08)'); sg.addColorStop(1, 'rgba(255,120,60,0)'); ctx.fillStyle = sg; ctx.fillRect(sx - 700, sy - 700, 1400, 1400);
+    ctx.restore();
+    // cloud decks (parallax)
+    const dA = ((pan * .06) % 1600 + 1600) % 1600, dB = ((pan * .14 + t * 3) % 1600 + 1600) % 1600;
+    ctx.globalAlpha = .95; for (let x = -dB - 1600; x < 2400; x += 1600) ctx.drawImage(P.cloudB, x, hz - 560, 1600, 330);
+    ctx.globalAlpha = 1; for (let x = -dA - 1600; x < 2400; x += 1600) ctx.drawImage(P.cloudA, x, hz - 400, 1600, 360);
+    // sun-lit underside of clouds
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; const cg = ctx.createRadialGradient(sx, hz - 150, 0, sx, hz - 150, 520); cg.addColorStop(0, 'rgba(255,190,120,.30)'); cg.addColorStop(1, 'rgba(255,150,80,0)'); ctx.fillStyle = cg; ctx.fillRect(sx - 600, hz - 700, 1200, 700); ctx.restore();
+    // shafts
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .28 + Math.sin(t * .4) * .05; ctx.translate(sx, hz - 90); ctx.rotate(Math.sin(t * .13) * .02); ctx.drawImage(P.rays, -820, -820, 1640, 1640); ctx.restore();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; const sd = ctx.createRadialGradient(sx, sy, 0, sx, sy, 60); sd.addColorStop(0, 'rgba(255,248,224,.95)'); sd.addColorStop(.25, 'rgba(255,226,170,.6)'); sd.addColorStop(1, 'rgba(255,190,110,0)'); ctx.fillStyle = sd; ctx.fillRect(sx - 70, sy - 70, 140, 140); ctx.restore();
+    if (heat > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const hg = ctx.createLinearGradient(0, hz - 220, 0, hz); hg.addColorStop(0, 'rgba(255,110,40,0)'); hg.addColorStop(1, 'rgba(255,110,40,' + (.22 * heat) + ')'); ctx.fillStyle = hg; ctx.fillRect(-600, hz - 220, 2800, 224); ctx.restore(); }
+}
+function ddpSea(hz, bot, t, sx, amp, tone) {
+    const g = ctx.createLinearGradient(0, hz, 0, bot);
+    const c0 = ddpMix([176, 160, 128], [112, 118, 112], tone || 0), c1 = ddpMix([56, 70, 74], [40, 52, 56], tone || 0), c2 = ddpMix([14, 24, 28], [10, 18, 22], tone || 0);
+    g.addColorStop(0, ddpRGB(c0)); g.addColorStop(.12, ddpRGB(c1)); g.addColorStop(1, ddpRGB(c2)); ctx.fillStyle = g; ctx.fillRect(-600, hz, 2800, bot - hz + 4);
+    const N = [14, 28, 44][DDP.q], span = bot - hz;
+    for (let i = 0; i < N; i++) {
+        const u = i / N, y = hz + span * Math.pow(u, 1.75) + 3, ps = .1 + u * 1.5, step = 18 + ps * 26;
+        ctx.beginPath();
+        for (let x = -600; x <= 2200; x += step) { const yy = y + (Math.sin(x * .011 / (ps * .6 + .3) + t * (.7 + ps * .9) + i * 1.7) * 3.2 + Math.sin(x * .029 + t * 1.4 + i * 2.3) * 1.4) * ps * amp; if (x === -600) ctx.moveTo(x, yy); else ctx.lineTo(x, yy); }
+        ctx.strokeStyle = 'rgba(214,226,224,' + (.05 + .13 * ps) + ')'; ctx.lineWidth = .5 + ps * 1.5; ctx.stroke();
+        ctx.beginPath();
+        for (let x = -600; x <= 2200; x += step) { const yy = y + 2 + ps * 2.5 + (Math.sin(x * .011 / (ps * .6 + .3) + t * (.7 + ps * .9) + i * 1.7) * 3.2) * ps * amp; if (x === -600) ctx.moveTo(x, yy); else ctx.lineTo(x, yy); }
+        ctx.strokeStyle = 'rgba(8,16,20,' + (.10 + .14 * ps) + ')'; ctx.lineWidth = .8 + ps * 2; ctx.stroke();
+    }
+    // sun glitter path
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let j = 0, JN = [0, 150, 320][DDP.q]; j < JN; j++) {
+        const u = Math.pow(ddpR(j * 1.3), 1.5), y = hz + 2 + u * span * .8, ps = .1 + u * 1.5, spread = 40 + u * 360, x = sx + (ddpR(j * 2.9) - .5) * spread * 2, fl = Math.max(0, Math.sin(t * (2 + ddpR(j) * 3) + j * 7.1));
+        const a = (.1 + .5 * fl) * (1 - u * .6); ctx.fillStyle = 'rgba(255,226,170,' + a + ')'; const L = (6 + ps * 20) * (.5 + ddpR(j + 5)); ctx.fillRect(x - L / 2, y, L, .8 + ps * 1.4);
+    }
+    ctx.restore();
+    const hg = ctx.createLinearGradient(0, hz - 10, 0, hz + 90); hg.addColorStop(0, 'rgba(226,206,170,.7)'); hg.addColorStop(1, 'rgba(226,206,170,0)'); ctx.fillStyle = hg; ctx.fillRect(-600, hz - 10, 2800, 100);
+}
+
+/* ---------- smoke / fire / splash ---------- */
+function ddpSmoke(x, y, s, t, seed, drift, rise, dens) {
+    const P = ddpEnsure(); dens = dens || 1;
+    for (let i = 0; i < 22; i++) {
+        const k = (t * .17 + i / 22 + seed * .137) % 1, r = (16 + k * 100) * s, px = x - k * drift * s + Math.sin(t * 1.1 + i * 1.3 + seed) * 6 * s, py = y - k * (rise || 260) * s, a = Math.pow(1 - k, 1.2) * Math.min(1, k * 10) * dens;
+        ctx.globalAlpha = a * .85; ctx.drawImage(P.dark, px - r, py - r, r * 2, r * 2);
+        ctx.globalAlpha = a * .5; ctx.drawImage(P.smoke, px - r * 1.1, py - r * 1.1 - r * .1, r * 2.2, r * 2.2);
+        if (k < .55) { ctx.globalAlpha = a * .4 * (1 - k / .55); ctx.drawImage(P.fire, px - r * .6, py - r * .55 + r * .25, r * 1.2, r * 1.2); }
+    }
+    ctx.globalAlpha = 1;
+}
+function ddpFire(x, y, s, t, seed) {
+    const P = ddpEnsure(); ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 7; i++) { const f = .65 + Math.sin(t * 9 + i * 2.1 + seed) * .25 + Math.sin(t * 17 + i) * .1, r = (22 + i * 5) * s * f; ctx.globalAlpha = .55; ctx.drawImage(P.fire, x + Math.sin(i * 3 + seed) * 8 * s - r, y - i * 8 * s - r, r * 2, r * 2); }
+    ctx.globalAlpha = .35; const R = 150 * s; ctx.drawImage(P.warm, x - R, y - R * .6, R * 2, R * 1.4); ctx.restore(); ctx.globalAlpha = 1;
+}
+// k = seconds since the shell landed
+function ddpGeyser(x, y, s, k, seed) {
+    if (k < 0 || k > 2.6) return; const P = ddpEnsure();
+    const rise = Math.min(1, k / .34), er = 1 - Math.pow(1 - rise, 2), fall = k > .75 ? Math.min(1, (k - .75) / 1.6) : 0, H = 190 * s * er * (1 - fall * .92), fade = Math.min(1, (2.6 - k) / .9);
+    ctx.save(); ctx.globalAlpha = fade;
+    // surface flash + shock ring
+    ctx.globalCompositeOperation = 'lighter'; if (k < .3) { ctx.globalAlpha = (1 - k / .3) * .8; const R = 70 * s * (1 + k * 4); ctx.drawImage(P.warm, x - R, y - R * .5, R * 2, R); } ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = fade * .8;
+    const ring = 30 * s + k * 90 * s; ctx.strokeStyle = 'rgba(235,240,236,' + (.5 * (1 - k / 2.6)) + ')'; ctx.lineWidth = 3 * s; ctx.beginPath(); ctx.ellipse(x, y, ring, ring * .2, 0, 0, 7); ctx.stroke();
+    // column of puffs
+    const n = 14; for (let i = 0; i < n; i++) { const u = i / (n - 1), py = y - u * H, w = (26 + 14 * Math.sin(u * 3.1) + u * 12 * (1 + fall)) * s * (.6 + .4 * er), jx = Math.sin(i * 2.7 + seed) * 8 * s;
+        const lump = 1 + .25 * Math.sin(i * 5.3 + seed * 2.1 + k * 3); ctx.globalAlpha = fade * .8; ctx.drawImage(P.grey, x + jx - w * lump * 1.1, py - w * 1.1, w * lump * 2.2, w * 2.2); ctx.globalAlpha = fade * .55 * (1 - u * .3); ctx.drawImage(P.white, x + jx - w * .6 * lump + w * .3, py - w * .8, w * 1.2 * lump, w * 1.5); ctx.globalAlpha = fade * .22; ctx.drawImage(P.warm, x + jx - w * .5 + w * .5, py - w * .6, w, w * 1.2); }
+    // crown
+    const cw = (40 + 60 * er) * s * (1 - fall * .3); ctx.globalAlpha = fade * .75; ctx.drawImage(P.white, x - cw, y - H - cw * .5, cw * 2, cw * 1.2);
+    // droplets
+    ctx.fillStyle = 'rgba(240,244,240,.9)'; for (let i = 0; i < 26; i++) { const a = (ddpR(seed + i) - .5) * 1.5, v = (90 + ddpR(seed + i * 3) * 150) * s, tt = k * 1.1, px = x + Math.sin(a) * v * tt * .9, py = y - Math.cos(a) * v * tt * 1.3 + 260 * tt * tt * s; if (py < y + 6) { ctx.globalAlpha = fade * .8; ctx.fillRect(px, py, 2.2 * s, 2.2 * s + 2); } }
+    ctx.restore(); ctx.globalAlpha = 1;
+}
+function ddpSpray(x, y, s, k, dir, seed, n) { // short burst of droplets (bow spray, bullet splash)
+    if (k < 0 || k > 1.2) return; ctx.fillStyle = 'rgba(244,248,244,.85)';
+    for (let i = 0; i < (n || 16); i++) { const v = (50 + ddpR(seed + i) * 130) * s, a = -Math.PI / 2 + (ddpR(seed + i * 3) - .5) * 1.4 + dir * .4, px = x + Math.cos(a) * v * k * 1.2, py = y + Math.sin(a) * v * k * 1.3 + 220 * k * k * s; ctx.globalAlpha = Math.max(0, 1 - k / 1.2); ctx.fillRect(px, py, 2 * s + .6, 2 * s + 1.4); }
+    ctx.globalAlpha = 1;
+}
+function ddpFlashGlow(x, y, r, a) { const P = ddpEnsure(); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = a; ctx.drawImage(P.warm, x - r, y - r, r * 2, r * 2); ctx.globalAlpha = a; ctx.drawImage(P.white, x - r * .35, y - r * .35, r * .7, r * .7); ctx.restore(); ctx.globalAlpha = 1; }
+
+/* ---------- ships & planes ---------- */
+function ddpShip(x, y, len, kind, flash, haze, t) {
+    const k = len / 300, base = ddpMix([30, 36, 40], [165, 168, 162], haze);
+    const col = ddpRGB(base), dark = ddpRGB(ddpMix(base, [8, 10, 12], .5)), lite = ddpRGB(ddpMix(base, [244, 214, 168], .4));
+    ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+    // long low hull, raised bow
+    ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(-150, -22); ctx.lineTo(-146, 6); ctx.lineTo(118, 6); ctx.lineTo(158, -30); ctx.quadraticCurveTo(140, -24, 100, -22); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = dark; ctx.fillRect(-146, 1, 262, 6);
+    // forecastle turrets
+    function turret(px, py, dir, big) { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(px - 13, py); ctx.lineTo(px - 11, py - 11); ctx.lineTo(px + 9, py - 11); ctx.lineTo(px + 14, py); ctx.closePath(); ctx.fill(); ctx.fillStyle = lite; ctx.fillRect(px - 11, py - 11, 20, 1.3); ctx.fillStyle = dark; ctx.save(); ctx.translate(px + dir * 6, py - 6); ctx.rotate(-.05); for (let b = 0; b < (big ? 3 : 2); b++) ctx.fillRect(dir > 0 ? 0 : -46, b * 3.2 - 3, 46, 2.2); ctx.restore(); }
+    turret(-104, -22, 1, true); turret(-74, -30, 1, true); turret(88, -22, -1, true); turret(120, -22, -1, false);
+    // central block: bridge tower, funnels, masts
+    ctx.fillStyle = col; ctx.fillRect(-36, -50, 70, 30); ctx.fillRect(-18, -76, 28, 26); ctx.fillRect(-10, -96, 14, 20);
+    ctx.fillStyle = dark; ctx.fillRect(-4, -134, 2.4, 40); ctx.fillRect(-56, -80, 2, 60); ctx.fillRect(44, -78, 2, 56);
+    ctx.fillStyle = col; ctx.fillRect(14, -66, 18, 18); ctx.fillRect(-52, -58, 14, 10);
+    ctx.fillStyle = dark; ctx.fillRect(18, -86, 12, 24); ctx.fillRect(36, -74, 10, 22);
+    ctx.fillStyle = lite; ctx.fillRect(-36, -50, 70, 1.5); ctx.fillRect(-18, -76, 28, 1.3); ctx.fillRect(-10, -96, 14, 1.3);
+    ctx.fillStyle = dark; ctx.fillRect(-70, -34, 26, 12); ctx.fillStyle = col; ctx.fillRect(-70, -36, 26, 2);
+    // aft hangar and crane
+    ctx.fillStyle = col; ctx.fillRect(-126, -34, 34, 12); ctx.fillStyle = dark; ctx.fillRect(-126, -34, 2, 24); ctx.fillRect(-140, -52, 1.6, 30); ctx.fillRect(-140, -52, 18, 1.4);
+    // waterline haze
+    const wg = ctx.createLinearGradient(0, -4, 0, 8); wg.addColorStop(0, 'rgba(226,206,172,0)'); wg.addColorStop(1, 'rgba(226,206,172,.5)'); ctx.fillStyle = wg; ctx.fillRect(-160, -4, 330, 14);
+    ctx.restore();
+    if (flash > 0) { ddpFlashGlow(x + (-30 * 1) * k + 80 * k, y - 34 * k, 190 * k * flash + 24, flash); }
+}
+function ddpPlane(x, y, s, ang, big) { // C-47 / fighter silhouette, banking side view
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.scale(s, s);
+    ctx.fillStyle = 'rgba(14,16,18,.92)'; ctx.beginPath(); ctx.moveTo(34, 0); ctx.quadraticCurveTo(26, -7, 6, -7); ctx.lineTo(-30, -4); ctx.lineTo(-38, -16); ctx.lineTo(-30, -16); ctx.lineTo(-24, -5); ctx.lineTo(-30, 0); ctx.lineTo(-24, 5); ctx.lineTo(10, 7); ctx.quadraticCurveTo(26, 7, 34, 0); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(8, 1); ctx.lineTo(-10, -28); ctx.lineTo(-18, -28); ctx.lineTo(-8, 3); ctx.fill();
+    if (big) { ctx.fillStyle = 'rgba(210,210,200,.55)'; ctx.fillRect(-22, -5, 3, 11); ctx.fillRect(-16, -5, 3, 11); }
+    ctx.restore();
+}
+function ddpBust(x, y, s, seed, haze, t, rim) { // head+shoulders of a soldier seen side-on (facing right); y = shoulder line
+    const olive = ddpMix([66, 70, 46], [150, 156, 146], haze), dk = ddpMix([30, 32, 22], [100, 108, 104], haze);
+    ctx.save(); ctx.translate(x, y + Math.sin(t * 2.2 + seed * 1.3) * 1.2 * s); ctx.scale(s, s);
+    ctx.fillStyle = ddpRGB(dk); ctx.fillRect(-9, -1, 15, 8);                                 // shoulders / pack
+    ctx.fillStyle = ddpRGB(olive); ctx.beginPath(); ctx.moveTo(-10, 8); ctx.lineTo(-9, -3); ctx.quadraticCurveTo(-2, -6, 6, -3); ctx.lineTo(7, 8); ctx.fill();
+    ctx.fillStyle = ddpRGB(ddpMix([70, 54, 40], dk, haze)); ctx.fillRect(-1, -6, 5, 5);      // neck/jaw
+    ctx.fillStyle = ddpRGB(olive); ctx.beginPath(); ctx.ellipse(1, -11, 6.4, 5.6, 0, Math.PI, 0); ctx.lineTo(7.6, -9); ctx.lineTo(-5.6, -9); ctx.closePath(); ctx.fill(); // helmet
+    ctx.fillStyle = ddpRGB(dk); ctx.fillRect(-5.8, -9.6, 13.4, 1.6); ctx.globalAlpha = .45; for (let i = 0; i < 7; i++) ctx.fillRect(-4 + i * 1.7, -15 + (i % 2) * 2, 1, 1); ctx.globalAlpha = 1; // brim + net
+    ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(1.5, -8.6, 4.5, 3.4);                    // face shadow
+    ctx.strokeStyle = ddpRGB(dk); ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(2, -8); ctx.lineTo(3, -3); ctx.stroke(); // chin strap
+    if (rim) { ctx.fillStyle = 'rgba(255,214,150,' + rim + ')'; ctx.fillRect(-5, -15.6, 9, 1.4); ctx.fillRect(-9, -2, 1.6, 9); }
+    ctx.restore();
+}
+/* ---------- landing craft (side view, bow to the right) ---------- */
+function ddpBoatSide(x, y, s, t, o) { // y = waterline
+    o = o || {}; const P = ddpEnsure(), seed = o.seed || 0, pitch = Math.sin(t * 1.5 + seed) * .018, haze = o.haze || 0;
+    const hull = ddpMix([50, 54, 38], [150, 156, 146], haze), dk = ddpMix([18, 20, 15], [100, 108, 104], haze), lt = ddpMix([236, 200, 140], [214, 208, 190], haze);
+    ctx.save(); ctx.translate(x, y + Math.sin(t * 1.9 + seed * 1.7) * 2.4 * s); ctx.rotate(pitch); ctx.scale(s, s);
+    // shadow on the water
+    ctx.fillStyle = 'rgba(6,12,14,.38)'; ctx.beginPath(); ctx.ellipse(0, 3, 82, 7, 0, 0, 7); ctx.fill();
+    // hull
+    ctx.fillStyle = ddpRGB(hull); ctx.beginPath(); ctx.moveTo(-66, -6); ctx.lineTo(-68, -30); ctx.lineTo(48, -30); ctx.lineTo(64, -40); ctx.lineTo(70, -34); ctx.lineTo(62, -4); ctx.lineTo(40, 3); ctx.lineTo(-52, 3); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = ddpRGB(dk); ctx.beginPath(); ctx.moveTo(-66, -6); ctx.lineTo(62, -4); ctx.lineTo(40, 3); ctx.lineTo(-52, 3); ctx.closePath(); ctx.fill();
+    // waterline stripe + plating
+    ctx.fillStyle = 'rgba(0,0,0,.22)'; for (let i = 0; i < 9; i++) ctx.fillRect(-62 + i * 14, -28, 1.2, 22);
+    ctx.fillStyle = ddpRGB(lt); ctx.globalAlpha = .9; ctx.fillRect(-68, -31, 116, 2); ctx.fillRect(-60, -52, 22, 1.6); ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(-66, -14, 128, 1.4);
+    // ramp (bow door)
+    ctx.fillStyle = ddpRGB(ddpMix(hull, [30, 32, 28], .25)); ctx.beginPath(); ctx.moveTo(48, -30); ctx.lineTo(64, -40); ctx.lineTo(70, -34); ctx.lineTo(62, -6); ctx.lineTo(52, -8); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(52, -28); ctx.lineTo(60, -8); ctx.stroke();
+    // cab + coxswain
+    ctx.fillStyle = ddpRGB(ddpMix(hull, [20, 22, 18], .15)); ctx.fillRect(-60, -52, 22, 24); ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(-56, -46, 14, 4);
+    ctx.fillStyle = ddpRGB(lt); ctx.globalAlpha = .5; ctx.fillRect(-60, -52, 22, 1.5); ctx.globalAlpha = 1;
+    // MG tubs
+    ctx.fillStyle = ddpRGB(dk); ctx.fillRect(-26, -38, 10, 8); ctx.fillRect(18, -38, 10, 8);
+    // troops: helmets over the gunwale
+    const nT = o.troops === undefined ? 12 : o.troops;
+    if (o.busts) { for (let i = 0; i < nT; i++) { ctx.save(); ddpBust(-34 + i * 7.2 + ((i * 7) % 3) * .8, -29 - ((i * 5) % 3) * 1.1, .72, seed + i, haze, t, o.rim || 0); ctx.restore(); } } else for (let i = 0; i < nT; i++) { const hx = -30 + i * 6.4 + ((i * 7) % 3), hy = -33 + Math.sin(t * 2.2 + i * 1.3 + seed) * 1.1; ctx.fillStyle = ddpRGB(ddpMix([50, 54, 38], [150, 156, 146], haze)); ctx.beginPath(); ctx.arc(hx, hy, 3.6, Math.PI, 0); ctx.fill(); ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(hx - 3.6, hy, 7.2, 1.2); }
+    ctx.fillStyle = ddpRGB(hull); ctx.fillRect(-68, -28.4, 116, 3.4); ctx.fillStyle = ddpRGB(lt); ctx.globalAlpha = .85; ctx.fillRect(-68, -28.6, 116, 1.5); ctx.globalAlpha = 1;
+    ctx.restore();
+    // bow wave and wake in world space
+    const sp = o.speed === undefined ? 1 : o.speed;
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    for (let i = 0; i < 14; i++) { const k = (t * 1.9 * sp + i / 14 + seed * .3) % 1, px = 60 + k * 30 * sp, py = -2 - Math.sin(k * 3.1) * (16 + (i % 3) * 5) * sp, r = (7 + k * 9) * (.7 + .3 * sp); ctx.globalAlpha = Math.pow(1 - k, 1.1) * .8; ctx.drawImage(P.white, px - r, py - r, r * 2, r * 2); }
+    ctx.globalAlpha = .85; ctx.fillStyle = 'rgba(236,244,240,.8)'; ctx.beginPath(); ctx.moveTo(40, 3); ctx.quadraticCurveTo(66 + 6 * sp, -2, 86 + 10 * sp, 4); ctx.lineTo(40, 5); ctx.fill(); ctx.globalAlpha = 1;
+    // wake
+    const wg = ctx.createLinearGradient(-70, 0, -300 * sp, 0); wg.addColorStop(0, 'rgba(236,244,240,.7)'); wg.addColorStop(1, 'rgba(236,244,240,0)'); ctx.fillStyle = wg; ctx.beginPath(); ctx.moveTo(-60, 1); ctx.lineTo(-300 * sp - 20, 10 + 4 * sp); ctx.lineTo(-300 * sp - 20, -2); ctx.lineTo(-60, -5); ctx.closePath(); ctx.fill();
+    for (let i = 0; i < 17; i++) { const px = -64 + i * 7, r = 6 + (i * 5 % 4) * 1.6; ctx.globalAlpha = .55 + .2 * Math.sin(t * 3 + i + seed); ctx.drawImage(P.white, px - r, -1 - r * .55 + Math.sin(t * 2.2 + i) * 1.2, r * 2, r * 1.2); } ctx.globalAlpha = 1;
+    ctx.restore();
+}
+/* ---------- people ---------- */
+function ddpMan(x, y, s, t, o) { // side view soldier, feet at (x,y), facing right (dir:-1 flips)
+    o = o || {}; const dir = o.dir || 1, run = o.run === undefined ? 1 : o.run, ph = (o.ph || 0) + t * (o.spd || 9) * run, haze = o.haze || 0;
+    const olive = ddpRGB(ddpMix([88, 90, 60], [150, 156, 146], haze)), dk = ddpRGB(ddpMix([46, 48, 32], [104, 110, 106], haze)), lt = ddpRGB(ddpMix([168, 160, 112], [200, 202, 190], haze)), skin = ddpRGB(ddpMix([168, 130, 98], [170, 170, 160], haze)), boot = ddpRGB(ddpMix([30, 26, 20], [96, 100, 98], haze));
+    ctx.save(); ctx.translate(x, y); ctx.scale(dir * s, s);
+    const fall = o.fall || 0; if (fall > 0) { ctx.rotate(-fall * 1.4); ctx.translate(-fall * 4, fall * 12); }
+    const sw = Math.sin(ph) * run, bob = Math.abs(Math.cos(ph)) * 2.4 * run, hip = [0, -30 + bob];
+    function leg(a, kn) { const kx = hip[0] + Math.sin(a) * 15, ky = hip[1] + Math.cos(a) * 15, a2 = a - kn - .1, fx = kx + Math.sin(a2) * 15, fy = ky + Math.cos(a2) * 15; ctx.lineCap = 'round'; ctx.lineWidth = 6.4; ctx.strokeStyle = olive; ctx.beginPath(); ctx.moveTo(hip[0], hip[1]); ctx.lineTo(kx, ky); ctx.stroke(); ctx.lineWidth = 5.6; ctx.strokeStyle = dk; ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(fx, fy); ctx.stroke(); ctx.fillStyle = boot; ctx.beginPath(); ctx.ellipse(fx + 2.5, fy + 1, 5, 2.6, 0, 0, 7); ctx.fill(); }
+    leg(-sw * .95, Math.max(0, sw) * 1.5); leg(sw * .95, Math.max(0, -sw) * 1.5);
+    const lean = .14 + .22 * run + (o.crouch || 0) * .35, sh = [hip[0] + Math.sin(lean) * 22, hip[1] - Math.cos(lean) * 22];
+    ctx.fillStyle = dk; ctx.save(); ctx.translate(sh[0] - 9, sh[1] + 8); ctx.rotate(lean * .6); ctx.fillRect(-5, -2, 10, 20); ctx.restore();           // pack
+    ctx.lineWidth = 12; ctx.strokeStyle = olive; ctx.beginPath(); ctx.moveTo(hip[0] - 1, hip[1] + 1); ctx.lineTo(sh[0], sh[1]); ctx.stroke();           // torso
+    ctx.lineWidth = 1.4; ctx.strokeStyle = dk; ctx.beginPath(); ctx.moveTo(sh[0] - 3, sh[1] + 1); ctx.lineTo(hip[0] + 3, hip[1] - 4); ctx.stroke();
+    const hd = [sh[0] + 3, sh[1] - 8];
+    ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(hd[0] + 1, hd[1] + 1, 4.2, 0, 7); ctx.fill();
+    ctx.fillStyle = olive; ctx.beginPath(); ctx.ellipse(hd[0], hd[1] - 1.5, 6.8, 5.2, -.08, Math.PI, 0); ctx.lineTo(hd[0] + 8, hd[1] + .3); ctx.lineTo(hd[0] - 6.4, hd[1] + .3); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = dk; ctx.fillRect(hd[0] - 6.4, hd[1] - .6, 15, 1.5); ctx.globalAlpha = .5; for (let i = 0; i < 6; i++) ctx.fillRect(hd[0] - 4 + i * 2, hd[1] - 5.6 + (i % 2) * 2, 1, 1); ctx.globalAlpha = 1;
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(hd[0] + 1, hd[1] + .8, 4, 3);
+    ctx.fillStyle = lt; ctx.globalAlpha = .6; ctx.fillRect(hd[0] - 4, hd[1] - 6.4, 7, 1.1); ctx.globalAlpha = 1;
+    // rifle + arms
+    const aim = o.aim || 0, rb = aim ? [sh[0] + 4, sh[1] + 4] : [sh[0] + 1, sh[1] + 13], rt = aim ? [sh[0] + 34, sh[1] + 2 - (o.rifleUp || 0)] : [sh[0] + 24, sh[1] - 4 + sw * 2];
+    ctx.lineCap = 'round'; ctx.lineWidth = 3.6; ctx.strokeStyle = '#1b1612'; ctx.beginPath(); ctx.moveTo(rb[0] - (aim ? 6 : 4), rb[1] + (aim ? 2 : 6)); ctx.lineTo(rt[0], rt[1]); ctx.stroke();
+    ctx.lineWidth = 4.6; ctx.strokeStyle = olive; ctx.beginPath(); ctx.moveTo(sh[0] + 1, sh[1] + 3); ctx.lineTo(rb[0] + (rt[0] - rb[0]) * .62, rb[1] + (rt[1] - rb[1]) * .62); ctx.stroke();
+    ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(rb[0] + (rt[0] - rb[0]) * .62, rb[1] + (rt[1] - rb[1]) * .62, 2.2, 0, 7); ctx.fill();
+    ctx.restore();
+}
+function ddpFront(x, y, s, t, o) { // soldier running straight at the camera, feet at (x,y); ~64 units tall at s=1
+    o = o || {}; const run = o.run === undefined ? 1 : o.run, ph = (o.ph || 0) + t * (o.spd || 8) * run, haze = o.haze || 0;
+    const olive = ddpRGB(ddpMix([84, 86, 58], [150, 156, 146], haze)), dk = ddpRGB(ddpMix([42, 44, 30], [104, 110, 106], haze)), skin = ddpRGB(ddpMix([176, 136, 104], [170, 170, 160], haze)), boot = ddpRGB(ddpMix([26, 22, 18], [96, 100, 98], haze));
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    const fall = o.fall || 0; if (fall > 0) { ctx.rotate((o.fallDir || 1) * fall * 1.3); ctx.translate(0, fall * 16); }
+    const bob = Math.abs(Math.sin(ph)) * 3 * run, sway = Math.sin(ph) * 2.2 * run, l1 = Math.max(0, Math.sin(ph)) * 7 * run, l2 = Math.max(0, -Math.sin(ph)) * 7 * run;
+    ctx.lineCap = 'round'; ctx.lineWidth = 7.4; ctx.strokeStyle = olive; ctx.beginPath(); ctx.moveTo(-4, -30 - bob); ctx.lineTo(-6, -4 - l1); ctx.moveTo(4, -30 - bob); ctx.lineTo(6, -4 - l2); ctx.stroke();
+    ctx.fillStyle = boot; ctx.beginPath(); ctx.ellipse(-6, -2 - l1, 5, 3.2, 0, 0, 7); ctx.ellipse(6, -2 - l2, 5, 3.2, 0, 0, 7); ctx.fill();
+    ctx.save(); ctx.translate(sway, -bob);
+    ctx.fillStyle = olive; ctx.beginPath(); ctx.moveTo(-10, -28); ctx.lineTo(-12, -54); ctx.quadraticCurveTo(0, -59, 12, -54); ctx.lineTo(10, -28); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = dk; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-11, -52); ctx.lineTo(9, -30); ctx.moveTo(11, -52); ctx.lineTo(-9, -30); ctx.stroke();
+    ctx.fillStyle = dk; ctx.fillRect(-11, -34, 22, 3);
+    // arms across rifle
+    ctx.lineWidth = 3.4; ctx.strokeStyle = '#1b1612'; ctx.beginPath(); ctx.moveTo(-10, -30); ctx.lineTo(11, -52); ctx.stroke();
+    ctx.lineWidth = 4.6; ctx.strokeStyle = olive; ctx.beginPath(); ctx.moveTo(-12, -52); ctx.lineTo(-4, -40); ctx.moveTo(12, -52); ctx.lineTo(7, -44); ctx.stroke();
+    ctx.fillStyle = ddpRGB(ddpMix([120, 92, 70], [170, 170, 160], haze)); ctx.beginPath(); ctx.arc(-4, -40, 1.9, 0, 7); ctx.arc(7, -44, 1.9, 0, 7); ctx.fill();
+    // head
+    ctx.fillStyle = skin; ctx.beginPath(); ctx.ellipse(0, -62, 4.6, 5.4, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = olive; ctx.beginPath(); ctx.ellipse(0, -64.5, 8.6, 6.2, 0, Math.PI, 0); ctx.lineTo(9.6, -63); ctx.lineTo(-9.6, -63); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(-7, -63.2, 14, 4.4);             // eyes in shadow
+    ctx.fillStyle = dk; ctx.fillRect(-9.6, -63.6, 19.2, 1.6); ctx.globalAlpha = .45; for (let i = 0; i < 7; i++) ctx.fillRect(-6 + i * 2, -69 + (i % 2) * 2, 1, 1); ctx.globalAlpha = 1;
+    ctx.strokeStyle = dk; ctx.lineWidth = .9; ctx.beginPath(); ctx.moveTo(-4.4, -59); ctx.lineTo(-2, -56); ctx.moveTo(4.4, -59); ctx.lineTo(2, -56); ctx.stroke();
+    ctx.restore(); ctx.restore();
+}
+function ddpBack(x, y, s, t, o) { // soldier seen from behind, shoulder line at (x,y); helmet above it
+    o = o || {}; const haze = o.haze || 0, sway = Math.sin(t * (o.spd || 3) + (o.ph || 0)) * 1.4 * s;
+    const olive = ddpRGB(ddpMix([56, 60, 42], [140, 146, 136], haze)), dk = ddpRGB(ddpMix([14, 16, 11], [90, 96, 92], haze)), mid = ddpRGB(ddpMix([34, 38, 26], [116, 122, 114], haze));
+    ctx.save(); ctx.translate(x + sway, y); ctx.scale(s, s);
+    ctx.fillStyle = mid; ctx.fillRect(-20, 8, 40, 60);                                    // torso (continues under the water)
+    ctx.fillStyle = olive; ctx.beginPath(); ctx.moveTo(-22, 12); ctx.quadraticCurveTo(-18, -4, 0, -5); ctx.quadraticCurveTo(18, -4, 22, 12); ctx.lineTo(20, 30); ctx.lineTo(-20, 30); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = mid; ctx.fillRect(-13, 8, 26, 34); ctx.fillStyle = dk; ctx.fillRect(-13, 38, 26, 4); ctx.fillStyle = olive; ctx.fillRect(-13, 8, 26, 3); ctx.fillRect(-11, 14, 9, 14); ctx.fillRect(2, 14, 9, 14); ctx.fillStyle = dk; ctx.fillRect(-1, 8, 2, 34); ctx.globalAlpha = .5; ctx.fillRect(-11, 20, 9, 1.2); ctx.fillRect(2, 20, 9, 1.2); ctx.globalAlpha = 1;   // pack
+    ctx.fillStyle = olive; ctx.beginPath(); ctx.ellipse(0, 6, 15, 5, 0, Math.PI, 0); ctx.fill();                                   // blanket roll
+    ctx.strokeStyle = dk; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-14, 8); ctx.lineTo(-22, 26); ctx.moveTo(14, 8); ctx.lineTo(22, 26); ctx.stroke();
+    ctx.lineWidth = 3.4; ctx.strokeStyle = '#17120e'; ctx.beginPath(); ctx.moveTo(-24, 2); ctx.lineTo(18, 40); ctx.stroke();                 // slung rifle
+    ctx.fillStyle = dk; ctx.fillRect(-4.5, -13, 9, 9);                                                                              // neck
+    ctx.translate((o.turn || 0) * 3.2, 0); ctx.rotate((o.turn || 0) * .08);
+    ctx.fillStyle = olive; ctx.beginPath(); ctx.ellipse(0, -15, 13.4, 11.4, 0, Math.PI, 0); ctx.lineTo(14.6, -12); ctx.quadraticCurveTo(0, -8, -14.6, -12); ctx.closePath(); ctx.fill(); // helmet
+    ctx.fillStyle = dk; ctx.beginPath(); ctx.moveTo(-14.6, -12); ctx.quadraticCurveTo(0, -8, 14.6, -12); ctx.lineTo(14.6, -10); ctx.quadraticCurveTo(0, -5.6, -14.6, -10); ctx.fill();
+    ctx.globalAlpha = .5; for (let i = 0; i < 18; i++) { ctx.fillStyle = i % 3 ? dk : '#7a7a52'; ctx.fillRect(-10 + (i * 7 % 21), -24 + ((i * 5) % 9), 1.6, 1.6); } ctx.globalAlpha = 1;
+    ctx.strokeStyle = dk; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-12, -11); ctx.lineTo(-13, -5); ctx.moveTo(12, -11); ctx.lineTo(13, -5); ctx.stroke();   // strap
+    if (o.rim) { ctx.fillStyle = 'rgba(255,214,150,' + o.rim + ')'; ctx.beginPath(); ctx.ellipse(0, -15, 13.4, 11.4, 0, Math.PI * 1.05, Math.PI * 1.55); ctx.lineTo(0, -15); ctx.fill(); ctx.fillRect(-22, 10, 3, 18); }
+    ctx.restore();
+}
+/* ---------- armour / obstacles / bunker ---------- */
+function ddpSherman(x, y, s, t, o) { // M4 Sherman side view, facing right, ground at y
+    o = o || {}; const haze = o.haze || 0, gun = o.gun || 0, rec = o.recoil || 0, wet = o.wet || 0, mv = o.move === undefined ? 1 : o.move;
+    const od = ddpMix([86, 90, 62], [150, 156, 146], haze), L = ddpRGB(ddpMix(od, [255, 220, 160], .28)), M = ddpRGB(od), D = ddpRGB(ddpMix(od, [14, 16, 10], .5)), DD = ddpRGB(ddpMix(od, [6, 8, 4], .75));
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(0, 2, 118, 8, 0, 0, 7); ctx.fill();
+    // tracks + wheels
+    ctx.fillStyle = DD; ctx.beginPath(); ctx.moveTo(-102, -22); ctx.quadraticCurveTo(-116, -14, -108, -2); ctx.lineTo(96, -2); ctx.quadraticCurveTo(116, -10, 104, -30); ctx.lineTo(-96, -34); ctx.closePath(); ctx.fill();
+    for (let i = 0; i < 6; i++) { const wx = -74 + i * 28 - (t * 30 * mv) % 28 * 0; ctx.fillStyle = D; ctx.beginPath(); ctx.arc(-74 + i * 28, -15, 10.4, 0, 7); ctx.fill(); ctx.fillStyle = M; ctx.beginPath(); ctx.arc(-74 + i * 28, -15, 4.6, 0, 7); ctx.fill(); ctx.strokeStyle = DD; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(-74 + i * 28, -15, 10.4, 0, 7); ctx.stroke(); }
+    ctx.fillStyle = D; ctx.beginPath(); ctx.arc(98, -20, 13, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(-100, -20, 11, 0, 7); ctx.fill();
+    ctx.strokeStyle = M; ctx.lineWidth = 1.2; const off = (t * 36 * mv) % 6; ctx.beginPath(); for (let i = -100; i < 100; i += 6) { ctx.moveTo(i + off, -34); ctx.lineTo(i + off, -30); } ctx.stroke();
+    // lower hull + glacis
+    ctx.fillStyle = M; ctx.beginPath(); ctx.moveTo(-106, -28); ctx.lineTo(-110, -56); ctx.lineTo(66, -62); ctx.lineTo(108, -38); ctx.lineTo(108, -28); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = D; ctx.beginPath(); ctx.moveTo(-106, -28); ctx.lineTo(108, -28); ctx.lineTo(108, -38); ctx.lineTo(-104, -40); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = L; ctx.beginPath(); ctx.moveTo(-110, -56); ctx.lineTo(66, -62); ctx.lineTo(108, -38); ctx.lineTo(106, -41); ctx.lineTo(66, -59); ctx.lineTo(-110, -53); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = D; ctx.fillRect(-100, -54, 40, 12); ctx.strokeStyle = DD; ctx.lineWidth = 1; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(-98 + i * 6.4, -54); ctx.lineTo(-98 + i * 6.4, -42); ctx.stroke(); }
+    // star decal
+    ctx.fillStyle = 'rgba(236,236,224,.85)'; ctx.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 4.2 : 10, a = -Math.PI / 2 + i * Math.PI / 5; ctx.lineTo(24 + Math.cos(a) * r, -45 + Math.sin(a) * r); } ctx.closePath(); ctx.fill();
+    // stowage
+    ctx.fillStyle = D; ctx.fillRect(-108, -66, 26, 12); ctx.fillStyle = ddpRGB(ddpMix([110, 100, 70], od, haze)); ctx.beginPath(); ctx.ellipse(-92, -70, 14, 5.4, 0, 0, 7); ctx.fill();
+    // turret
+    ctx.fillStyle = M; ctx.beginPath(); ctx.moveTo(-44, -60); ctx.lineTo(-50, -76); ctx.lineTo(-34, -94); ctx.lineTo(4, -98); ctx.lineTo(34, -88); ctx.lineTo(44, -76); ctx.lineTo(40, -61); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = D; ctx.beginPath(); ctx.moveTo(-44, -60); ctx.lineTo(-50, -76); ctx.lineTo(-44, -76); ctx.lineTo(-40, -60); ctx.closePath(); ctx.fill(); ctx.fillRect(-44, -66, 86, 6);
+    ctx.fillStyle = L; ctx.beginPath(); ctx.moveTo(-34, -94); ctx.lineTo(4, -98); ctx.lineTo(34, -88); ctx.lineTo(30, -88); ctx.lineTo(4, -95); ctx.lineTo(-32, -91); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = D; ctx.fillRect(-26, -102, 18, 5); ctx.fillStyle = M; ctx.fillRect(-20, -108, 4, 6);                                    // cupola + .50 cal
+    ctx.strokeStyle = DD; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-14, -106); ctx.lineTo(-30, -112); ctx.stroke();
+    // gun + mantlet
+    ctx.save(); ctx.translate(40, -76); ctx.rotate(-gun);
+    ctx.fillStyle = D; ctx.fillRect(-6, -9, 12, 18); ctx.fillStyle = DD; ctx.fillRect(6 - rec, -2.6, 92, 5.2); ctx.fillStyle = M; ctx.fillRect(6 - rec, -2.6, 92, 1.6); ctx.fillStyle = DD; ctx.fillRect(96 - rec, -4, 8, 8);
+    ctx.restore();
+    // water running off, exhaust
+    if (wet > 0) { ctx.strokeStyle = 'rgba(232,240,236,' + (.55 * wet) + ')'; ctx.lineWidth = 1.6; for (let i = 0; i < 26; i++) { const wx = -100 + ddpR(i * 3.3) * 200, k = (t * 1.3 + ddpR(i)) % 1, wy = -62 + k * 34; ctx.beginPath(); ctx.moveTo(wx, wy); ctx.lineTo(wx - 1, wy + 7); ctx.stroke(); } ctx.fillStyle = 'rgba(236,244,240,' + (.8 * wet) + ')'; ctx.fillRect(-110, -4, 224, 4); }
+    ctx.restore();
+    if (o.exhaust !== false) { const P = ddpEnsure(); for (let i = 0; i < 7; i++) { const k = (t * 1.1 + i / 7) % 1; ctx.globalAlpha = (1 - k) * .5; const r = (7 + k * 22) * s; ctx.drawImage(P.smoke, x - 112 * s - k * 50 * s - r, y - 62 * s - k * 30 * s - r, r * 2, r * 2); } ctx.globalAlpha = 1; }
+}
+function ddpHedgehog(x, y, s, haze) { // Czech hedgehog: three crossed steel beams
+    const c = ddpRGB(ddpMix([54, 40, 30], [130, 130, 124], haze || 0)), d = ddpRGB(ddpMix([20, 14, 10], [100, 100, 96], haze || 0));
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.lineCap = 'butt';
+    [[-.9, 1], [.9, 1], [0, 1.15]].forEach(function (b, i) { ctx.lineWidth = 5.4; ctx.strokeStyle = i === 2 ? d : c; ctx.beginPath(); ctx.moveTo(-34 * b[0] - (i === 2 ? 0 : 0), 0); ctx.lineTo(34 * b[0], -62 * (i === 2 ? 1.15 : 1)); ctx.stroke(); });
+    ctx.lineWidth = 5.4; ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(-40, -34); ctx.lineTo(40, -34); ctx.stroke(); ctx.strokeStyle = 'rgba(210,150,90,.5)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-40, -36); ctx.lineTo(40, -36); ctx.stroke();
+    ctx.restore();
+}
+/* ---------- shared shore scenery ---------- */
+function ddpHill(x0, x1, yTop, yBase, seed, haze, t) { // grassy rise with craters, wire and fire; right-side high ground
+    const g = ctx.createLinearGradient(0, yTop, 0, yBase); g.addColorStop(0, ddpRGB(ddpMix([76, 88, 56], [160, 160, 140], haze))); g.addColorStop(.55, ddpRGB(ddpMix([92, 98, 62], [170, 166, 140], haze))); g.addColorStop(1, ddpRGB(ddpMix([150, 130, 92], [190, 176, 146], haze)));
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x0, yBase);
+    for (let x = x0; x <= x1; x += 24) { const u = (x - x0) / (x1 - x0), prof = Math.pow(Math.min(1, u * 1.25), .6); ctx.lineTo(x, yBase - (yBase - yTop) * prof + Math.sin(x * .03 + seed) * 5); }
+    ctx.lineTo(x1, yBase); ctx.closePath(); ctx.fill();
+    // grass tufts + crater scars
+    for (let i = 0; i < 90; i++) { const u = ddpR(seed + i * 1.9), x = x0 + u * (x1 - x0), yy = yBase - (yBase - yTop) * Math.pow(Math.min(1, u * 1.25), .6) * (.1 + ddpR(seed + i) * .9); ctx.fillStyle = 'rgba(' + (ddpR(i) < .5 ? '40,56,30' : '120,110,70') + ',.28)'; ctx.fillRect(x, yy, 6 + ddpR(i + 3) * 14, 2 + ddpR(i + 5) * 3); }
+    for (let i = 0; i < 9; i++) { const u = .1 + ddpR(seed + i * 4.1) * .85, x = x0 + u * (x1 - x0), yy = yBase - (yBase - yTop) * Math.pow(Math.min(1, u * 1.25), .6) * (.12 + ddpR(seed + i * 2) * .7); ctx.fillStyle = 'rgba(36,28,18,.4)'; ctx.beginPath(); ctx.ellipse(x, yy, 22 + ddpR(i) * 26, 6 + ddpR(i + 1) * 5, 0, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(190,170,120,.25)'; ctx.fillRect(x - 20, yy - 6, 40, 1.5); }
+}
+function ddpBunker(x, y, s, t, o) { // concrete pillbox, front face, slit, gun flash
+    o = o || {}; const haze = o.haze || 0, c = ddpRGB(ddpMix([118, 114, 100], [170, 168, 156], haze)), d = ddpRGB(ddpMix([66, 64, 56], [140, 140, 132], haze)), l = ddpRGB(ddpMix([170, 164, 140], [196, 194, 184], haze));
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(10, 2, 128, 10, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(-110, 0); ctx.lineTo(-104, -52); ctx.lineTo(-84, -64); ctx.lineTo(96, -64); ctx.lineTo(116, -48); ctx.lineTo(124, 0); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = l; ctx.fillRect(-84, -64, 180, 3); ctx.fillStyle = d; ctx.fillRect(-110, -6, 234, 6);
+    ctx.fillStyle = 'rgba(0,0,0,.18)'; for (let i = 0; i < 12; i++) ctx.fillRect(-100 + i * 19, -60, 1.4, 54);
+    ctx.fillStyle = '#080706'; ctx.fillRect(-52, -42, 104, 15); ctx.fillStyle = d; ctx.fillRect(-56, -44, 112, 3); ctx.fillRect(-56, -27, 112, 4);
+    ctx.fillStyle = ddpRGB(ddpMix([70, 84, 52], [150, 156, 140], haze)); ctx.globalAlpha = .85; ctx.beginPath(); ctx.moveTo(-100, -62); for (let i = 0; i < 12; i++) ctx.lineTo(-100 + i * 19, -66 - ((i * 7) % 5) * 3); ctx.lineTo(112, -62); ctx.lineTo(100, -48); ctx.lineTo(-96, -48); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1; // camo net
+    ctx.restore();
+    if (o.fire) { const fl = Math.random() < .6 ? 1 : .3; ddpFlashGlow(x + 56 * s, y - 34 * s, 46 * s * fl, .95 * fl); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,224,150,' + fl + ')'; ctx.fillRect(x - 40 * s, y - 36 * s, 96 * s, 5 * s); ctx.restore(); }
+}
+function ddpTracer(x0, y0, x1, y1, k, len, w) { // bright streak, k 0..1 along the path
+    if (k < 0 || k > 1) return; const ax = x0 + (x1 - x0) * k, ay = y0 + (y1 - y0) * k, k2 = Math.max(0, k - len), bx = x0 + (x1 - x0) * k2, by = y0 + (y1 - y0) * k2;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; const lg = ctx.createLinearGradient(bx, by, ax, ay); lg.addColorStop(0, 'rgba(255,120,30,0)'); lg.addColorStop(.7, 'rgba(255,170,70,.8)'); lg.addColorStop(1, 'rgba(255,246,210,1)'); ctx.strokeStyle = lg; ctx.lineWidth = w || 2.6; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(ax, ay); ctx.stroke();
+    ctx.globalAlpha = .5; ctx.lineWidth = (w || 2.6) * 3; ctx.stroke(); ctx.restore();
+}
+function ddpLens(t, evs, w, hv) { // water droplets sliding down the lens after each splash event
+    evs.forEach(function (e, n) { const k = t - e; if (k < 0 || k > 2.6) return; for (let i = 0; i < 14; i++) { const x = ddpR(n * 31 + i * 7) * 1600, y0 = hv * (.12 + ddpR(n * 17 + i * 3) * .75), r = 3 + ddpR(n * 5 + i) * 9, y = y0 + k * k * 22 * (.4 + ddpR(i)), a = Math.min(1, (2.6 - k) / 1.2) * .5;
+        ctx.fillStyle = 'rgba(255,255,255,' + (a * .25) + ')'; ctx.beginPath(); ctx.ellipse(x, y, r * .8, r * 1.15, 0, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(255,240,210,' + a + ')'; ctx.beginPath(); ctx.arc(x - r * .2, y - r * .3, r * .28, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,' + (a * .5) + ')'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, y, r * .8, r * 1.15, 0, 0, 7); ctx.stroke(); } });
+}
+
+/* ================= SHOT B : inside the landing craft ================= */
+const DDP_GEY_B = [7.1, 8.0, 8.9, 9.7, 10.5, 11.2, 11.9, 12.6];
+const DDP_GEY_BP = [[-8, 17], [9, 13], [-5.5, 10], [10, 20], [-12, 24], [4, 28], [-4, 13], [7, 9.5]];
+function ddpShotB(t, hv) {
+    const P = ddpEnsure(), s = t - DD.cuts[0], vy = hv * .40, F = 900, sh = ddpShakeAt(t, .8 + s * .45);
+    let jolt = 0; DDP_GEY_B.forEach(function (g) { const d = t - g; if (d > 0 && d < .55) jolt += Math.pow(1 - d / .55, 2); });
+    const roll = Math.sin(t * 1.7) * .024 + Math.sin(t * .8 + 1) * .016 + jolt * Math.sin(t * 41) * .004, pitch = Math.sin(t * 1.3) * 16 + Math.sin(t * 2.7) * 6 + jolt * Math.sin(t * 33) * 7;
+    const pj = function (X, Y, Z) { const f = F / Z; return [800 + X * f, vy + (1.75 - Y) * f]; };
+    // ---- outside world (rolls with the horizon) ----
+    ctx.save(); ctx.translate(800, hv / 2); ctx.rotate(roll); ctx.translate(-800 + sh[0] * .6, -hv / 2 + pitch + sh[1] * .6);
+    ddpSky(vy, t, t * 14, 1020, .9, .22);
+    // low shoreline with burning positions
+    ctx.fillStyle = ddpRGB([72, 82, 66]); ctx.beginPath(); ctx.moveTo(-600, vy + 3); for (let x = -600; x <= 2200; x += 40) ctx.lineTo(x, vy - 10 - 16 * Math.abs(Math.sin(x * .004 + 1)) - 8 * Math.sin(x * .02)); ctx.lineTo(2200, vy + 3); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(210,190,150,.4)'; ctx.fillRect(-600, vy - 3, 2800, 6);
+    [[220, .9], [560, .6], [930, 1.1], [1280, .7], [1620, 1]].forEach(function (p, i) { ddpSmoke(p[0], vy - 6, p[1], t, i * 2.1, 30, 330); ddpFire(p[0], vy - 2, .35, t, i); });
+    for (let i = 0; i < 14; i++) { const st = 6.8 + i * .5, k = t - st; if (k > 0 && k < .4) ddpFlashGlow(80 + ddpR(i * 3) * 1500, vy - 12, 70 * (1 - k / .4) + 8, 1 - k / .4); }
+    ddpSea(vy, vy + 760, t, 1020, 2.2, .15);
+    // far ships and planes
+    for (let i = 0; i < 6; i++) ddpShip(((i * 337 + 60 - t * 6) % 2400 + 2400) % 2400 - 400, vy + 5, 70 + ddpR(i) * 50, 'dd', 0, .78, t);
+    for (let i = 0; i < 7; i++) { const px = (((t * 120 + i * 140 + 90) % 2400) - 400), py = vy - 340 - (i % 3) * 36; ddpPlane(px, py, .6, -.02, true); }
+    // geysers (metres → screen)
+    DDP_GEY_B.forEach(function (g, i) { const q = DDP_GEY_BP[i], f = F / q[1], x = 800 + q[0] * f, y = vy + 2.05 * f; ddpGeyser(x, y, 9 * f / 190, t - g, i * 5 + 1); });
+    // tracers over the bow
+    if (t > 8.6) for (let i = 0; i < 9; i++) { const per = 1.1 + i * .13, k = ((t - 8.6 + i * .37) % per) / per, sd = i % 2 ? 1 : -1, x0 = 800 + sd * (180 + ddpR(i) * 300), y0 = vy + 120 + ddpR(i + 4) * 60, x1 = 800 + sd * (40 + ddpR(i + 9) * 500), y1 = vy - 6; ddpTracer(x0, y0, x1, y1, k * 1.25, .22, 3); }
+    ctx.restore();
+    // ---- boat interior ----
+    ctx.save(); ctx.translate(sh[0] * 1.3, sh[1] * 1.3 + jolt * Math.sin(t * 37) * 6);
+    const Z0 = .3, Z1 = 7.3, WX = 1.55, WY = 1.3, RY = 1.45;
+    function quad(a, b, c, d) { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.closePath(); }
+    // floor
+    quad(pj(-WX, 0, Z0), pj(WX, 0, Z0), pj(WX, 0, Z1), pj(-WX, 0, Z1)); let fg = ctx.createLinearGradient(0, vy + 150, 0, hv); fg.addColorStop(0, '#1c2220'); fg.addColorStop(1, '#0c100f'); ctx.fillStyle = fg; ctx.fill();
+    ctx.save(); quad(pj(-WX, 0, Z0), pj(WX, 0, Z0), pj(WX, 0, Z1), pj(-WX, 0, Z1)); ctx.clip();
+    for (let i = 0; i < 16; i++) { const z = 1.2 + ddpR(i * 3) * 5.8, x = (ddpR(i * 7) - .5) * 2.6, f = F / z, w = (40 + ddpR(i) * 90) * (f / 120), y = vy + 1.75 * f; ctx.fillStyle = 'rgba(190,205,205,' + (.08 + .06 * Math.sin(t * 2 + i)) + ')'; ctx.beginPath(); ctx.ellipse(800 + x * f, y, w, w * .07 + 2, 0, 0, 7); ctx.fill(); }
+    ctx.restore();
+    // side walls
+    [-1, 1].forEach(function (sd) {
+        const a = pj(sd * WX, 0, Z0), b = pj(sd * WX, WY, Z0), c = pj(sd * WX, WY, Z1), d = pj(sd * WX, 0, Z1); quad(a, b, c, d);
+        const wg = ctx.createLinearGradient(800 + sd * 700, 0, 800 + sd * 150, 0); wg.addColorStop(0, '#0e1210'); wg.addColorStop(1, '#3a443c'); ctx.fillStyle = wg; ctx.fill();
+        ctx.save(); quad(a, b, c, d); ctx.clip(); ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 3; for (let z = .8; z < 7.3; z += .75) { const p1 = pj(sd * WX, 0, z), p2 = pj(sd * WX, WY, z); ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.stroke(); }
+        ctx.strokeStyle = 'rgba(150,170,160,.22)'; ctx.lineWidth = 2; const m1 = pj(sd * WX, .65, Z0), m2 = pj(sd * WX, .65, Z1); ctx.beginPath(); ctx.moveTo(m1[0], m1[1]); ctx.lineTo(m2[0], m2[1]); ctx.stroke();
+        for (let z = .9; z < 7.2; z += .38) for (const yy of [.2, 1.1]) { const p = pj(sd * WX, yy, z); ctx.fillStyle = 'rgba(210,220,210,.18)'; ctx.fillRect(p[0] - 2, p[1] - 2, 4, 4); }
+        for (let i = 0; i < 6; i++) { const z = 1 + ddpR(i * 4 + sd) * 5.5, p = pj(sd * WX, WY, z), p2 = pj(sd * WX, .2 + ddpR(i) * .6, z); ctx.strokeStyle = 'rgba(110,64,34,.28)'; ctx.lineWidth = 4 * (F / z / 100); ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(p2[0], p2[1]); ctx.stroke(); }
+        ctx.restore();
+        const tp1 = pj(sd * WX, WY, Z0), tp2 = pj(sd * WX, WY, Z1); ctx.strokeStyle = 'rgba(255,236,200,.55)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(tp1[0], tp1[1]); ctx.lineTo(tp2[0], tp2[1]); ctx.stroke();
+    });
+    // bow ramp wall
+    const r0 = pj(-WX, 0, Z1), r1 = pj(WX, 0, Z1), r2 = pj(WX, RY, Z1), r3 = pj(-WX, RY, Z1); quad(r0, r1, r2, r3); const rg = ctx.createLinearGradient(0, r3[1], 0, r0[1]); rg.addColorStop(0, '#59645a'); rg.addColorStop(.12, '#2c342e'); rg.addColorStop(1, '#141916'); ctx.fillStyle = rg; ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 3; for (const xx of [-.6, 0, .6]) { const a = pj(xx, 0, Z1), b = pj(xx, RY, Z1); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(255,238,205,.7)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(r3[0], r3[1]); ctx.lineTo(r2[0], r2[1]); ctx.stroke();
+    // incoming fire sparks on the ramp
+    if (t > 9.2) for (let i = 0; i < 5; i++) { const k = (t * 6 + i * 1.7) % 4; if (k < .25 && Math.sin(t * 3 + i * 5) > .2) { const x = r3[0] + (r2[0] - r3[0]) * ddpR(Math.floor(t * 6) * 3 + i), y = r3[1] + 14 + ddpR(Math.floor(t * 6) + i * 9) * (r0[1] - r3[1]) * .7; ddpFlashGlow(x, y, 26, 1 - k / .25); } }
+    // ---- the men: rows far→near, backs to us ----
+    const rows = [5.7, 4.8, 3.9, 3.05, 2.2], lanes = [-1.12, -.38, .38, 1.1], flick = .35 + .55 * Math.max(0, Math.sin(t * 5.3)) * (t > 8 ? 1 : .4) + Math.min(.6, jolt);
+    rows.forEach(function (Z, ri) { const f = F / Z; lanes.forEach(function (X, li) { const jx = (ddpR(ri * 9 + li * 3) - .5) * .3, jz = (ddpR(ri * 5 + li) - .5) * .5, ff = F / (Z + jz), sc = (.46 * ff) / 44 * (.93 + ddpR(ri * 3 + li * 11) * .14), px = 800 + (X + jx) * ff, py = vy + (1.75 - 1.43) * ff + Math.sin(t * 2.1 + ri + li * .8) * 2.2 * ff / 300;
+        ddpBack(px, py, sc, t, { ph: ri * 2 + li, rim: .35 + flick * .6 * (li < 2 ? 1 : .7), haze: Math.max(0, (Z - 3) * .015), spd: 2 + li * .2, turn: (ddpR(ri * 13 + li * 5) - .5) * 2 * (Math.sin(t * .5 + ri + li) > .6 ? 1.6 : .4) }); }); });
+    // dark water rope-spray curtains
+    [1.3, 2.9, 4.3, 5.6, 6.5, 9.6, 11.0].forEach(function (e, n) { const k = s - e; if (k < 0 || k > 1.3) return; ctx.save(); ctx.globalAlpha = Math.min(1, (1.3 - k) / .5);
+        for (let i = 0; i < 90; i++) { const sx = 800 + (ddpR(n * 23 + i) - .5) * 900, y0 = vy + 60, kk = Math.min(1, k * 1.3 + ddpR(i) * .08), x = 800 + (sx - 800) * (1 + kk * 2.6), y = y0 + kk * kk * hv * .85 + ddpR(i + 2) * 30, r = 1.6 + ddpR(i + 4) * 4.5 * (1 + kk * 2); ctx.fillStyle = 'rgba(244,248,244,' + (.45 + ddpR(i + 6) * .45) + ')'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
+        const g = ctx.createLinearGradient(0, vy + 40, 0, vy + 40 + k * 520); g.addColorStop(0, 'rgba(244,248,244,.22)'); g.addColorStop(1, 'rgba(244,248,244,0)'); ctx.fillStyle = g; ctx.fillRect(-100, vy + 40, 1800, k * 420); ctx.restore(); });
+    ctx.restore();
+    ddpLens(t, [8.2, 9.3, 10.8, 12.5], 1600, hv);
+    // dark vignette inside the boat + final blast
+    let fl = 0; const fk = t - 12.4; if (fk > -.04 && fk < .4) fl = Math.max(0, 1 - Math.max(0, fk) / .4) * .9;
+    return fl;
+}
+/* ---------- explosions on sand / earth ---------- */
+function ddpBlast(x, y, s, k, seed, dens) { // k = seconds since detonation
+    if (k < 0 || k > 3.2) return; dens = dens === undefined ? 1 : dens; const P = ddpEnsure(), up = Math.min(1, k / .45), eu = 1 - Math.pow(1 - up, 2), fade = Math.min(1, (3.2 - k) / 1.4);
+    ctx.save();
+    if (k < .5) { ctx.globalCompositeOperation = 'lighter'; const a = 1 - k / .5, R = (90 + k * 340) * s; ctx.globalAlpha = a; ctx.drawImage(P.fire, x - R, y - R * .9, R * 2, R * 1.8); ctx.globalAlpha = a * .9; ctx.drawImage(P.white, x - R * .3, y - R * .45, R * .6, R * .9); ctx.globalCompositeOperation = 'source-over'; }
+    for (let i = 0; i < 16; i++) { const u = i / 15, r = (30 + 34 * Math.sin(u * 3) + k * 20) * s * (.6 + .4 * eu), px = x + Math.sin(i * 2.4 + seed) * 22 * s * (.4 + u), py = y - u * 230 * s * eu;
+        ctx.globalAlpha = fade * (.78 - u * .3) * dens; ctx.drawImage(P.dust, px - r, py - r, r * 2, r * 2); ctx.globalAlpha = fade * .55 * (1 - u) * dens; ctx.drawImage(P.dark, px - r * .8, py - r * .8, r * 1.6, r * 1.6); }
+    if (k < 1.1) { ctx.globalCompositeOperation = 'lighter'; for (let i = 0; i < 8; i++) { const u = i / 7, kk = k / 1.1, r = (46 + 30 * Math.sin(u * 3)) * s * (.7 + kk * .8), px = x + Math.sin(i * 3.1 + seed) * 34 * s * (.3 + u), py = y - (20 + u * 140 * eu + kk * 60) * s; ctx.globalAlpha = (1 - kk) * .75 * dens; ctx.drawImage(P.fire, px - r, py - r, r * 2, r * 2); } ctx.globalCompositeOperation = 'source-over'; }
+    ctx.globalAlpha = fade; ctx.fillStyle = 'rgba(70,56,38,.9)'; for (let i = 0; i < 20; i++) { const a = (ddpR(seed + i) - .5) * 2.2, v = (140 + ddpR(seed + i * 3) * 260) * s, tt = k * .9; const px = x + Math.sin(a) * v * tt, py = y - Math.cos(a) * v * tt * 1.15 + 420 * tt * tt * s; if (py < y + 8) ctx.fillRect(px, py, 4 * s + 1, 3 * s + 1); }
+    ctx.restore();
+}
+function ddpFoot(x, y, s, t, seed, run) { // water ripple + foam around legs wading
+    ctx.save(); ctx.fillStyle = 'rgba(210,226,222,.5)'; ctx.beginPath(); ctx.ellipse(x, y, 20 * s, 4.5 * s, 0, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(240,248,244,.65)'; ctx.lineWidth = 1.4 * s; ctx.beginPath(); ctx.ellipse(x, y, 20 * s * (1 + (t * 1.2 + seed) % 1 * .6), 4.5 * s * (1 + (t * 1.2 + seed) % 1 * .6), 0, 0, 7); ctx.stroke(); ctx.restore();
+    if (run) ddpSpray(x, y - 4 * s, s * .8, (t * 2.4 + seed) % 1, 0, seed, 9);
+}
+
+/* ================= SHOT C1 : the ramp drops (bow-on) ================= */
+const DDP_GEY_C = [14.1, 14.9, 15.7, 16.3];
+function ddpBowOn(Xc, Z0, openK, o) { // landing craft seen head-on; openK 0..1 ramp
+    o = o || {}; const F = 900, vy = o.vy, Yc = o.Yc, t = o.t, hv = o.hv;
+    const pj = function (X, Y, Z) { const f = F / Z; return [800 + (Xc + X) * f, vy + (Yc - Y) * f]; };
+    function quad(a, b, c, d) { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(d[0], d[1]); ctx.closePath(); }
+    const lit = o.lit === undefined ? .6 : o.lit;
+    // hull front plate
+    quad(pj(-1.85, -.3, Z0), pj(1.85, -.3, Z0), pj(1.7, 2.3, Z0), pj(-1.7, 2.3, Z0)); let g = ctx.createLinearGradient(0, pj(0, 2.3, Z0)[1], 0, pj(0, -.3, Z0)[1]); g.addColorStop(0, '#2c3024'); g.addColorStop(1, '#12150f'); ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,214,150,' + lit + ')'; ctx.lineWidth = 3.2; let a = pj(-1.7, 2.3, Z0), b = pj(1.7, 2.3, Z0); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+    // opening + interior
+    const o0 = pj(-1.35, .4, Z0), o1 = pj(1.35, .4, Z0), o2 = pj(1.35, 2.15, Z0), o3 = pj(-1.35, 2.15, Z0);
+    if (o.men) { ctx.save(); quad(o0, o1, o2, o3); ctx.clip(); const ig = ctx.createLinearGradient(0, o3[1], 0, o0[1]); ig.addColorStop(0, '#0a0b08'); ig.addColorStop(1, '#171a14'); ctx.fillStyle = ig; ctx.fillRect(o3[0] - 5, o3[1] - 5, (o1[0] - o0[0]) + 10, (o0[1] - o3[1]) + 10);
+        o.men(ctx, pj); ctx.restore(); }
+    else { quad(o0, o1, o2, o3); ctx.fillStyle = '#0c0d0a'; ctx.fill(); }
+    // ramp door
+    const th = openK * 1.44, Zt = Z0 - 1.65 * Math.sin(th), Yt = .4 + 1.65 * Math.cos(th) + (openK < 1 ? .3 * (1 - openK) : 0);
+    const d0 = pj(-1.35, .4, Z0), d1 = pj(1.35, .4, Z0), d2 = pj(1.35, Yt, Zt), d3 = pj(-1.35, Yt, Zt);
+    quad(d0, d1, d2, d3); const dg = ctx.createLinearGradient(0, Math.min(d2[1], d0[1]), 0, Math.max(d2[1], d0[1])); dg.addColorStop(0, openK < .6 ? '#3d453a' : '#505a50'); dg.addColorStop(1, '#1b2019'); ctx.fillStyle = dg; ctx.fill();
+    ctx.save(); quad(d0, d1, d2, d3); ctx.clip(); ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 2.6; for (let i = 1; i < 4; i++) { const f = i / 4, p0 = [d0[0] + (d1[0] - d0[0]) * f, d0[1] + (d1[1] - d0[1]) * f], p1 = [d3[0] + (d2[0] - d3[0]) * f, d3[1] + (d2[1] - d3[1]) * f]; ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke(); }
+    for (let i = 1; i < 6; i++) { const f = i / 6, p0 = [d0[0] + (d3[0] - d0[0]) * f, d0[1] + (d3[1] - d0[1]) * f], p1 = [d1[0] + (d2[0] - d1[0]) * f, d1[1] + (d2[1] - d1[1]) * f]; ctx.strokeStyle = 'rgba(210,220,205,.12)'; ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke(); }
+    ctx.restore(); ctx.strokeStyle = 'rgba(255,224,170,' + (lit * .8) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(d3[0], d3[1]); ctx.lineTo(d2[0], d2[1]); ctx.stroke();
+    // hinge shadow & surf at the hull
+    const w0 = pj(-2.2, 0, Z0 + .2), w1 = pj(2.2, 0, Z0 + .2), wc = (w0[0] + w1[0]) / 2, ww = (w1[0] - w0[0]) / 2; for (let i = 0; i < 18; i++) { const u = i / 17 * 2 - 1, k = (t * .8 + i * .37) % 1; ctx.globalAlpha = .75 * (1 - k * .5); ctx.drawImage(ddpEnsure().white, wc + u * ww - 26, w0[1] - 14 - k * 10 + Math.abs(u) * 6, 52, 30); } ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(236,244,240,.45)'; ctx.beginPath(); ctx.ellipse(wc, w0[1] + 2, ww * 1.05, 9, 0, 0, 7); ctx.fill();
+    return { pj: pj, d0: d0, d1: d1, d2: d2, d3: d3, Zt: Zt, Yt: Yt };
+}
+function ddpShotC1(t, hv) {
+    const P = ddpEnsure(), s = t - DD.cuts[1], F = 900, vy = hv * .47, Yc = 1.05, sh = ddpShakeAt(t, 1.0 + Math.max(0, 1.4 - s) * 1.6);
+    let jolt = 0; DDP_GEY_C.forEach(function (g) { const d = t - g; if (d > 0 && d < .5) jolt += Math.pow(1 - d / .5, 2); });
+    const slam = s - 1.25, js = slam > 0 && slam < .5 ? Math.pow(1 - slam / .5, 2) : 0;
+    const zoom = 1 + s * .012, roll = Math.sin(t * 1.3) * .012 + Math.sin(t * 6) * .003 * (jolt + js);
+    ctx.save(); ctx.translate(800, hv / 2 + 40); ctx.rotate(roll); ctx.scale(zoom, zoom); ctx.translate(-800 + sh[0] + Math.sin(t * 31) * js * 7, -hv / 2 - 40 + sh[1] + Math.sin(t * 37) * (jolt + js) * 7);
+    const sx = 830;
+    ddpSky(vy, t, t * 6, sx, 1, .22); ddpSea(vy, vy + 900, t, sx, 2.4, .1);
+    // far smoke on the horizon, ships
+    [[200, .8], [520, .5], [1120, .9], [1450, .6]].forEach(function (p, i) { ddpSmoke(p[0], vy - 4, p[1], t, i * 1.9, 26, 300); });
+    for (let i = 0; i < 6; i++) ddpShip(((i * 389 + 90 - t * 5) % 2200 + 2200) % 2200 - 300, vy + 6, 70 + ddpR(i) * 50, 'dd', 0, .8, t);
+    // beached craft behind / beside
+    ddpBowOn(-9.5, 20, .85, { vy, Yc, t, hv }); ddpBowOn(8.5, 15, .9, { vy, Yc, t, hv }); ddpBowOn(-5.5, 11.5, .75, { vy, Yc, t, hv, lit: .4 });
+    // shell geysers
+    [[-4.2, 8.5], [6.4, 9.2], [-3.5, 17], [4.2, 13.5]].forEach(function (q, i) { const f = F / q[1]; ddpGeyser(800 + q[0] * f, vy + (Yc + 0) * f, 8 * f / 190, t - DDP_GEY_C[i], i * 7 + 2); });
+    // the lead craft
+    const Z0 = 5.3 + (1 - cs2E(s / 1.0)) * 1.3, openK = cs2E(cs2C((s - .3) / 1.1, 0, 1)) * (1 - .0);
+    const stage = [], Xl = [-.95, -.32, .32, .95];
+    const res = ddpBowOn(0, Z0, Math.pow(cs2C((s - .25) / 1.0, 0, 1), 1.7), { vy, Yc, t, hv, lit: .75, men: function (c, pj) {
+        // troops waiting inside, facing us
+        for (let r = 4; r >= 0; r--) for (let l = 0; l < 4; l++) { const ts = 14.95 + r * .3 + ((l * 3) % 4) * .11 + ddpR(r * 4 + l) * .16, Zm = Z0 + .9 + r * .8; if (t > ts + .15) continue; const p = pj(Xl[l] + (ddpR(r * 4 + l) - .5) * .2, .45, Zm), f = F / Zm; ddpFront(p[0], p[1], 1.75 * f / 64, t, { run: 0, ph: r + l, haze: 0 }); }
+    } });
+    // runners
+    const runners = [];
+    for (let r = 0; r < 6; r++) for (let l = 0; l < 4; l++) { const j = r * 4 + l, ts = 14.95 + r * .3 + ((l * 3) % 4) * .11 + ddpR(j) * .16; if (t < ts) continue; const v = 3.0, Zs = Z0 + .9 + r * .8; let Z = Zs - v * (t - ts); if (Z < 1.15) continue; const off = Math.max(0, (Z0 - 1.65) - Z), X = Xl[l] * (1 + 2.4 * cs2C(off / 2.4, 0, 1)) + (l < 2 ? -1 : 1) * cs2C(off / 4, 0, 1) * .8; let Y = Z > Z0 ? .45 : Z > Z0 - 1.55 ? .45 - (Z0 - Z) / 1.55 * .4 : 0; let fall = 0; if (j % 7 === 3 && t > ts + 1.1) { fall = cs2C((t - ts - 1.1) / .5, 0, 1); Z = Zs - v * (1.1) - v * .35 * fall; } runners.push({ j, Z, X, Y, fall, l }); }
+    runners.sort(function (a, b) { return b.Z - a.Z; });
+    runners.forEach(function (m) { if (m.Z > Z0 + .5 && 0) return; const f = F / m.Z, x = 800 + m.X * f, y = vy + (Yc - m.Y) * f, sc = 1.75 * f / 64; ddpFront(x, y, sc, t, { run: m.fall ? .2 : 1, ph: m.j * 1.7, haze: 0, fall: m.fall, fallDir: m.l < 2 ? -1 : 1 });
+        if (m.Y < .3) { ctx.fillStyle = 'rgba(30,52,56,.7)'; ctx.beginPath(); ctx.ellipse(x, y - 8 * sc, 26 * sc, 9 * sc, 0, 0, 7); ctx.fill(); ddpFoot(x, y - 11 * sc, sc, t, m.j, !m.fall); } });
+    // ramp-down splash + geysers either side
+    ddpSpray(800 - 1.5 * F / Z0, vy + Yc * F / Z0, 1.6, s - 1.25, -1, 3, 26); ddpSpray(800 + 1.5 * F / Z0, vy + Yc * F / Z0, 1.6, s - 1.25, 1, 9, 26);
+    // enemy fire stitching the water toward the boat, tracers
+    for (let i = 0; i < 6; i++) { const per = .9 + i * .11, k = ((t - 13.7 + i * .31) % per) / per, sd = i % 2 ? 1 : -1; if (t > 13.7) { const x0 = 800 + sd * (260 + ddpR(i) * 480), y0 = hv * .98, x1 = 800 + sd * (40 + ddpR(i + 4) * 90), y1 = vy + 10; ddpTracer(x0, y0, x1, y1, k, .16, 2); if (k > .7 && k < 1) ddpSpray(x1, y1 + 30 * ddpR(i), .5, (k - .7) * 3, sd, i, 7); } }
+    // sparks off the hull
+    for (let i = 0; i < 6; i++) { const k = (t * 7 + i * 1.3) % 3; if (k < .2 && Math.sin(t * 2.3 + i * 4.1) > -.2) { const p = res.pj((ddpR(Math.floor(t * 7) + i) - .5) * 2.8, .4 + ddpR(i * 3) * 1.8, Z0); ddpFlashGlow(p[0], p[1], 24, 1 - k / .2); } }
+    ctx.restore();
+    ddpLens(t, [14.2, 15.0, 15.8, 16.1], 1600, hv);
+    return js > 0 ? js * .35 : 0;
+}
+
+/* ================= SHOT C2 : wading in, backs to us ================= */
+const DDP_GEY_C2 = [16.7, 17.4, 18.2, 19.0, 19.6];
+function ddpShotC2(t, hv) {
+    const P = ddpEnsure(), s = t - 16.4, hz = hv * .365, sh = ddpShakeAt(t, 1.4), zoom = 1.02 + s * .022, drift = s * 8;
+    let jolt = 0; DDP_GEY_C2.concat([18.6, 19.3]).forEach(function (g) { const d = t - g; if (d > 0 && d < .5) jolt += Math.pow(1 - d / .5, 2); });
+    ctx.save(); ctx.translate(800, hv * .6); ctx.rotate(Math.sin(t * 1.2) * .01 + jolt * Math.sin(t * 40) * .004); ctx.scale(zoom, zoom); ctx.translate(-800 - drift + sh[0] + Math.sin(t * 37) * jolt * 6, -hv * .6 + sh[1] + Math.sin(t * 31) * jolt * 6);
+    ddpSky(hz, t, t * 4, 360, 1, .45);
+    // smoke drifting across the sky
+    [[60, 1.6], [470, 1.3], [1010, 1.7], [1500, 1.4]].forEach(function (p, i) { ddpSmoke(p[0], hz + 20, p[1], t, i * 2.3, 60, 480, .9); });
+    // headland, bunker, beach
+    ddpHill(760, 2000, hz - 260, hz + 70, 4, .1, t);
+    ddpBunker(1290, hz - 188, .55, t, { haze: .15, fire: (t * 7) % 1 < .6 });
+    const sandG = ctx.createLinearGradient(0, hz + 20, 0, hz + 90); sandG.addColorStop(0, ddpRGB([172, 150, 112])); sandG.addColorStop(1, ddpRGB([128, 112, 84])); ctx.fillStyle = sandG; ctx.fillRect(-700, hz + 22, 2000, 68);
+    ctx.fillStyle = ddpRGB([104, 100, 90]); ctx.fillRect(-700, hz + 10, 1500, 15); ctx.fillStyle = 'rgba(255,230,190,.3)'; ctx.fillRect(-700, hz + 10, 1500, 2);           // sea wall
+    ctx.fillStyle = ddpRGB([80, 90, 58]); ctx.beginPath(); ctx.moveTo(-700, hz + 11); for (let x = -700; x < 800; x += 50) ctx.lineTo(x, hz - 6 - Math.sin(x * .02) * 5); ctx.lineTo(800, hz + 11); ctx.closePath(); ctx.fill();
+    // wire + obstacles on the sand
+    for (let i = 0; i < 14; i++) { const x = -300 + i * 120 + ddpR(i) * 40, y = hz + 36 + ddpR(i + 3) * 44; ddpHedgehog(x, y, .36 + (y - hz - 30) * .004, .35); }
+    ddpFire(150, hz + 36, .5, t, 2); ddpSmoke(150, hz + 36, .8, t, 5, 50, 300);
+    // distant runners on the beach (backs)
+    for (let i = 0; i < 22; i++) { const u = ddpR(i * 4), x = -280 + u * 1000 + Math.sin(t * .6 + i) * 8, yy = hz + 70 - ((t * .12 + ddpR(i)) % 1) * 48; ddpBack(x, yy, .12 + (yy - hz - 22) * .003, t, { ph: i, haze: .25, spd: 8 }); }
+    // sand blasts
+    [[17.0, 120, 50], [17.9, 430, 64], [18.7, 60, 70], [19.4, 640, 54], [16.8, 310, 74], [19.8, 220, 60]].forEach(function (b, i) { ddpBlast(b[1], hz + b[2], .55 + (b[2] - 40) * .006, t - b[0], i * 3.1); });
+    // water
+    const wy = hz + 82, wg = ctx.createLinearGradient(0, wy, 0, hv + 100); wg.addColorStop(0, 'rgb(112,118,102)'); wg.addColorStop(.1, 'rgb(62,76,74)'); wg.addColorStop(1, 'rgb(22,34,38)'); ctx.fillStyle = wg; ctx.beginPath(); ctx.moveTo(-700, wy); for (let x = -700; x <= 2200; x += 40) ctx.lineTo(x, wy + Math.sin(x * .012 + t * 1.5) * 4 + Math.sin(x * .03 - t * 2.2) * 2); ctx.lineTo(2200, hv + 200); ctx.lineTo(-700, hv + 200); ctx.closePath(); ctx.fill();
+    for (let i = 0; i < 26; i++) { const u = i / 26, y = wy + 10 + Math.pow(u, 1.7) * (hv * .62) + ((t * (10 + u * 40)) % 40) * -.0, ps = .2 + u * 1.5; ctx.beginPath(); for (let x = -700; x <= 2200; x += 30) { const yy = y + Math.sin(x * .01 / (ps * .5 + .3) + t * (1 + ps) + i * 2) * 3 * ps; if (x === -700) ctx.moveTo(x, yy); else ctx.lineTo(x, yy); } ctx.strokeStyle = 'rgba(232,240,232,' + (.06 + .12 * ps) + ')'; ctx.lineWidth = .8 + ps * 1.6; ctx.stroke(); }
+    ctx.fillStyle = 'rgba(236,244,238,.65)'; ctx.beginPath(); ctx.moveTo(-700, wy - 2); for (let x = -700; x <= 2200; x += 20) ctx.lineTo(x, wy - 2 + Math.sin(x * .05 + t * 3) * 2.4); for (let x = 2200; x >= -700; x -= 20) ctx.lineTo(x, wy + 7 + Math.sin(x * .04 - t * 2) * 3); ctx.closePath(); ctx.fill();
+    // hedgehogs in the surf (mid)
+    [[260, .0, 1.0], [700, .12, 1.25], [1010, .06, .95], [1360, .2, 1.4], [-60, .16, 1.15]].forEach(function (h, i) { ddpHedgehog(h[0], wy + 40 + h[1] * hv * .5, .9 * h[2] + h[1] * 2.4, 0); });
+    // shell geysers in the surf
+    DDP_GEY_C2.forEach(function (g, i) { const x = [240, 560, 940, 1180, 80][i], y = wy + 50 + [14, 60, 34, 70, 90][i]; ddpGeyser(x, y, .9 + (y - wy) * .007, t - g, i * 4 + 1); });
+    // bunker tracers into the water
+    for (let i = 0; i < 9; i++) { const per = .8 + i * .1, k = ((t - 16.4 + i * .27) % per) / per, x1 = 120 + ddpR(i * 3) * 1300, y1 = hv * (.7 + ddpR(i) * .26); ddpTracer(1330, hz - 190, x1, y1, k, .16, 2.6); if (k > .9) ddpSpray(x1, y1, 1.2, (k - .9) * 8, 0, i, 10); }
+    // foreground wading men (backs)
+    const men = [[220, hv * .66, 3.3, 0], [650, hv * .72, 3.9, 1.3], [1010, hv * .64, 3.0, 2.1], [1400, hv * .7, 3.6, .7], [-40, hv * .62, 2.6, 3.2], [860, hv * .6, 2.1, 4.1], [470, hv * .58, 1.9, 5.3], [1230, hv * .59, 2.2, 2.8]];
+    men.sort(function (a, b) { return a[2] - b[2]; });
+    men.forEach(function (m, i) { const bob = Math.sin(t * 2.3 + m[3]) * 5 * m[2] / 3, bx = m[0] + Math.sin(t * .9 + m[3]) * 8, by = m[1] + bob, wl = by + 24 * m[2];
+        ctx.save(); ctx.beginPath(); ctx.rect(bx - 200, by - 200 * m[2], 400, wl - (by - 200 * m[2])); ctx.clip();
+        ddpBack(bx, by, m[2], t, { ph: m[3], rim: .5, haze: Math.max(0, 1.5 - m[2]) * .1, spd: 2.4 }); ctx.restore();
+        ctx.fillStyle = 'rgba(30,48,50,.55)'; ctx.beginPath(); ctx.ellipse(bx, wl + 3 * m[2], 40 * m[2], 8 * m[2], 0, 0, 7); ctx.fill();
+        const rk = (t * 1.1 + m[3]) % 1; ctx.strokeStyle = 'rgba(236,246,240,' + (.8 * (1 - rk)) + ')'; ctx.lineWidth = 2 * m[2] * .6; ctx.beginPath(); ctx.ellipse(bx, wl, (30 + rk * 30) * m[2], (5 + rk * 4) * m[2], 0, 0, 7); ctx.stroke();
+        ctx.fillStyle = 'rgba(236,244,238,.55)'; ctx.beginPath(); ctx.ellipse(bx, wl, 30 * m[2], 4.4 * m[2], 0, 0, 7); ctx.fill();
+        ddpSpray(bx - 30 * m[2], wl, m[2] * .9, (t * 1.8 + m[3]) % 1, -1, i, 12); });
+    ctx.restore();
+    ddpLens(t, [17.1, 18.2, 19.1], 1600, hv);
+    return 0;
+}
+/* ================= SHOT D : the Sherman and the bunker ================= */
+function ddpHillY(x, x0, x1, yTop, yBase, seed) { const u = cs2C((x - x0) / (x1 - x0), 0, 1), prof = Math.pow(Math.min(1, u * 1.25), .6); return yBase - (yBase - yTop) * prof + Math.sin(x * .03 + seed) * 5; }
+function ddpTankPos(t) { // world distance travelled by the tank
+    if (t < 23.9) return 55 * (t - 20.2); if (t < 24.3) { const d = t - 23.9; return 55 * 3.7 + 55 * d - 55 * d * d / .8; } if (t < 26.5) return 214.5; const d = t - 26.5; return 214.5 + 14 * d * d;
+}
+function ddpRuin(x, y, s, t, k) { // shattered pillbox, burning
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.fillStyle = 'rgba(30,22,14,.55)'; ctx.beginPath(); ctx.ellipse(0, 4, 150, 14, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#6e6a5c'; ctx.beginPath(); ctx.moveTo(-108, 0); ctx.lineTo(-100, -34); ctx.lineTo(-76, -30); ctx.lineTo(-60, -52); ctx.lineTo(-30, -38); ctx.lineTo(-8, -26); ctx.lineTo(20, -44); ctx.lineTo(54, -30); ctx.lineTo(78, -40); ctx.lineTo(112, -14); ctx.lineTo(124, 0); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#3c3a32'; ctx.beginPath(); ctx.moveTo(-60, -30); ctx.lineTo(-30, -38); ctx.lineTo(-8, -26); ctx.lineTo(20, -44); ctx.lineTo(54, -30); ctx.lineTo(40, -6); ctx.lineTo(-40, -6); ctx.closePath(); ctx.fill();
+    for (let i = 0; i < 9; i++) { ctx.fillStyle = i % 2 ? '#5a574a' : '#7c786a'; ctx.fillRect(-130 + i * 30 + ddpR(i) * 10, -6 - ddpR(i + 3) * 8, 9 + ddpR(i + 5) * 10, 8 + ddpR(i + 7) * 7); }
+    ctx.restore(); ddpFire(x - 10 * s, y - 20 * s, .55 * s, t, 8); ddpFire(x + 50 * s, y - 16 * s, .4 * s, t, 3);
+}
+function ddpShotD(t, hv) {
+    const s = t - DD.cuts[2];
+    if (t >= 24.62 && t < 26.5) return ddpBunkerCU(t, hv);
+    const P = ddpEnsure(), hz = hv * .385, pos = ddpTankPos(t), gy = hv * .79, ts = 2.5;
+    const fireT = 24.4, fk = t - fireT, fired = fk > 0 ? Math.pow(Math.max(0, 1 - fk / 1.2), 2) : 0, blast = fk > 0 && fk < .5 ? Math.pow(1 - fk / .5, 2) : 0;
+    let sh = ddpShakeAt(t, .9 + blast * 14 + (t > 24.0 && t < 24.4 ? 1 : 0));
+    const zoom = 1.04 + (t - 20.2) * .003 + blast * .03 + (t > 26.5 ? -(t - 26.5) * .01 : 0);
+    ctx.save(); ctx.translate(800, hv * .62); ctx.rotate(Math.sin(t * .8) * .004 + blast * Math.sin(t * 50) * .004); ctx.scale(zoom, zoom); ctx.translate(-800 + sh[0], -hv * .62 + sh[1]);
+    const sx = 360 - pos * .05;
+    ddpSky(hz, t, pos * .2, sx, 1, .3);
+    [[-100, 1.7], [330, 1.4], [820, 1.6], [1300, 1.2], [1760, 1.6]].forEach(function (p, i) { ddpSmoke(((p[0] - pos * .15) % 2400 + 2400) % 2400 - 400, hz + 10, p[1], t, i * 2.7, 70, 500, .85); });
+    ddpSea(hz, hz + 96, t, sx, .8, .1);
+    for (let i = 0; i < 8; i++) ddpShip(((i * 301 + 40 - pos * .08) % 2200 + 2200) % 2200 - 300, hz + 6, 80 + ddpR(i) * 70, 'dd', 0, .75, t);
+    // hill + bunker (parallax .3)
+    const hx0 = 880 - pos * .3, hx1 = 2800 - pos * .3, hyT = hz - 190, hyB = hz + 100;
+    ddpHill(hx0, hx1, hyT, hyB, 7, .12, t);
+    const bx = 1500 - pos * .3, by = ddpHillY(bx, hx0, hx1, hyT, hyB, 7) + 6, destroyed = t > 24.85;
+    if (!destroyed) ddpBunker(bx, by, .85, t, { haze: .12, fire: t < 24.4 ? (t * 8) % 1 < .6 : false }); else { ddpRuin(bx, by, .85, t, 0); ddpSmoke(bx, by - 30, 1.7, t, 4, 40, 520, 1); }
+    // beach
+    const gg = ctx.createLinearGradient(0, hz + 92, 0, hv); gg.addColorStop(0, 'rgb(96,86,66)'); gg.addColorStop(.18, 'rgb(150,132,100)'); gg.addColorStop(1, 'rgb(108,92,68)'); ctx.fillStyle = gg; ctx.fillRect(-700, hz + 92, 3000, hv - hz);
+    ctx.fillStyle = 'rgba(236,244,238,.5)'; ctx.fillRect(-700, hz + 94, 3000, 3);
+    for (let i = 0; i < 70; i++) { const x = (((ddpR(i * 3) * 2600 - pos * (.8 + ddpR(i) * .3)) % 2600) + 2600) % 2600 - 500, y = hz + 110 + ddpR(i + 5) * (hv * .42); ctx.fillStyle = 'rgba(' + (ddpR(i) < .5 ? '60,48,32' : '190,170,130') + ',' + (.1 + ddpR(i + 1) * .16) + ')'; ctx.fillRect(x, y, 20 + ddpR(i + 2) * 50, 2 + ddpR(i + 8) * 3); }
+    // wet sheen where the tank came ashore
+    ctx.fillStyle = 'rgba(70,84,84,.35)'; ctx.fillRect(-700, hz + 100, 3000, 50);
+    // scenery on the beach (parallax 1.0): hedgehogs, craters, wreck
+    for (let i = 0; i < 10; i++) { const x = (((i * 360 + 140 - pos) % 3600) + 3600) % 3600 - 700, y = hz + 150 + ddpR(i * 4) * (hv * .22); if (i % 4 === 1) { ddpFire(x, y, .8, t, i); ddpSmoke(x, y, 1.1, t, i, 40, 400); ctx.save(); ctx.translate(x, y); ctx.rotate(.06); ctx.translate(-x, -y); ddpBoatSide(x, y + 6, 1.5, t, { troops: 0, speed: 0, haze: .1, seed: i }); ctx.restore(); } else ddpHedgehog(x, y, .8 + (y - hz - 150) / hv * 1.8, .1); }
+    for (let i = 0; i < 6; i++) { const x = (((i * 520 + 60 - pos) % 3100) + 3100) % 3100 - 600, y = gy + 12 + ddpR(i) * 40; ctx.fillStyle = 'rgba(40,30,20,.5)'; ctx.beginPath(); ctx.ellipse(x, y, 60 + ddpR(i) * 40, 12, 0, 0, 7); ctx.fill(); }
+    // distant explosions
+    [[20.9, 700], [21.9, 300], [22.9, 1200], [23.5, 160], [26.7, 900], [27.3, 1400]].forEach(function (b, i) { ddpBlast(b[1], hz + 130 + (i % 3) * 14, .55, t - b[0], i * 5); });
+    // wake of water + spray at the tank's tracks while it drains
+    const tx = 600 + Math.max(0, t - 26.5) * 10, wet = cs2C(1 - (t - 20.2) / 4.5, 0, 1) * .9;
+    // infantry in the stream
+    const men = [[-470, 30, .8], [-340, 14, .9], [-230, 52, .85], [380, 22, .8], [520, 48, .85], [650, 8, .75], [-80, 112, 1.05], [300, 118, 1.0]];
+    const advance = t > 26.5 ? (t - 26.5) * 60 : 0;
+    const crew = men.map(function (m, i) { return { x: tx + m[0] + (m[0] > 0 ? advance * 1.4 : advance * .6) + Math.sin(t * 1.1 + i) * 8, y: gy + m[1] * 1.3, s: ts * m[2] * .96, i: i }; });
+    const back = crew.filter(function (c) { return c.y <= gy + 40; }), front = crew.filter(function (c) { return c.y > gy + 40; });
+    const mS = 1; function drawMen(a) { a.forEach(function (c) { const firing = t > 24.4 && t < 26.5 && c.i % 2, still = t > 24.0 && t < 26.6; ddpMan(c.x, c.y, c.s, t, { ph: c.i * 1.9, run: still ? (firing ? .15 : .5) : 1, aim: firing ? 1 : (c.i % 3 === 0 ? 1 : 0), crouch: still ? .6 : 0, haze: 0, spd: 9 }); ddpFoot(c.x, c.y, c.s * .6, t, c.i, false); }); }
+    drawMen(back);
+    // the Sherman
+    const rock = fk > 0 ? Math.sin(fk * 18) * fired * 4 : 0, recoilX = fk > 0 ? -fired * 10 : 0;
+    const gunA = t < 23.6 ? .02 : t < 24.4 ? .02 + cs2E((t - 23.6) / .8) * .05 : .07;
+    ddpSherman(tx + recoilX, gy + rock * .2, ts, t, { gun: gunA, recoil: fk > 0 ? fired * 16 : 0, wet: wet, move: t < 24.3 || t > 26.5 ? 1 : 0, exhaust: true });
+    drawMen(front);
+    // bunker fire onto the tank, sparks
+    if (t < 24.4) for (let i = 0; i < 5; i++) { const per = .55 + i * .07, k = ((t - 20.4 + i * .23) % per) / per; ddpTracer(bx + 34, by - 20, tx + 200 + ddpR(i) * 80, gy - 120 + ddpR(i + 3) * 60, k, .2, 2.6); if (k > .9) ddpFlashGlow(tx + 200 + ddpR(i) * 80, gy - 120 + ddpR(i + 3) * 60, 30, (1 - k) * 10); }
+    // muzzle blast + shell
+    const tipx = tx + recoilX + (40 + 104 * Math.cos(gunA)) * ts, tipy = gy - (76 + 104 * Math.sin(gunA)) * ts;
+    if (fk > 0 && fk < .5) { const a = Math.pow(1 - fk / .5, 1.4); ddpFlashGlow(tipx, tipy, 260 * a + 30, a); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = a; ctx.fillStyle = 'rgba(255,238,190,1)'; ctx.beginPath(); ctx.moveTo(tipx, tipy - 14); ctx.lineTo(tipx + 230 * a, tipy - 4); ctx.lineTo(tipx + 330 * a, tipy); ctx.lineTo(tipx + 230 * a, tipy + 4); ctx.lineTo(tipx, tipy + 14); ctx.closePath(); ctx.fill(); ctx.restore(); }
+    if (fk > 0 && fk < 3) { for (let i = 0; i < 10; i++) { const k = cs2C(fk / 3, 0, 1), r = (28 + k * 90 + i * 5) * 1.2, px = tipx + 30 + i * 22 * (1 + k * 1.5), py = tipy - k * 40 - i * 2; ctx.globalAlpha = (1 - k) * .55; ctx.drawImage(P.grey, px - r, py - r, r * 2, r * 2); } ctx.globalAlpha = 1; }
+    if (fk > 0 && fk < 1.4) { for (let i = 0; i < 8; i++) { const k = cs2C(fk / 1.4, 0, 1), r = (30 + k * 120) * (1 - i * .06); ctx.globalAlpha = (1 - k) * .6; ctx.drawImage(P.dust, tx + 260 * ts / 2 * (.4 + i * .1) + k * 160 - r, gy - r * .3, r * 2, r * .8); } ctx.globalAlpha = 1; }
+    if (fk > 0 && fk < .2) ddpTracer(tipx, tipy, bx, by - 30, fk / .2, .35, 4.5);
+    ctx.restore();
+    ddpLens(t, [20.9, 24.45], 1600, hv);
+    return blast * .5;
+}
+function ddpBunkerCU(t, hv) {
+    const P = ddpEnsure(), hz = hv * .3, k = t - 24.85, boom = k > 0, sh = ddpShakeAt(t, boom ? 16 * Math.pow(Math.max(0, 1 - k / 1.0), 2) + 1.4 : 1.4);
+    const zoom = 1.04 + (boom ? Math.min(.07, k * .07) : (t - 24.62) * .05), bx = 900, bs = 2.5, by = hv * .76;
+    ctx.save(); ctx.translate(800, hv * .55); ctx.rotate(boom ? Math.sin(k * 30) * Math.max(0, .01 - k * .008) : 0); ctx.scale(zoom, zoom); ctx.translate(-800 + sh[0], -hv * .55 + sh[1]);
+    ddpSky(hz, t, 120, 300, 1, .4);
+    [[160, 1.9], [700, 1.5], [1350, 2.1]].forEach(function (p, i) { ddpSmoke(p[0], hz + 30, p[1], t, i * 2.9, 70, 520, .9); });
+    ctx.fillStyle = 'rgb(150,150,132)'; ctx.fillRect(-700, hz - 2, 2900, 260);
+    // grassy slope
+    const hg = ctx.createLinearGradient(0, hz, 0, hv + 100); hg.addColorStop(0, 'rgb(104,112,78)'); hg.addColorStop(.35, 'rgb(84,92,56)'); hg.addColorStop(1, 'rgb(70,64,42)'); ctx.fillStyle = hg; ctx.beginPath(); ctx.moveTo(-600, hv + 200); ctx.lineTo(-600, hz + 80); for (let x = -600; x <= 2200; x += 40) ctx.lineTo(x, hz + 30 + Math.sin(x * .004 + 1) * 40 + Math.sin(x * .017) * 8); ctx.lineTo(2200, hv + 200); ctx.closePath(); ctx.fill();
+    for (let i = 0; i < 260; i++) { const x = -500 + ddpR(i * 3) * 2600, y = hz + 100 + ddpR(i + 7) * (hv - hz), sc = .4 + (y - hz) / hv; ctx.strokeStyle = 'rgba(' + (ddpR(i) < .5 ? '40,56,28' : '150,140,90') + ',' + (.18 + ddpR(i + 2) * .2) + ')'; ctx.lineWidth = 1.4 * sc; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + (ddpR(i + 4) - .5) * 8, y - (6 + ddpR(i + 5) * 12) * sc); ctx.stroke(); }
+    for (let i = 0; i < 6; i++) { const x = 80 + i * 300 + ddpR(i) * 80, y = hz + 150 + ddpR(i + 3) * 300; ctx.fillStyle = 'rgba(34,26,16,.45)'; ctx.beginPath(); ctx.ellipse(x, y, 60 + ddpR(i) * 50, 14 + ddpR(i + 1) * 8, 0, 0, 7); ctx.fill(); }
+    // dirt apron + sandbags
+    ctx.fillStyle = 'rgba(96,80,56,.8)'; ctx.beginPath(); ctx.ellipse(bx, by + 6, 360, 36, 0, 0, 7); ctx.fill();
+    function bags(x0, y0, n, dir) { for (let r = 0; r < 3; r++) for (let i = 0; i < n - r; i++) { ctx.fillStyle = (i + r) % 2 ? '#8a7a56' : '#7c6e4c'; ctx.beginPath(); ctx.ellipse(x0 + dir * (i * 46 + r * 23), y0 - r * 20, 24, 11, 0, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.stroke(); } }
+    bags(bx - 330, by + 18, 5, 1); bags(bx + 330, by + 18, 5, -1);
+    if (!boom) { ddpBunker(bx, by, bs, t, { fire: (t * 9) % 1 < .6 }); for (let i = 0; i < 4; i++) { const kk = (t * 7 + i * .31) % 1; ddpTracer(bx + 50 * bs, by - 34 * bs, 200 + i * 280, hv * 1.02, kk, .2, 3.4); } }
+    else {
+        const cx = bx + 6, cy = by - 40 * bs;
+        if (k < .08) ddpBunker(bx, by, bs, t, {}); else ddpRuin(bx, by, bs, t, 0);
+        const fb = Math.min(1, k / .35); if (k < 1.5) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const R = (140 + fb * 380) * (1 - Math.max(0, k - .35) / 1.5 * .4); ctx.globalAlpha = Math.max(0, 1 - k / 1.3); ctx.drawImage(P.fire, cx - R, cy - R * .9, R * 2, R * 1.8); ctx.globalAlpha = Math.max(0, 1 - k / .3) * .8; ctx.drawImage(P.white, cx - R * .4, cy - R * .5, R * .8, R * .9); ctx.restore(); }
+        ddpBlast(bx, by - 20, 3.0, k, 5, .55); ddpBlast(bx - 170, by - 10, 2.0, k - .08, 9, .5); ddpBlast(bx + 190, by - 10, 2.2, k - .14, 13, .5);
+        if (k > 0 && k < .5) { ctx.strokeStyle = 'rgba(255,240,210,' + (.45 * (1 - k / .5)) + ')'; ctx.lineWidth = 14 * (1 - k / .5) + 2; ctx.beginPath(); ctx.ellipse(cx, cy + 50, 100 + k * 1400, 30 + k * 360, 0, 0, 7); ctx.stroke(); }
+        for (let i = 0; i < 28; i++) { const a = (ddpR(i * 2.3) - .5) * 2.6, v = 300 + ddpR(i * 5.1) * 700, g = 980, px = cx + Math.sin(a) * v * k * 1.3, py = cy - Math.cos(a) * v * k * 1.4 + .5 * g * k * k; if (k > 0 && k < 2.6 && py < hv + 100) { ctx.save(); ctx.translate(px, py); ctx.rotate(k * (3 + ddpR(i) * 9) * (i % 2 ? 1 : -1)); ctx.fillStyle = i % 3 ? '#6a665a' : '#3a372f'; const sz = 10 + ddpR(i + 7) * 28; ctx.fillRect(-sz / 2, -sz / 3, sz, sz * .66); ctx.restore(); } }
+        ddpSmoke(bx, by - 30, 3, t, 6, 40, 760, Math.min(1, k * 2));
+    }
+    if (t < 24.85) ddpTracer(-100, hz + 200, bx, by - 40 * bs, cs2C((t - 24.62) / .23, 0, 1), .5, 5);
+    ctx.restore();
+    ddpLens(t, [24.9, 25.3], 1600, hv);
+    return boom ? Math.max(0, 1 - k / .5) * .7 : 0;
+}
+/* ---------- camera + helpers ---------- */
+function ddpCam(hv, x, y, zoom, roll) { ctx.translate(800, hv / 2); ctx.rotate(roll || 0); ctx.scale(zoom, zoom); ctx.translate(-800 - x, -hv / 2 - y); }
+function ddpShakeAt(t, a) { return [(Math.sin(t * 23.1) * .6 + Math.sin(t * 41.7 + 1) * .4) * a, (Math.sin(t * 29.3 + 2) * .6 + Math.sin(t * 53.9) * .4) * a]; }
+function ddpHeadland(hz, pan, col, haze, h0) { // distant coast silhouette, right side
+    ctx.fillStyle = ddpRGB(ddpMix(col, [170, 168, 150], haze)); ctx.beginPath(); ctx.moveTo(900 - pan, hz + 2);
+    for (let x = 900; x <= 2300; x += 40) { const u = (x - 900) / 1400, yy = hz - h0 * Math.pow(Math.min(1, u * 1.6), .7) * (1 + .12 * Math.sin(x * .02)) - Math.sin(x * .05) * 3; ctx.lineTo(x - pan, yy); }
+    ctx.lineTo(2300 - pan, hz + 2); ctx.closePath(); ctx.fill();
+}
+const DDP_SALVO = [1.7, 3.7, 5.4];
+function ddpShotA(t, hv) {
+    const P = ddpEnsure(), hz = hv * .5, pan = t * 30, sh = ddpShakeAt(t, .6);
+    const heroX = 560 + t * 24, heroY = hz + 130, e = cs2E((t - 2.2) / 4.2), camX = 800 + (heroX + 20 - 800) * e, camY = hv / 2 + (hz + 30 - hv / 2) * e, zz = 1.0 + e * .5;
+    ctx.save(); ddpCam(hv, camX - 800 + sh[0], camY - hv / 2 + sh[1] + Math.sin(t * .7) * 3, zz, Math.sin(t * .5) * .004 - e * .01);
+    const sx = 1090 - pan * .06;
+    ddpSky(hz, t, pan, sx, .8, .22);
+    ddpHeadland(hz, pan * .1, [66, 78, 66], .55, 36);
+    ddpSea(hz, hz + 560, t, sx, 1.1, 0);
+    [[1330, .5], [1560, .8], [1830, .6], [2100, .9]].forEach(function (p, i) { ddpSmoke(p[0] - pan * .1, hz - 14, .8 * p[1], t, i * 1.7, 40, 360); ddpFire(p[0] - pan * .1, hz - 2, .3, t, i); });
+    for (let i = 0; i < 10; i++) { const st = 1.2 + i * .52, k = t - st; if (k > 0 && k < .5) ddpFlashGlow(1200 + ddpR(i * 5) * 800 - pan * .1, hz - 12, 110 * (1 - k / .5) + 10, 1 - k / .5); }
+    for (let i = 0; i < 12; i++) { const x = ((i * 200 + 80 - pan * .08) % 2400 + 2400) % 2400 - 400; ddpShip(x, hz + 5, 70 + ddpR(i) * 60, 'dd', 0, .8, t); }
+    function salvoK(off) { let f = 0; DDP_SALVO.forEach(function (st) { const d = t - st - off; if (d >= 0 && d < .7) f = Math.max(f, 1 - d / .7); }); return f; }
+    ddpShip(250 - pan * .22, hz + 26, 600, 'bb', salvoK(0), .36, t);
+    ddpShip(1380 - pan * .18, hz + 18, 380, 'bb', salvoK(.35), .52, t);
+    DDP_SALVO.forEach(function (st) { const k = t - st; if (k > 0 && k < 5) { ctx.globalAlpha = Math.max(0, 1 - k / 5) * .7; const R = 70 + k * 80; ctx.drawImage(P.grey, 330 - pan * .22 - R, hz - 50 - k * 8 - R * .6, R * 2, R * 1.2); ctx.globalAlpha = 1; } });
+    for (let g = 0; g < 3; g++) for (let i = 0; i < 6; i++) { const px = ((t * (90 + g * 25) + g * 700 + i * 70 - 300) % 2600) - 500, py = hz - 300 - g * 80 - i * 9 + Math.sin(i + g) * 6; ddpPlane(px, py, .6 - g * .09, -.03 + Math.sin(t * .4 + i) * .02, true); }
+    for (let i = 0; i < 12; i++) { const st = .8 + i * .5, k = t - st; if (k > 0 && k < 1.8) { const bx = 300 + ddpR(i * 9) * 1100, by = hz - 330 + ddpR(i * 4) * 140; ctx.globalAlpha = (1 - k / 1.8) * .9; const R = 14 + k * 24; ctx.drawImage(P.dark, bx - R, by - R, R * 2, R * 2); ctx.globalAlpha = 1; if (k < .12) ddpFlashGlow(bx, by, 30, 1 - k / .12); } }
+    if (t > 2.2 && t < 4.8) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (let i = 0; i < 30; i++) { const st = 2.2 + ddpR(i * 3) * 1.8, k = (t - st) / 1.1; if (k > 0 && k < 1) { const x0 = 500 + ddpR(i) * 500 - pan * .2, y0 = hz + 60 + ddpR(i + 4) * 40, x1 = 1250 + ddpR(i + 8) * 800 - pan * .1, y1 = hz - 6, ax = x0 + (x1 - x0) * k, ay = y0 + (y1 - y0) * k - Math.sin(k * Math.PI) * 170, k2 = Math.max(0, k - .08), bx = x0 + (x1 - x0) * k2, by = y0 + (y1 - y0) * k2 - Math.sin(k2 * Math.PI) * 170, lg = ctx.createLinearGradient(bx, by, ax, ay); lg.addColorStop(0, 'rgba(255,140,50,0)'); lg.addColorStop(1, 'rgba(255,230,170,.95)'); ctx.strokeStyle = lg; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(ax, ay); ctx.stroke(); } if (k >= 1 && k < 1.25) ddpFlashGlow(1250 + ddpR(i + 8) * 800 - pan * .1, hz - 8, 60 * (1.25 - k) * 4, (1.25 - k) * 4); } ctx.restore(); }
+    // mid-distance armada, bows right
+    const boats = [];
+    for (let i = 0; i < 8; i++) { const u = i / 7; boats.push({ i, y: hz + 22 + u * 70, s: .5 + u * 1.15, par: .25 + u * .5, x0: ((i * 411) % 2100) - 200, sp: 8 + u * 14 }); }
+    boats.forEach(function (b) { const x = (((b.x0 + t * b.sp - pan * b.par * .5) % 2700) + 2700) % 2700 - 520; ddpBoatSide(x, b.y, b.s, t, { seed: b.i * 1.9, troops: 12, haze: Math.max(0, .45 - b.s * .25), busts: b.s > 1.2, rim: .6 }); });
+    // geysers away from the hero
+    [[.6, 760, .1], [1.5, 1460, .3], [2.4, 280, .5], [3.1, 1760, .2], [3.9, 160, .6], [4.6, 1900, .4], [5.2, 1250, .2], [5.9, -80, .3]].forEach(function (g, i) { ddpGeyser(g[1] - pan * (.2 + g[2] * .3), hz + 36 + g[2] * 130, .42 + g[2] * .9, t - g[0], i * 3); });
+    // hero craft, troops silhouetted against the dawn
+    ddpBoatSide(heroX, heroY, 3.2, t, { seed: 3.3, troops: 13, haze: 0, busts: true, rim: .9, speed: 1.1 });
+    // foreground swell with spray
+    const fy = hz + 330; ctx.fillStyle = 'rgba(6,14,18,.94)'; ctx.beginPath(); ctx.moveTo(-700, hv + 200); ctx.lineTo(-700, fy + 40); for (let x = -700; x <= 2300; x += 30) ctx.lineTo(x, fy + Math.sin(x * .005 + t * 1.0) * 26 + Math.sin(x * .017 + t * 1.8) * 6 + 40 * Math.sin(x * .0011 - 1)); ctx.lineTo(2300, hv + 200); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(210,226,224,.35)'; ctx.lineWidth = 2; ctx.beginPath(); for (let x = -700; x <= 2300; x += 30) { const yy = fy + Math.sin(x * .005 + t * 1.0) * 26 + Math.sin(x * .017 + t * 1.8) * 6 + 40 * Math.sin(x * .0011 - 1); if (x === -700) ctx.moveTo(x, yy); else ctx.lineTo(x, yy); } ctx.stroke();
+    ctx.restore();
+    for (let i = 0; i < 18; i++) { const k = (t * .3 + i * .21) % 1; ctx.fillStyle = 'rgba(255,255,255,' + (.35 * (1 - k)) + ')'; ctx.fillRect(((i * 211) % 1600) + k * 40, hv * (.82 + .16 * ddpR(i)) - k * 40, 2, 3 + k * 8); }
+    return 0;
+}
+function ddpPost(t, w, h, flash) {
+    const P = ddpEnsure(), bl = DDP.bl || (DDP.bl = ddpCv(160, 100)), bg = bl.getContext('2d'), b2 = DDP.b2 || (DDP.b2 = ddpCv(40, 25)), g2 = b2.getContext('2d');
+    if (DDP.q > 0) { bg.globalCompositeOperation = 'copy'; bg.drawImage(canvas, 0, 0, 160, 100); g2.globalCompositeOperation = 'copy'; g2.drawImage(bl, 0, 0, 40, 25);
+    ctx.save(); ctx.imageSmoothingEnabled = true; ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = .13; ctx.drawImage(bl, 0, 0, w, h); ctx.globalAlpha = .2; ctx.drawImage(b2, 0, 0, w, h); ctx.restore(); }
+    if (DDP.q > 1) { ctx.save(); ctx.globalCompositeOperation = 'saturation'; ctx.fillStyle = 'rgba(128,128,128,.1)'; ctx.fillRect(0, 0, w, h); ctx.restore(); }
+    ctx.save(); ctx.globalCompositeOperation = 'soft-light'; const cg = ctx.createLinearGradient(0, 0, 0, h); cg.addColorStop(0, 'rgba(90,120,160,.22)'); cg.addColorStop(.5, 'rgba(160,150,130,.08)'); cg.addColorStop(1, 'rgba(30,70,90,.2)'); ctx.fillStyle = cg; ctx.fillRect(0, 0, w, h); ctx.restore();
+    ctx.save(); ctx.globalAlpha = .1; ctx.globalCompositeOperation = 'overlay'; ctx.drawImage(CS2.grain, -Math.random() * 220, -Math.random() * 220, w + 220, h + 220); ctx.restore();
+    if (Math.random() < .35) { ctx.fillStyle = 'rgba(255,245,220,.10)'; ctx.fillRect(Math.random() * w, 0, 1.3, h); }
+    if (Math.random() < .1) { ctx.fillStyle = 'rgba(255,245,220,.12)'; ctx.fillRect(0, Math.random() * h, w, 1); }
+    const vg = ctx.createRadialGradient(w / 2, h * .5, w * .22, w / 2, h * .5, w * .75); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.6)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
+}
+function ddpFrame(t, w, h) {
+    const nowp = performance.now(); if (t < .1) { DDP.ema = 0; DDP.last = 0; DDP.q = 2; DDP.cool = 0; } if (DDP.last) { const dt = Math.min(nowp - DDP.last, 120); DDP.ema = DDP.ema ? DDP.ema * .92 + dt * .08 : dt; if (--DDP.cool < 0) { if (DDP.ema > 38 && DDP.q > 0) { DDP.q--; DDP.cool = 24; DDP.ema = 28; } else if (DDP.ema < 19 && DDP.q < 2) { DDP.q++; DDP.cool = 90; } } } DDP.last = nowp;
+    const U = w / 1600, hv = h / U, fl = [0]; ctx.save(); ctx.scale(U, U); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 1600, hv);
+    let f = 0;
+    if (t < DD.cuts[0]) f = ddpShotA(t, hv);
+    else if (t < DD.cuts[1]) f = ddpShotB(t, hv);
+    else if (t < 16.4) f = ddpShotC1(t, hv);
+    else if (t < DD.cuts[2]) f = ddpShotC2(t, hv);
+    else f = ddpShotD(t, hv);
+    ctx.restore(); if (!window.DDP_NOPOST) ddpPost(t, w, h, f); DDP.ok = true; return f || 0;
+}
+/* ===== DDP END ===== */
 /* ===== DD3 BEGIN: D-Day cutscene as real-time raymarched 3D (WebGL2). Falls back to the painted 2D version. ===== */
 const DD3_SCENE = "#version 300 es\nprecision highp float;\nuniform vec2 uRes; uniform float uT, uShot;\nuniform vec3 uCamP, uCamT; uniform float uFov, uRoll;\nuniform vec3 uBP[6]; uniform mat3 uBM[6]; uniform vec4 uBS[6];\nuniform vec3 uTP; uniform mat3 uTM; uniform vec4 uTA; uniform vec3 uTCol;\nuniform vec3 uWP; uniform mat3 uWM;\nuniform vec4 uShip[3]; uniform vec4 uShipS[3];\nuniform vec4 uPl[6]; uniform int uPlN;\nuniform vec4 uMen[14]; uniform vec4 uMenX[14]; uniform int uMenN; uniform vec4 uMenB;\nuniform vec4 uLit[4]; uniform vec4 uSm[3];\nuniform vec3 uSun; uniform vec3 uFogCol; uniform float uFogD, uSky, uBunk, uFleet; uniform int uZ;\n#define ZERO uZ\nout vec4 outc;\n\nfloat h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}\nfloat h31(vec3 p){p=fract(p*.3183099+.1);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}\nfloat vnoise(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);\n return mix(mix(mix(h31(i),h31(i+vec3(1,0,0)),f.x),mix(h31(i+vec3(0,1,0)),h31(i+vec3(1,1,0)),f.x),f.y),\n            mix(mix(h31(i+vec3(0,0,1)),h31(i+vec3(1,0,1)),f.x),mix(h31(i+vec3(0,1,1)),h31(i+vec3(1,1,1)),f.x),f.y),f.z);}\nfloat vn2(vec2 x){vec2 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y);}\nfloat fbm3(vec3 p){float a=.5,s=0.;for(int i=0;i<3;i++){s+=a*vnoise(p);p=p*2.07+vec3(1.7,9.2,3.1);a*=.5;}return s;}\nfloat fbm5(vec3 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*vnoise(p);p=p*2.03+vec3(1.7,9.2,3.1);a*=.5;}return s;}\nmat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}\nfloat smin(float a,float b,float k){float h=max(k-abs(a-b),0.)/k;return min(a,b)-h*h*k*.25;}\nfloat sdBox(vec3 p,vec3 b){vec3 q=abs(p)-b;return length(max(q,0.))+min(max(q.x,max(q.y,q.z)),0.);}\nfloat sdRB(vec3 p,vec3 b,float r){return sdBox(p,b-r)-r;}\nfloat sdCap(vec3 p,vec3 a,vec3 b,float r){vec3 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.);return length(pa-ba*h)-r;}\nfloat sdEll(vec3 p,vec3 r){float k0=length(p/r);float k1=length(p/(r*r));return k0*(k0-1.)/k1;}\nfloat sdCylZ(vec3 p,float r,float hh){vec2 d=vec2(length(p.xy)-r,abs(p.z)-hh);return min(max(d.x,d.y),0.)+length(max(d,0.));}\nfloat sdCylY(vec3 p,float r,float hh){vec2 d=vec2(length(p.xz)-r,abs(p.y)-hh);return min(max(d.x,d.y),0.)+length(max(d,0.));}\n\n// ---------------- waves ----------------\nfloat waveH(vec2 p,float t,out vec2 g){\n  float h=0.; g=vec2(0.); vec2 d; float f,a,ph; float A=mix(.2,1.,1.-smoothstep(-48.,-4.,p.y));\n  d=vec2(.28,.96); f=.21; a=.55; ph=dot(p,d)*f+t*1.35; h+=a*sin(ph); g+=a*f*cos(ph)*d;\n  d=vec2(-.62,.78); f=.37; a=.28; ph=dot(p,d)*f+t*1.7; h+=a*sin(ph); g+=a*f*cos(ph)*d;\n  d=vec2(.9,.43); f=.83; a=.10; ph=dot(p,d)*f+t*2.3; h+=a*sin(ph); g+=a*f*cos(ph)*d;\n  d=vec2(-.2,-.98); f=1.9; a=.035; ph=dot(p,d)*f+t*3.1; h+=a*sin(ph); g+=a*f*cos(ph)*d;\n  g*=A; return h*A;}\n\n// ---------------- terrain ----------------\nfloat th(vec2 p){\n  float z=p.y;\n  float h=clamp(.045*z,-3.5,1.7)+smoothstep(34.,66.,z)*9.+smoothstep(66.,150.,z)*24.;\n  h+=(vn2(p*.045)-.5)*9.*smoothstep(48.,95.,z);\n  h+=(vn2(p*.4)-.5)*.12*(1.-smoothstep(24.,60.,z));\n  return h;}\n\n// ---------------- soldier (local: +x facing, feet y=0) ----------------\nfloat sdMan(vec3 q,float ph,float run,float cr,float sd,out float m){\n  q.y+=run*abs(sin(ph))*.045;\n  float hH=.92-cr*.2; float ln=run*.12+cr*.1; float ls=ln*clamp((q.y-hH)/.48,0.,1.);\n  vec3 tq=vec3(q.x-.012-ls,q.y-(hH+.26),q.z);\n  float d=sdRB(tq,vec3(.115,.27,.2),.07); m=7.;\n  float pv=sdRB(vec3(q.x,q.y-hH,q.z),vec3(.11,.09,.17),.05); d=min(d,pv);\n  vec3 sh=vec3(.03+ln,hH+.5,0.);\n  float s1=sin(ph)*run, s2=-s1;\n  for(int i=0;i<2;i++){ float sg=i==0?1.:-1.; float sw=i==0?s1:s2;\n    vec3 hip=vec3(0.,hH-.04,sg*.095); vec3 kn=vec3(.1+sw*.3+cr*.15,hH*.5+max(-sw,0.)*.1*run,sg*.105); vec3 ft=vec3(sw*.25+cr*.03,.07+max(sw,0.)*.15*run,sg*.11);\n    float l=min(sdCap(q,hip,kn,.092),sdCap(q,kn,ft+vec3(0.,.1,0.),.066)); d=min(d,l);\n    float bt=sdRB(q-ft-vec3(.055,.0,0.),vec3(.12,.07,.058),.03); if(bt<d){d=bt;m=11.;} }\n  vec3 hc=sh+vec3(.045,.2,0.);\n  float nk=sdCap(q,sh+vec3(0.,.04,0.),hc-vec3(0.,.04,0.),.05); d=min(d,nk);\n  float hd=length(q-hc)-.088; if(hd<d){d=hd;m=8.;}\n  float hl=min(sdEll(q-hc-vec3(-.004,.04,0.),vec3(.118,.078,.118)),sdCylY(q-hc-vec3(0.,-.015,0.),.142,.009)); if(hl<d){d=hl;m=9.;}\n  float shd=sdCap(q,sh+vec3(0.,-.03,-.19),sh+vec3(0.,-.03,.19),.07); d=min(d,shd);\n  float pk=sdRB(q-sh-vec3(-.17,-.17,0.),vec3(.075,.17,.14),.03); if(pk<d){d=pk;m=10.;}\n  float bd2=sdCap(q,sh+vec3(-.2,.02,-.14),sh+vec3(-.2,.02,.14),.045); if(bd2<d){d=bd2;m=10.;}\n  float po=min(sdRB(q-vec3(.05,hH+.02,.19),vec3(.06,.07,.035),.02),sdRB(q-vec3(.05,hH+.02,-.19),vec3(.06,.07,.035),.02)); if(po<d){d=po;m=10.;}\n  vec3 hand=mix(vec3(.2,hH+.2,.1),vec3(.34+sin(ph)*.08,hH+.1,.08),run);\n  vec3 hand2=hand+vec3(.07,-.02,-.17);\n  vec3 elb=vec3(.07+ln*.6,hH+.2,.22); vec3 elb2=vec3(.07+ln*.6,hH+.2,-.22);\n  float am=min(min(sdCap(q,sh+vec3(0.,-.04,.2),elb,.058),sdCap(q,elb,hand,.048)),min(sdCap(q,sh+vec3(0.,-.04,-.2),elb2,.058),sdCap(q,elb2,hand2,.048))); if(am<d){d=am;m=7.;}\n  float hn=min(length(q-hand)-.042,length(q-hand2)-.042); if(hn<d){d=hn;m=8.;}\n  vec3 r0=mix(vec3(.1,hH-.1,.1),vec3(.04,hH,.09),run), r1=mix(vec3(.17,hH+.7,.1),vec3(.62,hH+.22,.08),run);\n  float rf=sdCap(q,r0,r1,.026); if(rf<d){d=rf;m=11.;}\n  float sk=sdCap(q,mix(vec3(.1,hH+.0,.1),vec3(.16,hH+.14,.09),run),r0,.04); if(sk<d){d=sk;m=12.;}\n  return d;}\n\n// ---------------- landing craft ----------------\nfloat sdBoat(vec3 q,vec4 bs,out float m){\n  float tp=smoothstep(2.4,5.6,q.x); float hw=1.65-.4*tp; float zs=1.65/hw;\n  vec3 o=vec3(q.x,q.y-.55,q.z*zs);\n  float chine=sdRB(o,vec3(5.6,.95,1.65),.2)*.85;\n  // bottom rake near bow\n  chine=max(chine,.351*(q.x-4.)-.936*(q.y+.4));\n  vec3 iq=vec3(q.x-.95,q.y-1.1,q.z*zs);\n  float cav=sdBox(iq,vec3(5.55,1.0,1.4));\n  vec2 rsp=vec2(abs(q.z)-hw,0.); float rs=min(sdBox(vec3(q.x,q.y-.3,rsp.x),vec3(5.2,.06,.05)),sdBox(vec3(q.x,q.y-.95,rsp.x),vec3(5.2,.05,.05)));\n  float d=max(min(chine,rs),-cav); m=1.;\n  float rail=sdBox(vec3(q.x-.2,q.y-1.53,abs(q.z)-hw*.93),vec3(5.2,.045,.17)); rail=max(rail,-cav+.02); if(rail<d){d=rail;m=5.;}\n  if(d>-0.01&&q.y<.07&&abs(q.z)<1.35&&q.x>-4.5) m=2.;   // deck seen from inside\n  if(cav<.03&&q.y>.06) m=3.;\n  // coxswain console + shield\n  float cab=sdBox(q-vec3(-3.35,1.5,0.),vec3(.8,.55,.62));\n  cab=max(cab,-sdBox(q-vec3(-2.55,1.75,0.),vec3(.12,.12,.44)));\n  if(cab<d){d=cab;m=5.;}\n  float eng=sdRB(q-vec3(-3.95,.5,0.),vec3(.7,.45,1.05),.1); if(eng<d){d=eng;m=5.;}\n  // gun tubs + MGs\n  float tub=min(sdBox(q-vec3(-2.3,1.55,1.35),vec3(.36,.2,.2)),sdBox(q-vec3(-2.3,1.55,-1.35),vec3(.36,.2,.2))); if(tub<d){d=tub;m=5.;}\n  float mg=min(sdCap(q,vec3(-2.2,1.85,1.3),vec3(-1.35,1.9,1.3),.03),sdCap(q,vec3(-2.2,1.85,-1.3),vec3(-1.35,1.9,-1.3),.03)); if(mg<d){d=mg;m=6.;}\n  float an=sdCap(q,vec3(-4.4,1.4,.5),vec3(-4.4,4.4,.5),.015); if(an<d){d=an;m=6.;}\n  // ramp\n  float a=.17+bs.x*1.28; float ca=cos(a),sa=sin(a);\n  vec3 rq=q-vec3(5.55,-.05,0.); float u=rq.x*sa+rq.y*ca, v=rq.x*ca-rq.y*sa;\n  float rp=sdBox(vec3(u-1.2,v,rq.z),vec3(1.22,.07,1.16));\n  rp=min(rp,sdBox(vec3(u-1.2,v+.06,abs(rq.z)-1.1),vec3(1.2,.1,.05)));\n  if(rp<d){d=rp;m=4.;}\n  // troops\n  if(bs.y>.5){\n    vec3 mb=q-vec3(.85,1.25,0.);\n    float bd=sdBox(mb,vec3(3.9,1.35,1.2));\n    if(bd>.25){ if(bd<d){d=bd;m=0.;} }\n    else {\n      float ix=clamp(floor((q.x+2.8)/.8),0.,8.), iz=clamp(floor((q.z+1.12)/.56),0.,3.);\n      float sd=h21(vec2(ix,iz)+3.7);\n      vec3 mq=q-vec3(-2.4+ix*.8,.06,-.84+iz*.56);\n      mq.xz=rot((sd-.5)*.5)*mq.xz; mq*=1.0/(.94+sd*.1);\n      float mm; if(ix<bs.w-.5){ float md=sdMan(mq,0.,0.,1.,sd,mm)*.9; if(md<d){d=md;m=mm+0.;} }\n    }\n  }\n  return d;}\n\n// ---------------- tank (local +x forward, y up, ground y=0) ----------------\nfloat sdTank(vec3 q,float ty,float rc,float burnt,out float m){\n  m=6.;\n  float hull=sdRB(q-vec3(0.,1.1,0.),vec3(2.8,.62,.98),.1);\n  hull=max(hull,dot(vec2(q.x-2.8,q.y-1.05),normalize(vec2(.8,.6))));\n  hull=max(hull,dot(vec2(-q.x-2.8,q.y-1.45),normalize(vec2(.45,.89))));\n  float up=sdRB(q-vec3(.0,1.55,0.),vec3(2.2,.2,1.06),.08); hull=min(hull,up);\n  float d=hull;\n  float fen=min(sdBox(q-vec3(.0,1.15,1.23),vec3(2.6,.025,.2)),sdBox(q-vec3(.0,1.15,-1.23),vec3(2.6,.025,.2))); if(fen<d){d=fen;m=6.;}\n  float tr=sdRB(vec3(q.x,q.y-.5,abs(q.z)-1.12),vec3(2.95,.48,.21),.2);\n  if(tr<d){d=tr;m=7.;}\n  float wx=clamp(floor((q.x+2.3)/.74),0.,6.); vec3 wq=vec3(q.x-(-2.3+wx*.74+.37),q.y-.38,abs(q.z)-1.33);\n  float wh=sdCylZ(wq,.31,.07); if(wh<d){d=wh;m=8.;}\n  float sp=min(sdCylZ(vec3(q.x-2.55,q.y-.62,abs(q.z)-1.33),.38,.08),sdCylZ(vec3(q.x+2.65,q.y-.58,abs(q.z)-1.33),.3,.08)); if(sp<d){d=sp;m=8.;}\n  float rr=sdCylZ(vec3(q.x-(floor((q.x+1.9)/1.3)*1.3+.65-1.9),q.y-1.02,abs(q.z)-1.3),.1,.06); if(rr<d&&abs(q.x)<1.9){d=rr;m=8.;}\n  // turret\n  vec3 tq=q-vec3(.12,1.9,0.); tq.xz=rot(ty)*tq.xz;\n  float tu=sdEll(tq-vec3(0.,.14,0.),vec3(1.3,.58,1.1));\n  tu=max(tu,-tq.y-.2); tu=smin(tu,sdRB(tq-vec3(-1.1,.12,0.),vec3(.5,.34,.75),.15),.25);\n  float cup=sdCylY(tq-vec3(-.38,.64,.4),.25,.11); tu=min(tu,cup);\n  float hat=sdCylY(tq-vec3(.25,.62,-.42),.21,.05); tu=min(tu,hat);\n  float man=sdRB(tq-vec3(1.18,.12,0.),vec3(.28,.36,.55),.12); tu=min(tu,man);\n  if(tu<d){d=tu;m=6.;}\n  float bx=3.4-rc; float br=sdCap(tq,vec3(1.3,.12,0.),vec3(bx,.14,0.),.072); br=min(br,sdCap(tq,vec3(1.3,.12,0.),vec3(2.2,.13,0.),.115));\n  if(br<d){d=br;m=8.;}\n  float mgn=sdCap(tq,vec3(-.38,.84,.4),vec3(.2,.86,.4),.022); if(mgn<d){d=mgn;m=8.;}\n  float jc=min(sdBox(q-vec3(-1.9,1.78,.7),vec3(.35,.14,.5)),sdBox(q-vec3(-1.5,1.76,-.75),vec3(.45,.12,.28))); if(jc<d){d=jc;m=9.;}\n  float ex=sdBox(q-vec3(-2.3,2.3,0.),vec3(.06,.45,.1)); if(ex<d){d=ex;m=8.;}\n  return d;}\n\n// ---------------- battleship ----------------\nfloat sdShip(vec3 q,float fl,out float m){\n  m=1.;\n  float hw=mix(11.,.5,smoothstep(40.,90.,q.x))*mix(1.,.55,1.-smoothstep(-92.,-70.,q.x));\n  float d=sdBox(vec3(q.x,q.y-2.,q.z*(11./hw)),vec3(92.,8.5,11.))*.7;\n  float deck=sdBox(q-vec3(-4.,10.5,0.),vec3(84.,.8,hw*.9)); d=min(d,deck);\n  float sup=sdBox(q-vec3(12.,16.,0.),vec3(13.,4.5,6.5)); sup=min(sup,sdBox(q-vec3(11.,24.,0.),vec3(8.,3.8,4.6))); sup=min(sup,sdBox(q-vec3(11.,31.,0.),vec3(5.,3.,3.6)));\n  sup=min(sup,sdCap(q,vec3(10.,34.,0.),vec3(10.,56.,0.),.9));\n  float fn=sdBox(q-vec3(-12.,20.,0.),vec3(4.5,9.,3.4)); sup=min(sup,fn);\n  if(sup<d){d=sup;m=2.;}\n  float tx;\n  for(int i=ZERO;i<4;i++){ tx=i==0?62.:(i==1?44.:(i==2?-38.:-58.)); float ty=i==1||i==3?16.:12.;\n    float tu=sdRB(q-vec3(tx,ty,0.),vec3(6.,2.2,5.),.8);\n    float br=min(sdCap(q,vec3(tx+4.,ty+.3,1.4),vec3(tx+22.-fl*.0,ty+3.4,1.4),.62),sdCap(q,vec3(tx+4.,ty+.3,-1.4),vec3(tx+22.,ty+3.4,-1.4),.62));\n    tu=min(tu,br); if(i>1) { tu=min(sdRB(q-vec3(tx,ty,0.),vec3(6.,2.2,5.),.8),min(sdCap(q,vec3(tx-4.,ty+.3,1.4),vec3(tx-22.,ty+3.4,1.4),.62),sdCap(q,vec3(tx-4.,ty+.3,-1.4),vec3(tx-22.,ty+3.4,-1.4),.62))); }\n    if(tu<d){d=tu;m=3.;} }\n  return d;}\n\n// ---------------- transport plane ----------------\nfloat sdPlane(vec3 q,out float m){\n  m=1.;\n  float f=sdCap(q,vec3(-9.5,0.,0.),vec3(7.,0.,0.),1.65);\n  f=smin(f,sdEll(q-vec3(7.5,0.,0.),vec3(3.6,1.65,1.65)),.8);\n  f=smin(f,sdCap(q,vec3(-16.,1.1,0.),vec3(-8.,.2,0.),.5),.8);\n  float cz=abs(q.z); float wch=mix(2.9,1.3,clamp(cz/14.5,0.,1.));\n  float w=sdBox(vec3(q.x-1.-cz*.12,q.y+.85-cz*.02,cz-7.2),vec3(wch,.2,7.4))*.8;\n  float nac=min(sdCap(q,vec3(-2.,-.9,5.2),vec3(3.6,-.9,5.2),.82),sdCap(q,vec3(-2.,-.9,-5.2),vec3(3.6,-.9,-5.2),.82));\n  float fin=sdBox(vec3(q.x+14.5-q.y*.55,q.y-2.8,q.z),vec3(1.7,2.5,.12))*.9;\n  float stb=sdBox(vec3(q.x+14.2,q.y-.5,cz-3.4),vec3(1.5,.12,3.4));\n  float d=min(f,min(w,min(nac,min(fin,stb))));\n  return d;}\n\n// ---------------- bunker ----------------\nfloat sdBunker(vec3 p,vec2 c,float side,out float m){\n  float by=th(c); vec3 q=p-vec3(c.x,by+1.7,c.y);\n  float d=sdBox(q,vec3(7.5,2.7,4.5));\n  d=max(d,-sdBox(q-vec3(0.,.8,-4.4),vec3(3.4,.3,1.4)));\n  d=min(d,sdBox(q-vec3(0.,2.85,-.5),vec3(8.3,.38,5.3)));\n  d=min(d,sdBox(q-vec3(-6.4,-1.2,-5.4),vec3(1.4,1.2,1.1)));\n  d=min(d,sdBox(q-vec3(6.4,-1.2,-5.4),vec3(1.4,1.2,1.1)));\n  if(uBunk>0.){ float r=2.9*uBunk; float dm=length(q-vec3(1.2,.9,-4.2))-r-(vn2(q.xy*1.9)-.5)*1.2; d=max(d,-dm); }\n  m=1.; return d;}\n\n// ---------------- far fleet (domain repeated) ----------------\nfloat sdFleet(vec3 p,out float m){\n  m=0.; if(p.y>40.) return (p.y-38.)*.8;\n  vec2 g=vec2(88.,64.); vec2 id=floor(p.xz/g); vec2 c=(id+.5)*g; float bd=min(g.x*.5-abs(p.x-c.x),g.y*.5-abs(p.z-c.y))+.4;\n  float hs=h21(id*1.93+4.1); if(hs<.42) return bd;\n  vec2 j=(vec2(h21(id+7.7),h21(id+2.9))-.5)*vec2(30.,20.); vec3 q=vec3(p.x-c.x-j.x,p.y,p.z-c.y-j.y);\n  float L=9.+hs*16.; float typ=fract(hs*13.);\n  float d=sdBox(vec3(q.z,q.y-2.2,q.x),vec3(L,2.4,3.4+typ*2.))*.8;\n  float sp=sdBox(vec3(q.z+L*.25,q.y-6.5,q.x),vec3(L*.2,3.2,2.2));\n  if(typ>.5) sp=min(sp,sdCap(vec3(q.z+L*.25,q.y,q.x),vec3(0.,6.,0.),vec3(0.,16.,0.),.5));\n  d=min(d,sp); m=1.;\n  return min(d,bd);}\n\n// ---------------- scene map ----------------\nfloat mapAll(vec3 p,out float m){\n  float d=1e9,dd,mm; m=1.;\n  if(uFleet>.5&&p.z<-70.){ dd=sdFleet(p,mm); if(dd<d){d=dd;m=mm>.5?1800.:0.;} }\n  if(p.z>-14.){ d=(p.y-th(p.xz))*.62; } else d=(p.y+3.6)*.62;\n  // sea-going things\n  for(int i=ZERO;i<6;i++){\n    if(uBS[i].z<.5) continue;\n    vec3 q=uBM[i]*(p-uBP[i]);\n    float db=length(q-vec3(0.,1.,0.))-6.9;\n    if(db>1.){ if(db<d){d=db;m=0.;} }\n    else { dd=sdBoat(q,uBS[i],mm); if(dd<d){d=dd;m=100.*float(i+1)+mm;} }\n  }\n  for(int i=ZERO;i<3;i++){\n    if(uShipS[i].x<=0.) continue;\n    float sc=uShipS[i].x; vec3 q=(p-uShip[i].xyz)/sc; float ca=cos(uShip[i].w),sa=sin(uShip[i].w); q.xz=vec2(ca*q.x-sa*q.z,sa*q.x+ca*q.z);\n    float db=(length(q-vec3(0.,10.,0.))-100.)*sc;\n    if(db>4.*sc){ if(db<d){d=db;m=0.;} }\n    else { dd=sdShip(q,uShipS[i].y,mm)*sc; if(dd<d){d=dd;m=1800.+mm;} }\n  }\n  if(uPlN>0){\n    for(int i=ZERO;i<6;i++){\n      if(i>=uPlN) break;\n      vec3 q=p-uPl[i].xyz; float ca=cos(uPl[i].w),sa=sin(uPl[i].w); q.xz=vec2(ca*q.x-sa*q.z,sa*q.x+ca*q.z);\n      float db=length(q)-17.;\n      if(db>1.){ if(db<d){d=db;m=0.;} } else { dd=sdPlane(q,mm); if(dd<d){d=dd;m=1900.+mm;} }\n    }\n  }\n  // shore set\n  if(p.z>-34.){\n    if(p.z>26.&&p.z<44.){\n      float w=sdBox(p-vec3(0.,1.95,34.),vec3(80.,.85,.55));\n      w=max(w,-(abs(p.x-14.)-3.2)); w=max(w,-(abs(p.x+31.)-2.4)); w+=(vn2(p.xz*1.7)-.5)*.12;\n      if(w<d){d=w;m=2.;}\n    }\n    if(p.z>-10.&&p.z<18.&&p.y<4.){\n      float iy=floor(p.z/5.2+.5); float sh=.5*mod(iy,2.); float ix=floor(p.x/7.+.5-sh);\n      vec2 id=vec2(ix,iy); float hs=h21(id*1.37+3.1);\n      vec2 c=vec2((ix+sh)*7.,iy*5.2)+(vec2(h21(id+7.7),h21(id+1.3))-.5)*2.2;\n      if(hs<.8&&!(uTA.z>.5&&c.x>-5.&&c.x<2.5)){\n        vec3 q=p-vec3(c.x,th(c)+.55,c.y); q.xz=rot(hs*25.)*q.xz;\n        q.xy=mat2(.8,-.6,.6,.8)*q.xy; q.yz=mat2(.8,.6,-.6,.8)*q.yz;\n        dd=min(min(sdBox(q,vec3(1.0,.055,.055)),sdBox(q,vec3(.055,1.0,.055))),sdBox(q,vec3(.055,.055,1.0))); if(dd<d){d=dd;m=3.;}\n      }\n    }\n    float db=length(p-vec3(30.,th(vec2(30.,62.))+2.,62.))-13.;\n    if(db>1.){ if(db<d){d=db;m=0.;} } else { dd=sdBunker(p,vec2(30.,62.),1.,mm); if(dd<d){d=dd;m=4.;} }\n    db=length(p-vec3(-44.,th(vec2(-44.,74.))+2.,74.))-13.;\n    if(db>1.){ if(db<d){d=db;m=0.;} } else { dd=sdBunker(p,vec2(-44.,74.),-1.,mm); if(dd<d){d=dd;m=4.;} }\n    if(uTA.z>.5){\n      vec3 q=uTM*(p-uTP);\n      db=length(q-vec3(0.,1.3,0.))-4.6;\n      if(db>1.){ if(db<d){d=db;m=0.;} } else { dd=sdTank(q,uTA.x,uTA.y,0.,mm); if(dd<d){d=dd;m=1600.+mm;} }\n    }\n    {\n      vec3 q=uWM*(p-uWP);\n      db=length(q-vec3(0.,1.3,0.))-4.6;\n      if(db>1.){ if(db<d){d=db;m=0.;} } else { dd=sdTank(q,.7,0.,1.,mm); if(dd<d){d=dd;m=1700.+mm;} }\n    }\n    if(uMenN>0){\n      db=length(p-uMenB.xyz)-uMenB.w;\n      if(db>1.5){ if(db<d){d=db;m=0.;} }\n      else {\n        for(int i=ZERO;i<14;i++){\n          if(i>=uMenN) break;\n          vec4 a=uMen[i], b=uMenX[i];\n          vec3 q=p-vec3(a.x,b.x,a.y);\n          float dm=length(q-vec3(0.,.9,0.))-1.5;\n          if(dm>.6){ if(dm<d){d=dm;m=0.;} }\n          else { q.xz=vec2(cos(a.z)*q.x-sin(a.z)*q.z,sin(a.z)*q.x+cos(a.z)*q.z); dd=sdMan(q,a.w,b.w,b.y,b.z,mm); if(dd<d){d=dd;m=2000.+mm;} }\n        }\n      }\n    }\n  }\n  return d;}\n\nvec3 calcN(vec3 p){\n  float e0=.0012*(1.+length(p-uCamP)*.03); float m; vec3 n=vec3(0.);\n  for(int i=ZERO;i<4;i++){ vec3 e=.5773*(2.*vec3(float(((i+3)>>1)&1),float((i>>1)&1),float(i&1))-1.); n+=e*mapAll(p+e*e0,m); }\n  return normalize(n);}\nfloat calcAO(vec3 p,vec3 n){ float m; float a=0.; for(int i=ZERO;i<3;i++){ float h=.12+float(i)*.28; float d=mapAll(p+n*h,m); a+=(h-d)*(1.-float(i)*.28); } return clamp(1.-a*1.4,.15,1.); }\n\n// ---------------- sky ----------------\nvec3 sky(vec3 rd,bool cl){\n  float y=clamp(rd.y,-.05,1.);\n  vec3 zen=vec3(.20,.27,.36),mid=vec3(.42,.48,.55),hor=mix(vec3(.60,.63,.66),vec3(.95,.78,.58),pow(max(dot(normalize(vec3(rd.x,0.,rd.z)),normalize(vec3(uSun.x,0.,uSun.z))),0.),3.));\n  vec3 c=mix(hor,mid,smoothstep(0.,.2,y)); c=mix(c,zen,smoothstep(.15,.85,y));\n  float sd=max(dot(rd,uSun),0.);\n  c+=vec3(1.,.7,.42)*pow(sd,6.)*.4+vec3(1.,.82,.58)*pow(sd,48.)*.7;\n  c+=vec3(1.,.92,.75)*smoothstep(.9992,.9998,sd)*uSky*4.;\n  if(rd.y>.005){\n    vec2 cp=rd.xz/(rd.y+.14)*1.2+vec2(uT*.012,0.);\n    float cv=cl?fbm5(vec3(cp*.8,uT*.008)):fbm3(vec3(cp*.8,uT*.008));\n    float cov=smoothstep(.34,.66,cv)*smoothstep(0.,.1,rd.y);\n    vec3 cc=mix(vec3(.38,.42,.48),vec3(.97,.88,.76),clamp(pow(sd,1.6)*1.1+.12-cov*.25,0.,1.));\n    cc=mix(cc,vec3(.24,.27,.32),smoothstep(.5,.85,cv)*.85);\n    c=mix(c,cc,cov*.92);\n  }\n  return c;}\n\n// ---------------- shading ----------------\nvec3 fireLight(vec3 p,vec3 n){\n  vec3 a=vec3(0.);\n  for(int i=ZERO;i<4;i++){ if(uLit[i].w<=0.) continue; vec3 L=uLit[i].xyz-p; float d2=dot(L,L); L*=inversesqrt(d2); a+=vec3(1.,.5,.2)*uLit[i].w*(max(dot(n,L),0.)*.8+.2)/(1.+d2*.012); }\n  return a;}\nvec3 lit(vec3 p,vec3 n,vec3 rd,vec3 al,float spec,float rough,float ao){\n  float dif=max(dot(n,uSun),0.);\n  vec3 amb=mix(vec3(.10,.095,.09),vec3(.30,.36,.45),n.y*.5+.5)*ao;\n  vec3 c=al*(vec3(1.,.84,.66)*dif*.85*(.35+.65*ao)+amb+fireLight(p,n)*ao);\n  vec3 h=normalize(uSun-rd); float sp=pow(max(dot(n,h),0.),rough)*spec*dif*.6;\n  c+=vec3(1.,.85,.6)*sp;\n  float fr=pow(1.-max(dot(n,-rd),0.),4.); c+=sky(reflect(rd,n),false)*fr*spec*.25*ao;\n  return c;}\nfloat star(vec2 p){ float a=atan(p.y,p.x)+1.5708; float k=6.2832/5.; a=abs(mod(a,k)-k*.5); return cos(a)*length(p)-(.5/ (1.+ (1.-cos(2.*a - 0.)) *0.0 )) ; }\n\nvec3 shadeObj(float m,vec3 p,vec3 n,vec3 rd,float ao){\n  vec3 al=vec3(.3); float spec=.1,rough=20.;\n  float k=floor(m/100.); float mi=m-k*100.;\n  float nz=vnoise(p*3.1);\n  if(m<10.){ // shore set\n    if(m<1.5){ // terrain\n      float z=p.z; vec2 ww; float wl=smoothstep(-1.5,7.,z+(vn2(p.xz*.12)-.5)*7.+sin(uT*.5+p.x*.1)*.8);\n      vec3 sand=mix(vec3(.60,.52,.40),vec3(.50,.43,.33),vn2(p.xz*.8)), wet=vec3(.30,.27,.22);\n      al=mix(wet,sand,wl);\n      float gr=smoothstep(44.,70.,z+(vn2(p.xz*.09)-.5)*30.); vec3 grass=mix(vec3(.19,.22,.11),vec3(.27,.25,.15),vn2(p.xz*.35)); grass=mix(grass,vec3(.16,.19,.09),vn2(p.xz*1.3)*.6);\n      al=mix(al,grass,gr);\n      float sl=smoothstep(.55,.85,1.-n.y); al=mix(al,vec3(.32,.28,.22),sl*.7);\n      float sc=smoothstep(.7,.85,vn2(p.xz*.23+4.)); al*=1.-sc*.35*(1.-gr*.5);   // blast scorch\n      float cr=h21(floor(p.xz/16.)+9.3); vec2 cc=(floor(p.xz/16.)+.5+(vec2(h21(floor(p.xz/16.)+1.7),h21(floor(p.xz/16.)+5.9))-.5)*.6)*16.; float cd=length(p.xz-cc)/(2.2+cr*3.); if(cr>.55&&z>6.){ al*=mix(.45,1.,smoothstep(.55,1.,cd)); al=mix(al,sand*1.15,smoothstep(.9,1.15,cd)*(1.-smoothstep(1.15,1.5,cd))*.5); }\n      al*=.8+.4*nz; spec=.05*(1.-wl)*3.; rough=14.;\n    } else if(m<2.5){ al=vec3(.40,.39,.36)*(.7+.5*nz)*(.75+.25*smoothstep(.45,.6,vn2(p.xy*2.))); }\n    else if(m<3.5){ al=mix(vec3(.10,.09,.08),vec3(.26,.14,.07),vnoise(p*5.)); spec=.3; }\n    else { al=vec3(.42,.41,.38)*(.65+.55*nz); if(p.y-th(vec2(30.,62.))>1.7&&false) al*=1.; float sooty=smoothstep(.0,1.,uBunk)*(1.-smoothstep(0.,3.,length(p-vec3(31.2,th(vec2(30.,62.))+2.6,57.8))))*0.9; al=mix(al,vec3(.04,.035,.03),sooty);\n      if(p.z<58.&&abs(p.y-th(vec2(30.,62.))-2.5)<.35&&abs(p.x-30.)<3.4) al*=.12; }\n  } else if(k<7.){ // boats\n    int bi=int(k)-1; vec3 q=uBM[bi]*(p-uBP[bi]); vec3 nl=uBM[bi]*n;\n    float pl=smoothstep(.42,.5,abs(fract(q.y*3.2)-.5));\n    if(mi<1.5){ al=vec3(.27,.30,.29); al*=1.-.25*pl; al=mix(vec3(.05,.07,.06),al,smoothstep(-.1,.35,q.y)); al*=.75+.5*nz; al=mix(al,vec3(.3,.18,.1),smoothstep(.55,.75,vn2(vec2(q.x*2.,q.y*.5)+3.))*.35*smoothstep(.2,1.,q.y)); spec=.12; }\n    else if(mi<2.5){ al=vec3(.30,.22,.14)*(.8+.3*smoothstep(.42,.5,abs(fract(q.x*1.7)-.5)))*(.8+.4*nz); spec=.25; rough=40.; }\n    else if(mi<3.5){ al=vec3(.20,.23,.17)*(.75+.5*nz); }\n    else if(mi<4.5){ al=vec3(.12,.135,.125)*(.7+.6*nz); float rib=smoothstep(.38,.5,abs(fract(q.x*4.2+q.y*4.2)-.5)); al*=.75+.45*rib; spec=.08; rough=40.; }\n    else if(mi<5.5){ al=vec3(.22,.25,.21)*(.8+.4*nz); }\n    else if(mi<6.5){ al=vec3(.03); spec=.4; }\n    else if(mi<7.5){ al=vec3(.20,.20,.125)*(.8+.4*nz); }\n    else if(mi<8.5){ al=vec3(.5,.37,.29); }\n    else if(mi<9.5){ al=vec3(.13,.15,.095)*(.6+.8*vnoise(p*34.)); }\n    else if(mi<10.5){ al=vec3(.17,.15,.10); }\n    else if(mi<11.5){ al=vec3(.04,.037,.033); spec=.4; }\n    else { al=vec3(.1,.07,.045); spec=.3; }\n  } else if(k<18.){ // tanks\n    bool wr=k>=17.; vec3 q; if(wr) q=uWM*(p-uWP); else q=uTM*(p-uTP);\n    vec3 base=wr?vec3(.075,.07,.065):uTCol;\n    al=base*(.8+.4*nz); spec=.18; rough=22.;\n    if(mi>6.5&&mi<7.5){ al=vec3(.05,.045,.04)*(.7+.6*smoothstep(.42,.5,abs(fract(q.x*5.5-uTA.w)-.5))); spec=.1; }\n    else if(mi>7.5&&mi<8.5){ al=vec3(.06,.06,.055); spec=.4; }\n    else if(mi>8.5){ al=base*vec3(.8,.72,.6); }\n    \n    if(wr){ al*=.5+.6*smoothstep(.3,.7,vn2(p.xz*1.4)); al=mix(al,vec3(.28,.12,.04),smoothstep(.55,.9,vnoise(p*5.))*.5); }\n    \n  } else if(k<19.){ // ship\n    al=vec3(.40,.43,.45)*(.75+.5*nz); if(mi>2.5) al=vec3(.34,.37,.38); spec=.1; }\n  else if(k<20.){ // plane\n    vec3 pq=p-uPl[0].xyz; al=vec3(.18,.20,.15)*(.8+.4*nz); spec=.1;\n    float band=mod(floor((p.x+p.z)*.0+ (p.x*.0)),2.);\n    al*=.9; }\n  else { // beach men\n    if(mi<7.5) al=vec3(.20,.20,.125)*(.8+.4*nz); else if(mi<8.5) al=vec3(.5,.37,.29); else if(mi<9.5) al=vec3(.13,.15,.095)*(.6+.8*vnoise(p*34.)); else if(mi<10.5) al=vec3(.17,.15,.10); else if(mi<11.5) { al=vec3(.04,.037,.033); spec=.4; } else { al=vec3(.1,.07,.045); spec=.3; }\n  }\n  vec3 col=lit(p,n,rd,al,spec,rough,ao);\n  if(p.y<2.6&&p.z<12.){ vec2 gw; float wy=p.y-waveH(p.xz,uT,gw); float ft=(1.-smoothstep(0.,.4,wy))*(.5+.6*vnoise(p*5.5+vec3(0.,uT*.8,0.))); col*=1.-.3*(1.-smoothstep(0.,1.3,wy)); col=mix(col,vec3(.62,.64,.62),clamp(ft,0.,1.)*.8); }\n  return col;\n}\n\nvec3 plumes(vec3 ro,vec3 rd,float tmax,vec3 col,out float Tr){\n  Tr=1.;\n  for(int i=ZERO;i<3;i++){\n    if(uSm[i].w<=0.) continue;\n    vec3 b=uSm[i].xyz; vec3 cen=b+vec3(11.,34.,7.5); float R=48.;\n    vec3 oc=ro-cen; float bq=dot(oc,rd),cq=dot(oc,oc)-R*R,hh=bq*bq-cq; if(hh<0.) continue;\n    hh=sqrt(hh); float t0=max(-bq-hh,0.),t1=min(-bq+hh,tmax); if(t1<=t0) continue;\n    const int N=14; float dt=(t1-t0)/float(N); float j=h21(gl_FragCoord.xy+uT*3.1+float(i));\n    vec3 acc=vec3(0.); float T=1.;\n    for(int s=0;s<N;s++){\n      vec3 p=ro+rd*(t0+(float(s)+j)*dt); float h=p.y-b.y; if(h<0.) continue;\n      vec2 ax=b.xz+h*vec2(.32,.22); float r=length(p.xz-ax); float w=1.8+h*.19;\n      float env=exp(-r*r/(w*w))*smoothstep(0.,5.,h)*(1.-smoothstep(42.,90.,h));\n      if(env<.01) continue;\n      float tb=fbm3(vec3(p.xz*.13,p.y*.09-uT*.55));\n      float dn=env*(.5+2.2*tb)*uSm[i].w;\n      float ex=dn*.8;\n      vec3 lc=mix(vec3(.022,.02,.02),vec3(.25,.22,.19),clamp(h*.006+tb*.2,0.,1.));\n      lc+=vec3(1.,.4,.1)*exp(-h*.2)*.8*uSm[i].w;\n      acc+=T*lc*ex*dt; T*=exp(-ex*dt);\n      if(T<.03) break;\n    }\n    col=col*T+acc; Tr*=T;\n  }\n  return col;}\n\nvoid main(){\n  vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y;\n  float cr=cos(uRoll),sr=sin(uRoll); uv=mat2(cr,-sr,sr,cr)*uv;\n  vec3 fw=normalize(uCamT-uCamP),rt=normalize(cross(fw,vec3(0,1,0))),up=cross(rt,fw);\n  float tf=tan(uFov*.5); vec3 rd=normalize(fw+(uv.x*rt+uv.y*up)*tf*2.); vec3 ro=uCamP;\n  // water plane\n  float tW=1e9; vec2 gW=vec2(0.);\n  if(rd.y<-.0002){\n    float ta=max((ro.y-1.4)/(-rd.y),0.), tb=(ro.y+1.4)/(-rd.y);\n    if(tb>0.){\n      if(ta>140.){ tW=-ro.y/rd.y; }\n      else{\n        float tt=ta,dt=(tb-ta)/12.; vec2 g;\n        for(int i=0;i<12;i++){ vec3 p=ro+rd*(tt+dt); float h=waveH(p.xz,uT,g);\n          if(p.y<h){ float lo=tt,hi=tt+dt; for(int k=0;k<4;k++){ float mid=.5*(lo+hi); vec3 pm=ro+rd*mid; if(pm.y<waveH(pm.xz,uT,g)) hi=mid; else lo=mid; } tW=hi; break; }\n          tt+=dt; }\n        if(tW>1e8) tW=tb;\n      }\n    }\n  }\n  // objects/terrain\n  float t=.3,m=0.; bool hit=false; float tmax=min(tW,2600.);\n  // skip empty space: nothing of interest before the camera is within range; start at 0\n  for(int i=0;i<104;i++){ vec3 p=ro+rd*t; float d=mapAll(p,m); if(d<.0009*t+.0006&&m>.5){hit=true;break;} t+=max(d,.0025*t+.02)*.92; if(t>tmax) break; }\n  vec3 col; float tEnd; float tAO=1.;\n  if(hit&&t<tW){\n    vec3 p=ro+rd*t; vec3 n=calcN(p); tEnd=t; float ao=t<90.?calcAO(p,n):1.;\n    col=shadeObj(m,p,n,rd,ao);\n  } else if(tW<1e8){\n    tEnd=tW; vec3 p=ro+rd*tW; vec2 g; float wh=waveH(p.xz,uT,g);\n    float fall=1./(1.+tW*.012);\n    vec3 n=normalize(vec3(-g.x*.9*fall,1.,-g.y*.9*fall)); n.xz+=(vec2(vn2(p.xz*2.7+uT*.6),vn2(p.xz*2.9-uT*.5))-.5)*.16*fall; n=normalize(n);\n    vec3 r=reflect(rd,n); r.y=abs(r.y);\n    float fr=.02+.98*pow(1.-max(dot(n,-rd),0.),5.);\n    vec3 rc=sky(normalize(mix(r,vec3(r.x,.12,r.z),.55)),false); rc=mix(rc,vec3(dot(rc,vec3(.33))),.25);\n    float depth=-th(p.xz);\n    vec3 deep=vec3(.025,.042,.05);\n    vec3 shal=mix(vec3(.15,.14,.11),vec3(.06,.10,.095),smoothstep(0.,2.2,depth));\n    vec3 base=mix(shal,deep,smoothstep(.2,3.,depth));\n    base*=.55+.5*max(dot(n,uSun),0.)+.25;\n    col=mix(base,rc*.6,fr);\n    col+=vec3(1.,.8,.55)*pow(max(dot(r,uSun),0.),220.)*1.8*fr*(.4+vn2(p.xz*.5+uT)*1.);\n    // foam\n    float crest=smoothstep(.62,1.05,wh/1.0+ (vnoise(vec3(p.xz*1.3,uT*.4))-.5)*.5);\n    float foam=crest*.4*fall;\n    float surf=(1.-smoothstep(0.,.55,depth))*(.4+.6*sin(p.z*1.1-uT*1.5+vn2(p.xz*.4)*4.)); float lines=(1.-smoothstep(.6,.9,abs(depth-.9+.8*sin(uT*.5))))*smoothstep(.55,.9,sin(p.z*1.7-uT*2.1+vn2(p.xz*.3)*5.))*.55;\n    foam=max(foam,clamp(surf*.7+lines*.6,0.,1.)*.32);\n    for(int i=ZERO;i<6;i++){ if(uBS[i].z<.5) continue; vec3 q=uBM[i]*(p-uBP[i]);\n      vec2 dq=max(abs(q.xz)-vec2(5.3,1.55),0.); float hd=length(dq);\n      float f=(exp(-hd*hd*.35)*.55+exp(-hd*1.6)*.55)*(.6+.7*vnoise(vec3(q.xz*1.5,uT*.7))); float bw=smoothstep(2.,5.2,q.x)*exp(-hd*.5); f+=bw*.5; float bh=-q.x-5.; if(bh>0.){ f=max(f,exp(-pow(q.z/(1.1+.13*bh),2.))*exp(-bh*.045)*(.55+.5*vnoise(vec3(q.xz*.8,uT)))); }\n      f*=1.-smoothstep(0.,2.5,abs(q.y)); foam=max(foam,f*.8);\n      col*=1.-.25*exp(-dot(dq,dq)*.3);\n    }\n    foam*=.55+.8*vn2(p.xz*3.2+uT*.3);\n    col=mix(col,vec3(.78,.8,.78)*(.55+.45*max(dot(n,uSun),0.)+.15),clamp(foam,0.,1.));\n    col+=fireLight(p,n)*.08*vec3(1.);\n    // lit by fires: orange glints\n    for(int i=ZERO;i<4;i++){ if(uLit[i].w<=0.) continue; vec3 L=uLit[i].xyz-p; float d2=dot(L,L); L=normalize(L); col+=vec3(1.,.45,.15)*pow(max(dot(r,L),0.),60.)*uLit[i].w*fr*(2.+4./(1.+d2*.0008))*.5/(1.+d2*.0004); }\n  } else { tEnd=3000.; col=sky(rd,true); }\n  // haze\n  float hz=1.-exp(-tEnd*uFogD*(1.+2.2*exp(-max(ro.y+rd.y*tEnd*.5,0.)*.06)));\n  vec3 fogc=uFogCol+vec3(.1,.05,.02)*uSky*.35;\n  if(tEnd<2900.) col=mix(col,fogc,clamp(hz,0.,1.)); else col=mix(col,fogc,.18);\n  float Tr; col=plumes(ro,rd,tEnd,col,Tr);\n  col*=1.15; col=(col*(2.51*col+.03))/(col*(2.43*col+.59)+.14); col=pow(clamp(col,0.,1.),vec3(.88));\n  outc=vec4(col,1.);\n}\n";
 const DD3_POST = "#version 300 es\nprecision highp float;\nuniform sampler2D uTex; uniform vec2 uRes; uniform float uT, uFade, uFlash, uDesat;\nuniform vec4 uP0[64]; uniform vec4 uP1[64]; uniform int uPN;\nin vec2 vUv; out vec4 outc;\nfloat hh(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}\nvoid main(){\n  vec2 uv=vUv; vec2 c=uv-.5; float r2=dot(c,c);\n  vec2 ca=c*r2*.014;\n  vec3 col; col.r=texture(uTex,uv+ca).r; col.g=texture(uTex,uv).g; col.b=texture(uTex,uv-ca).b;\n  { vec2 tx=1./vec2(textureSize(uTex,0)); vec3 n1=texture(uTex,uv+vec2(tx.x,0.)).rgb,n2=texture(uTex,uv-vec2(tx.x,0.)).rgb,n3=texture(uTex,uv+vec2(0.,tx.y)).rgb,n4=texture(uTex,uv-vec2(0.,tx.y)).rgb;\n    float lc=dot(col,vec3(.3,.5,.2)),l1=dot(n1,vec3(.3,.5,.2)),l2=dot(n2,vec3(.3,.5,.2)),l3=dot(n3,vec3(.3,.5,.2)),l4=dot(n4,vec3(.3,.5,.2));\n    float ct=max(max(l1,l2),max(l3,max(l4,lc)))-min(min(l1,l2),min(l3,min(l4,lc)));\n    col=mix(col,(col*2.+n1+n2+n3+n4)/6.,smoothstep(.03,.2,ct)*.8); }\n  vec3 b=vec3(0.);\n  b+=textureLod(uTex,uv,3.).rgb*.30; b+=textureLod(uTex,uv,4.).rgb*.30; b+=textureLod(uTex,uv,5.).rgb*.22; b+=textureLod(uTex,uv,6.).rgb*.18;\n  float lb=dot(b,vec3(.3,.5,.2)); col+=b*.42*smoothstep(.4,.95,lb)+b*.03;\n  float asp=uRes.x/uRes.y;\n  for(int i=0;i<64;i++){ if(i>=uPN) break; vec4 p=uP0[i]; vec4 q=uP1[i]; if(q.x<=0.) continue;\n    vec2 d=(uv-p.xy)*vec2(asp,1.); vec2 v=q.yz*vec2(asp,1.); float vl=length(v);\n    float rl=p.z*3.2+vl; if(dot(d,d)>rl*rl) continue;\n    vec2 vd=vl>1e-5?v/vl:vec2(1.,0.);\n    float along=dot(d,vd), perp=dot(d,vec2(-vd.y,vd.x));\n    float ac=clamp(along,-vl,0.); vec2 dd=vec2(along-ac,perp);\n    float k=p.w;\n    float ang=atan(d.y,d.x); float wob=1.+.22*sin(ang*3.+q.w*6.)+.12*sin(ang*7.-q.w*3.+uT*1.3);\n    float rr=length(dd)/(p.z*(k>1.5&&k<3.5||k>5.5&&k<6.5?wob:1.));\n    if(k<.5){ float g=exp(-rr*rr*3.5); col+=vec3(1.,.45,.12)*g*q.x*1.5; }\n    else if(k<1.5){ float g=exp(-rr*rr*14.); col+=vec3(1.,.85,.55)*g*q.x*2.4; col+=vec3(1.,.5,.2)*exp(-rr*rr*3.)*q.x*.4; }\n    else if(k<2.5){ float g=exp(-rr*rr*3.2); col=mix(col,vec3(.05,.04,.035)+col*.12,clamp(g*q.x*.8,0.,.92)); }\n    else if(k<3.5){ float g=exp(-rr*rr*2.6); col=mix(col,vec3(.78,.8,.8)*(.55+.4*lb)+vec3(.12,.07,.02)*q.x,clamp(g*q.x*.85,0.,.75)); }\n    else if(k<4.5){ float g=exp(-rr*rr*7.); col+=vec3(1.,.9,.6)*g*q.x*3.2+vec3(1.,.5,.15)*exp(-rr*rr*1.4)*q.x*.8; }\n    else if(k<5.5){ float g=exp(-rr*rr*9.); col+=vec3(1.,.55,.18)*g*q.x*1.8; }\n    else if(k<6.5){ float g=exp(-rr*rr*2.6); col=mix(col,vec3(.5,.43,.34)*(.6+.5*lb),clamp(g*q.x*.7,0.,.85)); }\n    else { float g=exp(-rr*rr*8.); col+=vec3(.9,.95,1.)*g*q.x*1.2; }\n  }\n  col+=uFlash*vec3(1.,.82,.55)*(.25+.75*(1.-smoothstep(0.,.9,r2*3.)));\n  col=1.-exp(-col*1.2);\n  float l=dot(col,vec3(.3,.55,.15)); col=mix(vec3(l),col,uDesat);\n  col*=mix(vec3(.95,1.,1.05),vec3(1.04,1.,.93),smoothstep(.1,.65,l));\n  col=col*col*(3.-2.*col)*.7+col*.3; col=pow(col,vec3(1.08));\n  col*=1.-smoothstep(.22,.95,r2*2.4)*.55;\n  float gr=hh(uv*uRes+fract(uT*7.3)*91.)-.5; col+=gr*.05*(1.-l*.6);\n  col*=1.-uFade; outc=vec4(clamp(col,0.,1.),1.);\n}\n";
@@ -4095,12 +4799,12 @@ function ddgMk(gl, fs) { const p = gl.createProgram(); [[gl.VERTEX_SHADER, DD_VS
 // Start compiling in the background as soon as the campaign menu opens, so the cutscene doesn't stall on shader compile.
 function ddgWarm() {
     if (DDGL.ok !== null || DDGL.pre) return;
-    try { if (typeof window !== 'undefined' && window.DD_3D === false) return; const g = ddgGL(); try { g.gl.getExtension('KHR_parallel_shader_compile'); } catch (e2) {} g.ps = ddgMk(g.gl, DD3_SCENE); g.pp = ddgMk(g.gl, DD3_POST); DDGL.pre = g; } catch (e) { DDGL.pre = null; }
+    try { if (typeof window === 'undefined' || window.DD_3D !== true) return; const g = ddgGL(); try { g.gl.getExtension('KHR_parallel_shader_compile'); } catch (e2) {} g.ps = ddgMk(g.gl, DD3_SCENE); g.pp = ddgMk(g.gl, DD3_POST); DDGL.pre = g; } catch (e) { DDGL.pre = null; }
 }
 function ddgInit(w, h) {
     if (DDGL.ok !== null) return DDGL.ok;
     try {
-        if (typeof window !== 'undefined' && window.DD_3D === false) throw new Error('disabled');
+        if (typeof window === 'undefined' || window.DD_3D !== true) throw new Error('disabled');
         let g = DDGL.pre; DDGL.pre = null;
         if (!g) { g = ddgGL(); g.ps = ddgMk(g.gl, DD3_SCENE); g.pp = ddgMk(g.gl, DD3_POST); }
         const gl = g.gl;
@@ -4333,23 +5037,23 @@ function ddglRender(t, w, h) {
 
 function drawDDayCutscene(now) {
     if (!campaignCutsceneRunning) return;
-    const t = (now - campaignCutsceneStart) / 1000, w = canvas.width, h = canvas.height;
+    const t = (now - campaignCutsceneStart) / 1000, w = canvas.width, h = canvas.height; DDP.ok = false;
     if (t < .05) { CS2.fired = {}; DDGL.last = 0; DDGL.ms = 0; DDGL.slow = 0; DDGL.runErr = 0; if (DDGL.ok === false && DDGL.why.indexOf('disabled') < 0) DDGL.ok = null; try { initAudio(); } catch (e) {} }
     if (!CS2.grain) CS2.grain = cs2Grain();
     // sound cues
     [1.7, 3.7, 5.4].forEach(function(st, i) { cs2Once('dds' + i, t > st, playDistantArtillery); });
-    [7.1, 8.0, 8.9, 9.7, 10.5, 11.2, 11.9, 12.6, 14.2, 15.0, 15.9, 16.6, 17.7, 18.5, 19.2, 19.9, 24.65].forEach(function(st, i) { cs2Once('dde' + i, t > st, function() { playExplosionSound(.4 + (i % 3) * .1); }); });
+    [7.1, 8.0, 8.9, 9.7, 10.5, 11.2, 11.9, 12.6, 14.1, 14.9, 15.7, 16.3, 16.8, 17.4, 18.2, 19.0, 19.6, 24.85].forEach(function(st, i) { cs2Once('dde' + i, t > st, function() { playExplosionSound(.4 + (i % 3) * .1); }); });
     [14.4, 14.9, 15.5, 16.4, 17.2, 18.1, 19.0, 21.5, 22.0].forEach(function(st, i) { cs2Once('ddm' + i, t > st, playDistantMachineGun); });
-    [24.9].forEach(function(st, i) { cs2Once('ddg' + i, t > st, function() { playExplosionSound(.7); try { playTone(120, 40, .5, .1, 'sawtooth'); } catch (e) {} }); });
-    cs2Once('ddramp', t > DD.cuts[1] + .2, function() { try { playTone(160, 60, .5, .12, 'square'); } catch (e) {} });
+    [24.4].forEach(function(st, i) { cs2Once('ddg' + i, t > st, function() { playExplosionSound(.7); try { playTone(120, 40, .5, .1, 'sawtooth'); } catch (e) {} }); });
+    cs2Once('ddramp', t > 14.8, function() { try { playTone(160, 60, .5, .12, 'square'); } catch (e) {} });
     ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
     let flash = 0, useGL = false;
     if (ddgInit(w, h)) { try { const S3 = ddglRender(Math.min(t, DD.dur), w, h); ctx.drawImage(DDGL.cv, 0, 0, w, h); useGL = true; flash = S3.flash || 0; } catch (e) { DDGL.why = 'render: ' + String(e && e.message).slice(0, 200); if (++DDGL.runErr > 3) DDGL.ok = false; } }
     if (!useGL) {
-    if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h);
+    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } }
     }
     DD.cuts.forEach(function(c) { const d = t - c; if (d >= 0 && d < .16) flash = Math.max(flash, .5 * (1 - d / .16)); });
-    if (!useGL) {
+    if (!useGL && !DDP.ok) {
     m7nBloom(w, h, .3);
     ctx.save(); ctx.globalCompositeOperation = 'saturation'; ctx.fillStyle = 'rgba(128,128,128,' + (t < DD.cuts[0] ? .12 : .3) + ')'; ctx.fillRect(0, 0, w, h); ctx.restore();
     ctx.save(); ctx.globalCompositeOperation = 'soft-light'; const cg = ctx.createLinearGradient(0, 0, 0, h); cg.addColorStop(0, 'rgba(70,100,150,.28)'); cg.addColorStop(1, 'rgba(255,160,80,.24)'); ctx.fillStyle = cg; ctx.fillRect(0, 0, w, h); ctx.restore();

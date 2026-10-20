@@ -3987,21 +3987,28 @@ function ddShot3(t, w, h) {
     ddBoat(bx, by, .98, open, u);
     // wading men: three lanes
     const rampX = bx + 124 + Math.cos(open * 1.05) * 112 * .98, rampY = by - 28 * .98 + Math.sin(open * 1.05) * 112 * .98;
-    const lanes = [h * .74, h * .82, h * .90];
+    const lanes = [h * .72, h * .81, h * .91];
     for (let L = 0; L < 3; L++) {
         const wy = lanes[L];
-        for (let i = 0; i < 5; i++) {
-            const idx = L * 6 + i, ts = 1.0 + i * .95 + L * .45, d = u - ts; if (d < 0) continue;
-            const hit = idx % 4 === 1, hts = ts + 2.6 + (idx % 3) * .5, fall = hit && u > hts ? cs2C((u - hts) / .8, 0, 1) : 0;
-            if (hit && u > hts + 2.6) continue;
-            const sp = 66 + (idx % 5) * 8, x = rampX + 10 + d * sp + (cs2R(idx) - .5) * 20, ph = u * 8 + idx * 1.7, sc = 1.55 + L * .22, depth = Math.max(0, 1 - d * .18);
-            ctx.save(); ctx.globalAlpha = 1 - fall * .0; const bob = Math.abs(Math.sin(ph)) * 3;
-            ddMan(x, wy + 28 * sc * .35 + fall * 22 - bob, sc, ph, true, .12 + fall * 1.2, [10, 0], [16, -2]);
+        for (let i = 0; i < 6; i++) {
+            const idx = L * 6 + i, ts = .9 + i * .85 + L * .4 + (cs2R(idx * 3) - .5) * .3, d = u - ts; if (d < 0) continue;
+            const hit = idx % 4 === 1 || idx === 8, hts = ts + 2.2 + (idx % 3) * .6, fall = hit && u > hts ? cs2C((u - hts) / .8, 0, 1) : 0;
+            const sp = 70 + (idx % 5) * 9, sc = 1.85 + L * .3, x = rampX + 10 + d * sp + (cs2R(idx) - .5) * 70 + L * 24, ph = u * 8 + idx * 1.7;
+            if (hit && u > hts) { // a helmet bobbing where he went down
+                ctx.fillStyle = '#3f4226'; ctx.beginPath(); ctx.ellipse(x + (u - hts) * 8, wy + 4 + Math.sin(u * 3 + idx) * 2, 10, 4, 0, Math.PI, 0); ctx.fill();
+                if (u > hts + 2.4) continue;
+            }
+            ctx.save(); const bob = Math.abs(Math.sin(ph)) * 3.4, fade = hit && u > hts ? 1 - fall : 1; ctx.globalAlpha = fade;
+            ddMan(x, wy + 10 + fall * 30 - bob, sc, ph, true, .1 + fall * 1.3, [10, 0], [16, -2]);
             ctx.restore();
-            if (hit && u > hts - .05 && u < hts + .35) { ctx.fillStyle = 'rgba(240,248,244,.7)'; ctx.beginPath(); ctx.arc(x, wy - 10, 8 + (u - hts) * 40, 0, 7); ctx.fill(); }
+            if (hit && u > hts - .05 && u < hts + .5) { const k = (u - hts) / .5; ctx.fillStyle = 'rgba(240,248,244,' + (.8 * (1 - k)) + ')'; ctx.beginPath(); ctx.ellipse(x, wy - 4, 12 + k * 40, 6 + k * 10, 0, 0, 7); ctx.fill(); }
         }
-        ddWaterBand(wy - 8 + L * 0, w, u + L, 70, .72 - L * .06);
+        ddWaterBand(wy - 6, w, u + L, 80, .74 - L * .06);
+        // bullet strikes walking through the water in this lane
+        for (let q = 0; q < 3; q++) { const k = (u * .9 + q * .33 + L * .21) % 1, bx2 = w * (.30 + k * .5), a2 = Math.sin(k * Math.PI); if (u > 1.5) ddGeyser(bx2, wy + 2, .2 + L * .06, (k * 1.0) % 1 * .6 + .05 + 0 * a2); }
     }
+    // rounds sparking off the boat's hull and ramp
+    if (u > 1.8) for (let q = 0; q < 4; q++) { const ph = (u * 4.3 + q * .37) % 1; if (ph < .25) { const sx2 = bx + 20 + q * 54 + Math.sin(q * 5) * 18, sy2 = by - 20 + (q % 2) * 22; ctx.save(); ctx.globalCompositeOperation = 'lighter'; const g2 = ctx.createRadialGradient(sx2, sy2, 0, sx2, sy2, 22); g2.addColorStop(0, 'rgba(255,240,180,' + (1 - ph * 4) + ')'); g2.addColorStop(1, 'rgba(255,140,50,0)'); ctx.fillStyle = g2; ctx.fillRect(sx2 - 22, sy2 - 22, 44, 44); ctx.restore(); } }
     // explosions + geysers in the surf
     [[1.6, .5, 1.2], [3.1, .62, 1.0], [4.4, .44, .8], [5.6, .7, 1.3], [2.4, .78, .8]].forEach(function(e) { ddGeyser(w * e[1], h * (.7 + (e[1] * 7 % 1) * .1), e[2], u - e[0]); });
     ddBlast(w * .56, h * .62, 1.2, u - 3.6, false); ddBlast(w * .72, h * .60, 1.4, u - 5.2, false);
@@ -4035,7 +4042,7 @@ function ddShot4(t, w, h) {
     // background tanks
     [{ x0: .34, s: .42, st: 1.6 }, { x0: .22, s: .34, st: 2.0 }].forEach(function(b, i) { const k = cs2C((u - b.st) / 6, 0, 1); const bx = w * (b.x0 + k * .16), by = h * (.63 + i * .02); const f = (u > 3.4 + i * .7 && u < 3.9 + i * .7) ? 1 - (u - 3.4 - i * .7) / .5 : 0; ddTank(bx, by, b.s, u + i, f, uk); });
     // soldiers dashing up the beach behind the hero tank
-    for (let i = 0; i < 8; i++) { const ts = .2 + i * .35, d = u - ts; if (d < 0) continue; const x = w * (.36 + (i % 4) * .035) + d * (58 + (i % 3) * 8), y = h * (.70 + (i % 3) * .03), ph = u * 9 + i * 1.7; ddMan(x, y - Math.abs(Math.sin(ph)) * 3, 1.9, ph, true, .14, [10, 0], [16, -2]); }
+    for (let i = 0; i < 8; i++) { const ts = .2 + i * .35, d = u - ts; if (d < 0) continue; const x = w * (.40 + (i % 4) * .06) + d * (52 + (i % 3) * 14), y = h * (.69 + (i % 4) * .035), ph = u * 9 + i * 1.7; ddMan(x, y - Math.abs(Math.sin(ph)) * 3, 1.9, ph, true, .14, [10, 0], [16, -2]); }
     // hero tank
     const hk = cs2C(u / 6.5, 0, 1), tx = cs2L(w * .06, w * .43, cs2E(hk) * .35 + hk * .65), ty = h * .83 - hk * 10, tsz = cs2L(1.35, 1.62, hk);
     const f1 = u > 1.4 && u < 1.95 ? 1 - (u - 1.4) / .55 : 0, f2 = u > 3.7 && u < 4.2 ? 1 - (u - 3.7) / .5 : 0;

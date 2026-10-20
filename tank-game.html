@@ -4126,18 +4126,20 @@ function ddpMix(a, b, k) { return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]
 function ddpRGB(c, a) { return 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + (a === undefined ? 1 : a) + ')'; }
 
 /* ---------- sky & sea ---------- */
-function ddpSky(hz, t, pan, sx, heat, dim) {
-    const P = ddpEnsure(), top = ddpMix([58, 72, 84], [38, 44, 50], dim || 0), mid = ddpMix([132, 148, 152], [96, 100, 100], dim || 0);
-    const g = ctx.createLinearGradient(0, hz - 760, 0, hz); g.addColorStop(0, ddpRGB(top)); g.addColorStop(.55, ddpRGB(mid)); g.addColorStop(.86, 'rgb(212,196,164)'); g.addColorStop(1, 'rgb(236,208,160)');
+function ddpSky(hz, t, pan, sx, heat, dim, pal) {
+    const P = ddpEnsure(), top = pal ? pal.top : ddpMix([58, 72, 84], [38, 44, 50], dim || 0), mid = pal ? pal.mid : ddpMix([132, 148, 152], [96, 100, 100], dim || 0);
+    const g = ctx.createLinearGradient(0, hz - 760, 0, hz); g.addColorStop(0, ddpRGB(top)); g.addColorStop(.55, ddpRGB(mid)); g.addColorStop(.86, pal ? ddpRGB(pal.low) : 'rgb(212,196,164)'); g.addColorStop(1, pal ? ddpRGB(pal.hor) : 'rgb(236,208,160)');
     ctx.fillStyle = g; ctx.fillRect(-600, hz - 900, 2800, 900 + 4);
     // sun bleed
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     const sy = hz - 70, sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, 640); sg.addColorStop(0, 'rgba(255,214,150,.78)'); sg.addColorStop(.18, 'rgba(255,170,100,.34)'); sg.addColorStop(.6, 'rgba(255,130,70,.08)'); sg.addColorStop(1, 'rgba(255,120,60,0)'); ctx.fillStyle = sg; ctx.fillRect(sx - 700, sy - 700, 1400, 1400);
     ctx.restore();
+    if (pal && pal.streaks) { ctx.save(); for (let i = 0; i < 9; i++) { const yy = hz - 60 - i * 62 + Math.sin(i * 2.1) * 12, wd = 700 + ddpR(i * 3) * 900, xx = ((ddpR(i * 7) * 2600 + t * (4 + i) - pan * (.05 + i * .01)) % 2900) - 700, a2 = .22 + .12 * ddpR(i + 5), warm = i < 4; ctx.globalAlpha = a2; ctx.drawImage(warm ? P.warm : P.grey, xx - wd / 2, yy - 20, wd, 56); ctx.globalAlpha = a2 * .6; ctx.drawImage(P.dark, xx - wd * .3, yy + 10, wd * .6, 26); } ctx.restore(); } else {
     // cloud decks (parallax)
     const dA = ((pan * .06) % 1600 + 1600) % 1600, dB = ((pan * .14 + t * 3) % 1600 + 1600) % 1600;
     ctx.globalAlpha = .95; for (let x = -dB - 1600; x < 2400; x += 1600) ctx.drawImage(P.cloudB, x, hz - 560, 1600, 330);
     ctx.globalAlpha = 1; for (let x = -dA - 1600; x < 2400; x += 1600) ctx.drawImage(P.cloudA, x, hz - 400, 1600, 360);
+    }
     // sun-lit underside of clouds
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; const cg = ctx.createRadialGradient(sx, hz - 150, 0, sx, hz - 150, 520); cg.addColorStop(0, 'rgba(255,190,120,.30)'); cg.addColorStop(1, 'rgba(255,150,80,0)'); ctx.fillStyle = cg; ctx.fillRect(sx - 600, hz - 700, 1200, 700); ctx.restore();
     // shafts
@@ -4724,6 +4726,84 @@ function ddpBunkerCU(t, hv) {
     ddpLens(t, [24.9, 25.3], 1600, hv);
     return boom ? Math.max(0, 1 - k / .5) * .7 : 0;
 }
+/* ================= MISSION 2 : painted upgrade (dusk over the bocage) ================= */
+const DDP_M2PAL = { top: [52, 40, 96], mid: [176, 100, 120], low: [250, 160, 98], hor: [255, 196, 120], streaks: true };
+function ddpHedge(y0, hgt, par, t, seed, rim) { // layered hedgerow with poplar tops, lit from the right
+    for (let row = 0; row < 2; row++) {
+        const yy = y0 + row * hgt * .35, sc = 1 - row * .12;
+        ctx.fillStyle = row ? 'rgb(30,42,28)' : 'rgb(40,58,32)'; ctx.fillRect(-700, yy, 3000, hgt * (1.1 - row * .2));
+        for (let i = 0; i < 70; i++) { const x = ((i * 46 + row * 23 - par * (1 + row * .25)) % 3200 + 3200) % 3200 - 700, r = (30 + ddpR(i * 3 + seed + row) * 24) * sc, y = yy + ddpR(i + seed) * 10;
+            ctx.fillStyle = row ? 'rgb(34,48,30)' : 'rgb(46,66,36)'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+            ctx.strokeStyle = 'rgba(255,190,110,' + (.32 - row * .12) + ')'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(x, y, r, -1.1, .1); ctx.stroke(); }
+    }
+    for (let i = 0; i < 9; i++) { const x = ((i * 410 + 120 - par * 1.1) % 3700 + 3700) % 3700 - 800, th = 120 + ddpR(i + seed) * 80; ctx.fillStyle = 'rgb(28,40,26)'; ctx.beginPath(); ctx.moveTo(x, y0 + 14); ctx.quadraticCurveTo(x - 26, y0 - th * .5, x, y0 - th); ctx.quadraticCurveTo(x + 26, y0 - th * .5, x, y0 + 14); ctx.fill(); ctx.strokeStyle = 'rgba(255,190,110,.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y0 - th); ctx.quadraticCurveTo(x + 24, y0 - th * .5, x, y0 + 14); ctx.stroke(); }
+}
+function ddpM2Env(hv, t, pan, o) {
+    o = o || {}; const P = ddpEnsure(), hz = hv * (o.hz || .4), sx = o.sx || 1180;
+    ddpSky(hz, t, pan, sx - pan * .03, 1.1, 0, DDP_M2PAL);
+    // purple ridges
+    [[.16, [92, 66, 112], .55, 70, 1.2], [.3, [70, 56, 96], .35, 46, 2.7]].forEach(function (r) { ctx.fillStyle = ddpRGB(ddpMix(r[1], [255, 170, 110], r[2] * .35)); ctx.beginPath(); ctx.moveTo(-700, hz + 40); for (let x = -700; x <= 2300; x += 40) ctx.lineTo(x, hz - r[3] * (.5 + .5 * Math.sin((x - pan * r[0]) * .0034 + r[4])) - 14 * Math.sin((x - pan * r[0]) * .011 + r[4] * 3)); ctx.lineTo(2300, hz + 40); ctx.closePath(); ctx.fill(); });
+    // farmhouse + church spire + crashed-plane smoke
+    const fx = 930 - pan * .2;
+    ctx.fillStyle = 'rgb(34,28,40)'; ctx.fillRect(fx - 60, hz - 30, 120, 44); ctx.beginPath(); ctx.moveTo(fx - 72, hz - 28); ctx.lineTo(fx - 30, hz - 62); ctx.lineTo(fx + 40, hz - 62); ctx.lineTo(fx + 72, hz - 28); ctx.closePath(); ctx.fill(); ctx.fillRect(fx + 30, hz - 84, 12, 30);
+    ctx.fillRect(fx - 150, hz - 22, 22, 40); ctx.beginPath(); ctx.moveTo(fx - 152, hz - 22); ctx.lineTo(fx - 139, hz - 96); ctx.lineTo(fx - 126, hz - 22); ctx.fill();
+    ctx.fillStyle = 'rgba(255,200,120,.55)'; ctx.fillRect(fx - 54, hz - 62, 96, 2); ctx.fillRect(fx - 76, hz - 30, 4, 4);
+    ddpSmoke(fx + 36, hz - 80, .5, t, 2, 20, 160, .6);
+    ddpSmoke(130 - pan * .12, hz + 10, 1.1, t, 4, 40, 420, .9); ddpSmoke(1620 - pan * .12, hz + 8, 1.0, t, 7, 30, 400, .9);
+    ddpHedge(hz + 28, 70, pan * .6, t, 3);
+    // haze between hedge and field
+    const hg = ctx.createLinearGradient(0, hz + 60, 0, hz + 130); hg.addColorStop(0, 'rgba(255,170,110,.35)'); hg.addColorStop(1, 'rgba(255,170,110,0)'); ctx.fillStyle = hg; ctx.fillRect(-700, hz + 60, 3000, 70);
+    // field in perspective
+    const fy = hz + 100, fg = ctx.createLinearGradient(0, fy, 0, hv + 120); fg.addColorStop(0, 'rgb(138,106,70)'); fg.addColorStop(.35, 'rgb(106,88,56)'); fg.addColorStop(1, 'rgb(44,40,26)'); ctx.fillStyle = fg; ctx.fillRect(-700, fy, 3000, hv - fy + 200);
+    ctx.strokeStyle = 'rgba(255,196,120,.12)'; ctx.lineWidth = 1.4; for (let i = -30; i < 40; i++) { ctx.beginPath(); ctx.moveTo(800 + i * 18, fy); ctx.lineTo(800 + i * 150 - pan * .4 % 150, hv + 100); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(30,20,10,.18)'; for (let i = -30; i < 40; i++) { ctx.beginPath(); ctx.moveTo(800 + i * 18 + 6, fy); ctx.lineTo(800 + i * 150 + 40 - pan * .4 % 150, hv + 100); ctx.stroke(); }
+    // dirt track
+    const tg = ctx.createLinearGradient(0, hv * .5, 0, hv * .93); tg.addColorStop(0, 'rgba(180,140,86,.55)'); tg.addColorStop(1, 'rgba(110,84,52,.85)'); ctx.fillStyle = tg; ctx.beginPath(); ctx.moveTo(-700, hv * .5); ctx.lineTo(2300, hv * .5); ctx.lineTo(2300, hv * .93); ctx.lineTo(-700, hv * .93); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(40,26,14,.35)'; ctx.lineWidth = 3; for (const yy of [.6, .66, .82, .88]) { ctx.beginPath(); ctx.moveTo(-700, hv * yy); ctx.lineTo(2300, hv * yy); ctx.stroke(); }
+    return { hz: hz };
+}
+function ddpTankRoll(x, y, s, t, o) { // Sherman + long shadow + dust + commander + antenna
+    o = o || {}; const P = ddpEnsure();
+    ctx.fillStyle = 'rgba(24,14,34,.4)'; ctx.beginPath(); ctx.ellipse(x - 70 * s, y + 3 * s, 200 * s, 12 * s, 0, 0, 7); ctx.fill();
+    for (let i = 0; i < 12; i++) { const k = (t * .7 + i / 12) % 1, r = (16 + k * 56) * s; ctx.globalAlpha = (1 - k) * .5; ctx.drawImage(P.dust, x - 118 * s - k * 150 * s - r, y - (8 + k * 36) * s - r * .7, r * 2, r * 1.5); ctx.globalAlpha = (1 - k) * .22; ctx.drawImage(P.warm, x - 118 * s - k * 150 * s - r * .8, y - (8 + k * 36) * s - r * .6, r * 1.6, r * 1.2); } ctx.globalAlpha = 1;
+    ddpSherman(x, y, s, t, { gun: o.gun === undefined ? .02 : o.gun, move: 1, wet: 0, haze: o.haze || 0, exhaust: true });
+    if (o.cmd !== false) { ddpBust(x - 17 * s, y - 100 * s, s * 1.35, o.seed || 1, o.haze || 0, t, .5); }
+    ctx.strokeStyle = 'rgba(20,14,12,.9)'; ctx.lineWidth = Math.max(1, 1.6 * s); const ax = x - 104 * s, ay = y - 66 * s; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.quadraticCurveTo(ax - 6 * s, ay - 90 * s, ax + Math.sin(t * 2 + (o.seed || 0)) * 6 * s - 4 * s, ay - 150 * s); ctx.stroke();
+    ctx.fillStyle = '#b5261c'; ctx.beginPath(); ctx.moveTo(ax - 4 * s, ay - 150 * s); ctx.lineTo(ax + 24 * s + Math.sin(t * 6) * 3 * s, ay - 143 * s); ctx.lineTo(ax - 4 * s, ay - 134 * s); ctx.fill();
+}
+function ddpM2Walkers(list, t, hv) { list.forEach(function (m) { ctx.fillStyle = 'rgba(24,14,34,.35)'; ctx.beginPath(); ctx.ellipse(m.x - 40 * m.s, m.y + 2 * m.s, 70 * m.s, 6 * m.s, 0, 0, 7); ctx.fill(); ddpMan(m.x, m.y, m.s, t, { ph: m.ph, run: .5, spd: 5.5, haze: m.haze || 0 }); }); }
+function ddpM2Shot1(t, hv) {
+    const P = ddpEnsure(), pan = t * 46, sh = ddpShakeAt(t, .5), zoom = 1.03 + t * .004;
+    ctx.save(); ctx.translate(800, hv * .6); ctx.rotate(Math.sin(t * .6) * .004); ctx.scale(zoom, zoom); ctx.translate(-800 + sh[0], -hv * .6 + sh[1]);
+    const env = ddpM2Env(hv, t, pan, { hz: .4 });
+    // friendly bombers + contrails
+    for (let g = 0; g < 2; g++) for (let i = 0; i < 4; i++) { const px = ((t * (70 + g * 30) + g * 500 + i * 120 - 200) % 2400) - 400, py = env.hz - 230 - g * 70 - i * 10; ctx.fillStyle = 'rgba(255,214,170,.2)'; for (let k = 1; k < 16; k++) { ctx.beginPath(); ctx.arc(px - 40 - k * 16, py + 2, 2.4 + k * .4, 0, 7); ctx.fill(); } ddpPlane(px, py, .65 - g * .1, -.02, true); }
+    // flak puffs on the ridge
+    for (let i = 0; i < 8; i++) { const st = .8 + i * .7, k = t - st; if (k > 0 && k < 2.4) { const bx = 500 + ddpR(i * 7) * 1000, by = env.hz - 260 + ddpR(i * 3) * 80; ctx.globalAlpha = (1 - k / 2.4) * .8; const R = 12 + k * 16; ctx.drawImage(P.dark, bx - R, by - R, R * 2, R * 2); ctx.globalAlpha = 1; if (k < .1) ddpFlashGlow(bx, by, 28, 1 - k / .1); } }
+    const gy = [hv * .56, hv * .68, hv * .84];
+    // far tank + walkers
+    ddpTankRoll(1420 + t * 8, gy[0], 1.0, t, { seed: 1, haze: .15 });
+    ddpM2Walkers([{ x: 1180 + t * 8, y: gy[0] + 6, s: 1.0, ph: 1, haze: .15 }, { x: 1250 + t * 8, y: gy[0] + 14, s: 1.0, ph: 3, haze: .15 }, { x: 1730 + t * 8, y: gy[0] + 8, s: 1.0, ph: 5, haze: .15 }], t, hv);
+    ddpTankRoll(960 + t * 12, gy[1], 1.7, t, { seed: 2, haze: .05 });
+    ddpM2Walkers([{ x: 1290 + t * 12, y: gy[1] + 12, s: 1.6, ph: 0 }, { x: 1400 + t * 12, y: gy[1] + 22, s: 1.65, ph: 2 }, { x: 1510 + t * 12, y: gy[1] + 10, s: 1.6, ph: 4 }], t, hv);
+    ddpTankRoll(420 + t * 16, gy[2], 2.25, t, { seed: 3 });
+    ddpM2Walkers([{ x: 800 + t * 16, y: gy[2] + 30, s: 2.2, ph: 1 }, { x: 960 + t * 16, y: gy[2] + 44, s: 2.3, ph: 3 }, { x: 1110 + t * 16, y: gy[2] + 28, s: 2.2, ph: 5 }], t, hv);
+    // foreground grass silhouettes
+    ctx.fillStyle = '#0b0a06'; for (let i = 0; i < 70; i++) { const x = ((i * 53 - pan * 2.2) % 1900 + 1900) % 1900 - 150, hh = 90 + ddpR(i * 3) * 190, sw = Math.sin(t * 1.3 + i) * 10; ctx.beginPath(); ctx.moveTo(x - 7, hv + 40); ctx.quadraticCurveTo(x + sw * .4, hv - hh * .55, x + sw + 4, hv - hh); ctx.quadraticCurveTo(x + sw * .5 + 6, hv - hh * .5, x + 8, hv + 40); ctx.fill(); }
+    ctx.strokeStyle = 'rgba(255,184,100,.45)'; ctx.lineWidth = 1.6; for (let i = 0; i < 70; i += 2) { const x = ((i * 53 - pan * 2.2) % 1900 + 1900) % 1900 - 150, hh = 90 + ddpR(i * 3) * 190, sw = Math.sin(t * 1.3 + i) * 10; ctx.beginPath(); ctx.moveTo(x + 6, hv + 40); ctx.quadraticCurveTo(x + sw * .5 + 6, hv - hh * .5, x + sw + 4, hv - hh); ctx.stroke(); }
+    ctx.restore();
+    return 0;
+}
+// the scenery for shot 4, drawn under the existing commander/radio/stamp overlay (real-pixel ctx, already camera-transformed)
+function ddpM2Scene4(t0, w, h, u) {
+    const U = w / 1600, hv = h / U, P = ddpEnsure(); ctx.save(); ctx.scale(U, U);
+    const pan = u * 14; ddpM2Env(hv, t0, pan, { hz: .4, sx: 1180 });
+    // far guns popping on the ridge
+    for (let i = 0; i < 6; i++) { const k = (t0 * .9 + i * .37) % 2.4; if (k < .12) ddpFlashGlow(300 + i * 220, hv * .4 - 4, 34, 1 - k / .12); }
+    // column setting off
+    const go = cs2C((u - 1.8) / 2.2, 0, 1); [[1220, 1.15, hv * .62], [980, 1.3, hv * .66], [760, 1.5, hv * .71], [520, 1.7, hv * .77]].forEach(function (c, i) { ddpTankRoll(c[0] + go * go * 260, c[2], c[1] * .95, t0, { seed: i + 4, haze: .08, cmd: true }); });
+    ctx.restore();
+}
 /* ---------- camera + helpers ---------- */
 function ddpCam(hv, x, y, zoom, roll) { ctx.translate(800, hv / 2); ctx.rotate(roll || 0); ctx.scale(zoom, zoom); ctx.translate(-800 - x, -hv / 2 - y); }
 function ddpShakeAt(t, a) { return [(Math.sin(t * 23.1) * .6 + Math.sin(t * 41.7 + 1) * .4) * a, (Math.sin(t * 29.3 + 2) * .6 + Math.sin(t * 53.9) * .4) * a]; }
@@ -4766,6 +4846,7 @@ function ddpShotA(t, hv) {
     for (let i = 0; i < 18; i++) { const k = (t * .3 + i * .21) % 1; ctx.fillStyle = 'rgba(255,255,255,' + (.35 * (1 - k)) + ')'; ctx.fillRect(((i * 211) % 1600) + k * 40, hv * (.82 + .16 * ddpR(i)) - k * 40, 2, 3 + k * 8); }
     return 0;
 }
+function ddpBloom(w, h) { if (DDP.q < 1) return; const bl = DDP.bl || (DDP.bl = ddpCv(160, 100)), bg = bl.getContext('2d'), b2 = DDP.b2 || (DDP.b2 = ddpCv(40, 25)), g2 = b2.getContext('2d'); bg.globalCompositeOperation = 'copy'; bg.drawImage(canvas, 0, 0, 160, 100); g2.globalCompositeOperation = 'copy'; g2.drawImage(bl, 0, 0, 40, 25); ctx.save(); ctx.imageSmoothingEnabled = true; ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = .12; ctx.drawImage(bl, 0, 0, w, h); ctx.globalAlpha = .18; ctx.drawImage(b2, 0, 0, w, h); ctx.restore(); }
 function ddpPost(t, w, h, flash) {
     const P = ddpEnsure(), bl = DDP.bl || (DDP.bl = ddpCv(160, 100)), bg = bl.getContext('2d'), b2 = DDP.b2 || (DDP.b2 = ddpCv(40, 25)), g2 = b2.getContext('2d');
     if (DDP.q > 0) { bg.globalCompositeOperation = 'copy'; bg.drawImage(canvas, 0, 0, 160, 100); g2.globalCompositeOperation = 'copy'; g2.drawImage(bl, 0, 0, 40, 25);
@@ -5050,7 +5131,7 @@ function drawDDayCutscene(now) {
     let flash = 0, useGL = false;
     if (ddgInit(w, h)) { try { const S3 = ddglRender(Math.min(t, DD.dur), w, h); ctx.drawImage(DDGL.cv, 0, 0, w, h); useGL = true; flash = S3.flash || 0; } catch (e) { DDGL.why = 'render: ' + String(e && e.message).slice(0, 200); if (++DDGL.runErr > 3) DDGL.ok = false; } }
     if (!useGL) {
-    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } }
+    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } }
     }
     DD.cuts.forEach(function(c) { const d = t - c; if (d >= 0 && d < .16) flash = Math.max(flash, .5 * (1 - d / .16)); });
     if (!useGL && !DDP.ok) {
@@ -17804,6 +17885,12 @@ function m2csShot4(t0, w, h) {
     let flash = 0, shake = 0; if (sd > 0 && sd < .5) { shake = Math.pow(1 - sd / .5, 2) * 9; if (sd < .08) flash = .5 * (1 - sd / .08); }
     ctx.save();
     const z = 1.0 + u * .006; ctx.translate(w / 2, h / 2); ctx.scale(z, z); ctx.translate(-w / 2 + Math.sin(u * 70) * shake, -h / 2 + Math.cos(u * 55) * shake);
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
     m2csSky(t0, w, h, yH, pan, .5);
     m2csRidge(t0, w, h, yH, pan, true);
     m2csFarGuns(t0, w, yH, pan, true);
@@ -17815,6 +17902,9 @@ function m2csShot4(t0, w, h) {
     // column in the distance starting to move out
     const road = h * .6; ctx.fillStyle = '#6e5e40'; ctx.fillRect(-w, road, w * 3, 30); 
     [[w * .70, 0], [w * .56, 1], [w * .42, 2], [w * .30, 3]].forEach(function(c, i) { const go = cs2C((u - 1.8) / 2.2, 0, 1), x = c[0] + go * go * 200 + i * 0; for (let k = 6; k >= 0; k--) { ctx.fillStyle = 'rgba(176,152,106,' + (.3 * (1 - k / 7) * (u > 2 ? 1 : .2)) + ')'; ctx.beginPath(); ctx.arc(x - 70 * .5 - k * 18, road + 18 - k * 2, 8 + k * 3.4, 0, 7); ctx.fill(); } m2csAllied(x, road + 2, .46, t0 + i * .3, i + 5, false); });
+    }
+    }
+    }
     // commander in the foreground
     const cp = cs2C((u - .4) / 1.0, 0, 1);
     m2csCommander(w * .3, h * .66, 1.5, t0, cp);
@@ -17855,12 +17945,13 @@ function drawM2Cutscene(now) {
     if (t < M2CS.cuts[0]) { cs2Once('e0_' + Math.floor(t * 2), true, function() { playTone(50 + cs2R(Math.floor(t * 2)) * 10, 42, .5, .035, 'sawtooth'); }); cs2Once('dist1', t > 2.5, playDistantArtillery); cs2Once('dist2', t > 4.8, playDistantMachineGun); }
     ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
     let flash = 0;
-    if (t < M2CS.cuts[0]) flash = m2csShot1(t, w, h);
+    if (t < M2CS.cuts[0]) { let ok1 = false; try { const U = w / 1600; ctx.save(); ctx.scale(U, U); ddpM2Shot1(t, h / U); ctx.restore(); ok1 = true; } catch (e) { ctx.restore(); } if (!ok1) flash = m2csShot1(t, w, h); }
     else if (t < M2CS.cuts[1]) flash = m2csShot2(t, w, h);
     else if (t < M2CS.cuts[2]) flash = m2csShot3(t, w, h);
     else flash = m2csShot4(t, w, h);
     // cut flashes (film burn)
     M2CS.cuts.forEach(function(c) { const d = t - c; if (d >= 0 && d < .16) flash = Math.max(flash, .55 * (1 - d / .16)); });
+    try { ddpBloom(w, h); } catch (e) {}
     // grade, grain, scratches, vignette
     ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = 'rgba(255,170,90,.2)'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = 'rgba(50,110,140,.12)'; ctx.fillRect(0, h * .5, w, h * .5); ctx.restore();
     ctx.save(); ctx.globalAlpha = .08; ctx.globalCompositeOperation = 'overlay'; ctx.drawImage(CS2.grain, -Math.random() * 220, -Math.random() * 220, w + 220, h + 220); ctx.restore();

@@ -1,37 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Gooberglob - Tank Command</title>
-
+    <meta name="description" content="Gooberglob: a WW2 tank game that runs in your browser. Storm the D-Day beaches, escort convoys and hijack an armoured train.">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <h1>★ GOOBERGLOB ★</h1>
+<header class="hero">
+    <div class="stamp">TOP SECRET · FIELD ORDERS</div>
+    <h1>GOOBERGLOB</h1>
+    <p class="tagline">★ TANK COMMAND ★</p>
 
-    <div class="tank">
-        🪖 🛡️
-    </div>
+    <svg class="tank-art" viewBox="0 0 420 150" role="img" aria-label="Side view of a tank">
+        <ellipse cx="210" cy="140" rx="170" ry="7" fill="rgba(0,0,0,.28)"/>
+        <rect x="36" y="86" width="348" height="44" rx="22" fill="#17170f"/>
+        <g fill="#3a3a2b" stroke="#0e0e08" stroke-width="2">
+            <circle cx="72" cy="108" r="17"/><circle cx="118" cy="110" r="16"/><circle cx="164" cy="110" r="16"/>
+            <circle cx="210" cy="110" r="16"/><circle cx="256" cy="110" r="16"/><circle cx="302" cy="110" r="16"/><circle cx="348" cy="108" r="17"/>
+        </g>
+        <path d="M44 92 L66 52 L156 46 L306 46 L384 88 L370 96 L58 96 Z" fill="#6c7444" stroke="#1a1b10" stroke-width="3"/>
+        <path d="M120 46 L130 22 Q180 4 236 22 L254 46 Z" fill="#7f8852" stroke="#1a1b10" stroke-width="3"/>
+        <rect x="248" y="26" width="150" height="9" fill="#1a1b12"/><rect x="390" y="23" width="16" height="15" fill="#1a1b12"/>
+        <circle cx="176" cy="18" r="9" fill="#2d2f20" stroke="#14150d" stroke-width="2"/>
+        <polygon points="96,76 100,66 104,76 114,76 106,82 109,92 100,86 91,92 94,82 86,76" fill="#e8e2c2"/>
+    </svg>
 
-    <p>RETRO TANK COMMAND</p>
+    <a class="play" href="tank-game.html">ENTER THE BATTLEFIELD</a>
+    <p class="sub">Free · Plays in your browser · Chromebook friendly</p>
+</header>
 
-    <div class="notice">
-        REPORT FOR DUTY, COMMANDER
-    </div>
+<main>
+    <section class="briefing">
+        <h2>MISSION BRIEFING</h2>
+        <p>Command a Sherman, Cromwell or Churchill through the Normandy campaign, from the first landing craft ramp to a fight on top of a moving armoured train.</p>
+    </section>
 
-    <br><br>
+    <section class="cards">
+        <article>
+            <span class="num">01</span>
+            <h3>D-DAY LANDING</h3>
+            <p>Hit the beach under fire, get your tank ashore and silence the bunkers.</p>
+        </article>
+        <article>
+            <span class="num">02</span>
+            <h3>THE CAMPAIGN</h3>
+            <p>Seven missions with cinematic briefings: fog ambushes, a crash site, convoy escort and more.</p>
+        </article>
+        <article>
+            <span class="num">03</span>
+            <h3>THE IRON ROAD</h3>
+            <p>Race a jeep alongside an armoured train, jump aboard and pull the brake.</p>
+        </article>
+        <article>
+            <span class="num">04</span>
+            <h3>SKIRMISH</h3>
+            <p>Pick your tank, pick a map and fight it out. Bring friends.</p>
+        </article>
+    </section>
+</main>
 
-   <a href="tank-game.html">
-    <button>
-        ENTER THE BATTLEFIELD
-    </button>
-</a>
+<footer>
+    <p>GOOBERGLOB · TANK COMMAND · REPORT FOR DUTY, COMMANDER</p>
+</footer>
 
 </body>
-
 </html>

@@ -4811,6 +4811,48 @@ function ddpM2Scene4(t0, w, h, u) {
     ctx.restore();
 }
 /* ================= MISSION 2 : flak battery + gun line (painted) ================= */
+
+function ddpLimb(ax, ay, bx, by, l1, l2, bend) { const dx = bx - ax, dy = by - ay, d = Math.max(.01, Math.min(Math.hypot(dx, dy), l1 + l2 - .02)), a = Math.atan2(dy, dx), c = Math.acos(Math.max(-1, Math.min(1, (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d)))); return { k: [ax + Math.cos(a + bend * c) * l1, ay + Math.sin(a + bend * c) * l1], e: [ax + Math.cos(a) * d, ay + Math.sin(a) * d] }; }
+function ddpShell(x, y, ang, len) { // 88mm round: brass case + steel head
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang); const L = len, W = len * .15;
+    ctx.fillStyle = '#c79a32'; ctx.fillRect(-L * .5, -W / 2, L * .58, W); ctx.fillStyle = '#7b5a16'; ctx.fillRect(-L * .5, -W / 2, L * .05, W); ctx.fillRect(L * .02, -W / 2 - .5, L * .04, W + 1);
+    ctx.fillStyle = 'rgba(255,240,170,.7)'; ctx.fillRect(-L * .45, -W / 2 + 1, L * .5, W * .22);
+    ctx.fillStyle = '#4f5246'; ctx.beginPath(); ctx.moveTo(L * .08, -W / 2 + .4); ctx.lineTo(L * .3, -W / 2 + .4); ctx.quadraticCurveTo(L * .5, -W * .3, L * .56, 0); ctx.quadraticCurveTo(L * .5, W * .3, L * .3, W / 2 - .4); ctx.lineTo(L * .08, W / 2 - .4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,230,170,.45)'; ctx.fillRect(L * .1, -W / 2 + 1, L * .24, W * .2); ctx.fillStyle = '#9a3a20'; ctx.fillRect(L * .3, -W / 2 + .4, L * .04, W - .8);
+    ctx.restore();
+}
+function ddpGI(x, y, s, dir, o) { // articulated gun crewman. local: +x forward, y up negative, feet at 0
+    o = o || {}; const ger = o.ger !== false, col = ger ? '#5d6258' : '#58593c', dkc = ger ? '#2a2e29' : '#2e301f', skin = '#b58b6a';
+    const cr = o.crouch || 0, lean = o.lean === undefined ? .12 : o.lean, w = o.walk || 0, hipY = -29 + cr * 13, hip = [-1 - cr * 3, hipY];
+    ctx.save(); ctx.translate(x, y); ctx.scale(dir * s, s); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.fillStyle = 'rgba(10,6,14,.3)'; ctx.beginPath(); ctx.ellipse(0, 1, 16, 3.2, 0, 0, 7); ctx.fill();
+    const sh = [hip[0] + Math.sin(lean) * 19, hip[1] - Math.cos(lean) * 19], hd = [sh[0] + Math.sin(lean) * 9 + 1, sh[1] - Math.cos(lean) * 9 - 2];
+    function arm(h, shade) { if (!h) h = [sh[0] + 3, sh[1] + 25]; const L = ddpLimb(sh[0], sh[1], h[0], h[1], 13, 13, 1); ctx.strokeStyle = shade ? dkc : col; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(sh[0], sh[1]); ctx.lineTo(L.k[0], L.k[1]); ctx.lineTo(L.e[0], L.e[1]); ctx.stroke(); ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(L.e[0], L.e[1], 2.6, 0, 7); ctx.fill(); }
+    arm(o.h2, true);
+    for (let i = 0; i < 2; i++) { const ph = w + i * Math.PI, fx = w ? Math.sin(ph) * 10 : (i ? -7 : 6), fy = w ? -Math.max(0, Math.cos(ph)) * 5 : 0, L = ddpLimb(hip[0], hip[1], fx, fy - 1, 15, 15, -1); ctx.strokeStyle = i ? dkc : col; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(hip[0], hip[1]); ctx.lineTo(L.k[0], L.k[1]); ctx.lineTo(L.e[0], L.e[1]); ctx.stroke(); ctx.fillStyle = '#17120e'; ctx.beginPath(); ctx.ellipse(L.e[0] + 2.2, L.e[1] + .6, 5, 2.6, 0, 0, 7); ctx.fill(); }
+    ctx.strokeStyle = col; ctx.lineWidth = 11; ctx.beginPath(); ctx.moveTo(hip[0], hip[1]); ctx.lineTo(sh[0], sh[1]); ctx.stroke();
+    ctx.strokeStyle = dkc; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(hip[0] - 5, hip[1] - 1); ctx.lineTo(hip[0] + 5, hip[1] - 3); ctx.stroke();
+    ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(hd[0] + 1, hd[1] + 1, 4.3, 0, 7); ctx.fill();
+    ctx.fillStyle = dkc; ctx.beginPath(); ctx.ellipse(hd[0], hd[1] - 1, 6.6, 5.2, -.1, Math.PI, 0); ctx.lineTo(hd[0] + 7, hd[1] + .8); ctx.lineTo(hd[0] - 9, hd[1] + 3.6); ctx.lineTo(hd[0] - 6.6, hd[1] - 1); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,214,150,.4)'; ctx.fillRect(hd[0] - 3, hd[1] - 5.4, 6, 1.1);
+    if (o.bino) { ctx.fillStyle = '#16140f'; ctx.fillRect(hd[0] + 2, hd[1] - 1.5, 8, 4); }
+    arm(o.h1, false);
+    if (o.shell) ddpShell(o.shell[0], o.shell[1], o.shell[2], o.shell[3]);
+    ctx.restore();
+}
+function ddpCasing(x, y, age, dir, len) { if (age < 0 || age > 1) return; const vx = -dir * 150, px = x + vx * age, py = y - 130 * age + 520 * age * age; if (py > y + 60) return; ctx.save(); ctx.translate(px, py); ctx.rotate(age * 14 * dir); ctx.globalAlpha = Math.min(1, 2 * (1 - age)); ctx.fillStyle = '#d3a62c'; ctx.fillRect(-len * .4, -len * .075, len * .8, len * .15); ctx.fillStyle = '#7b5a16'; ctx.fillRect(-len * .4, -len * .075, len * .06, len * .15); ctx.restore(); }
+// loader cycle (p 0..1): fetch shell -> carry -> ram into breech -> walk back
+function ddpLoaderPose(p, f, gx, gy, s, aim, sc) {
+    const bx = gx + f * s * (-30 * Math.cos(aim)), by = gy - 70 * s + s * (-30 * Math.sin(aim)), x1 = bx - f * 20 * sc, x0 = x1 - f * 62 * sc;
+    const ease = function (k) { return k * k * (3 - 2 * k); };
+    const r = { x: x0, walk: 0, crouch: 0, lean: .12, h1: null, h2: null, shell: null };
+    function hold(cx, cy, ang) { const c = Math.cos(ang), n = Math.sin(ang); r.h1 = [cx + 11 * c, cy + 11 * n]; r.h2 = [cx - 9 * c, cy - 9 * n]; r.shell = [cx, cy, ang, 46]; }
+    if (p < .16) { const k = Math.sin(p / .16 * Math.PI * .5); r.crouch = .75 * k; r.lean = .35 * k; r.h1 = [24, -6 - 4 * k]; r.h2 = [10, -6 - 4 * k]; if (p > .1) { const q = (p - .1) / .06; hold(18, -7 - 14 * q, .1 - .3 * q); } }
+    else if (p < .5) { const k = ease((p - .16) / .34); r.x = x0 + (x1 - x0) * k; r.walk = (p - .16) * 38; r.lean = .1; hold(17, -26, -.28); }
+    else if (p < .7) { const k = ease((p - .5) / .2); r.x = x1; r.lean = .06; const hx = (bx - x1) * f / sc, hy = (by - gy) / sc, c = Math.cos(aim), n = Math.sin(aim), d = -30 + 36 * k; hold(hx + c * d, hy + n * d, aim); if (k > .97) { r.shell = null; r.h1 = [hx + 8, hy + 6]; r.h2 = [hx - 8, hy + 8]; } }
+    else { const k = ease((p - .7) / .3); r.x = x1 + (x0 - x1) * k; r.walk = k > 0 && k < 1 ? (p - .7) * 38 : 0; r.h1 = [6 + Math.sin(r.walk) * 4, -22]; r.h2 = [-6 - Math.sin(r.walk) * 4, -22]; }
+    return r;
+}
 function ddpFlak88(x, y, s, flip, aim, rec, t, o) { // 88mm FlaK 36 on its cruciform mount; flip = +1 faces right
     o = o || {}; const haze = o.haze || 0, sand = ddpMix([84, 76, 46], [140, 130, 110], haze), dk = ddpMix([30, 30, 22], [110, 110, 100], haze), lt = ddpMix([220, 190, 120], [230, 210, 170], .2);
     ctx.save(); ctx.translate(x, y); ctx.scale(s * flip, s);
@@ -4885,8 +4927,7 @@ function ddpM2Flak(t, u, w, h, S) {
     const GUNS = [{ x: w * .14, flip: 1, seed: 1 }, { x: w * .86, flip: -1, seed: 2 }], rec = [0, 0];
     shots.forEach(function (s) { const d = t - s.t; if (d >= 0 && d < .4) rec[s.gun] = Math.max(rec[s.gun], 34 * Math.pow(1 - d / .4, 1.5)); });
     GUNS.forEach(function (g, gi) {
-        let best = null, bd = 1e9; alive.concat(ph >= 0 && ph < S.crashDt ? [{ x: S.P0.x + 70 * ph, y: S.P0.y + 24 * ph * ph }] : []).forEach(function (p) { const d = Math.abs(p.x - g.x); if (d < bd) { bd = d; best = p; } });
-        let aim = -.9; if (best) aim = Math.atan2(Math.min(best.y, S.yH + 52 - 90) - (S.yH + 52 - 72), Math.abs(best.x - g.x)); if (t > 11) aim = -.8; aim = Math.max(-1.0, Math.min(-.25, aim)); g.aim = g.aim === undefined ? aim : g.aim + (aim - g.aim) * .12;
+        g.aim = -.8 - .2 * Math.sin(t * .55 + gi * 1.9) + (t > 11 ? .05 : 0);
         const gx = g.x / U, f = g.flip;
         // panzers behind and beside
         ddpPanzer((g.x + f * 265) / U, gyv + 12, .96, f, t, { haze: .06 }); ddpPanzer((g.x - f * 285) / U, gyv + 26, .9, -f, t, { haze: .1 });
@@ -4894,12 +4935,11 @@ function ddpM2Flak(t, u, w, h, S) {
         for (let r = 0; r < 3; r++) for (let i = 0; i < 12 - r * 2; i++) { const bx = gx - 150 + i * 28 + r * 14, by = gyv + 16 - r * 15 - 2; ctx.fillStyle = (i + r) % 2 ? '#8a7650' : '#9a8460'; ctx.beginPath(); ctx.ellipse(bx, by, 16, 8, 0, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.stroke(); ctx.strokeStyle = 'rgba(255,200,120,.35)'; ctx.beginPath(); ctx.ellipse(bx, by - 1, 14, 6, 0, Math.PI * 1.1, Math.PI * 1.85); ctx.stroke(); }
         // ammo crates
         ctx.fillStyle = '#4a4430'; ctx.fillRect(gx - f * 170 - 14, gyv - 4, 34, 18); ctx.fillRect(gx - f * 140 - 14, gyv - 2, 30, 16);
-        ddpFlak88(gx, gyv, 1.2, f, g.aim * f, rec[gi], t, { haze: 0 });
+        ddpFlak88(gx, gyv, 1.2, f, g.aim, rec[gi], t, { haze: 0 });
         // crew
-        const cyc = (t * .9 + gi * .4) % 1.2;
-        ddpMan(gx + f * 92, gyv + 14, 1.55, t, { dir: f, run: 0, aim: 0, ger: true, haze: 0, crouch: .3 });
-        ddpMan(gx - f * 150 + f * Math.min(1, cyc / .8) * 60, gyv + 20, 1.6, t, { dir: f, run: .45, spd: 6, carry: 1, ger: true });
-        ddpMan(gx - f * 215, gyv + 24, 1.5, t, { dir: f, run: 0, aim: 1, ger: true });
+        { const sc = 1.3, lp = ddpLoaderPose(((t * .34 + gi * .45) % 1 + 1) % 1, f, gx, gyv + 14, 1.2, g.aim, sc); ddpGI(lp.x, gyv + 14, sc, f, { walk: lp.walk, crouch: lp.crouch, lean: lp.lean, h1: lp.h1, h2: lp.h2, shell: lp.shell });
+          const pulse = 1 - Math.min(1, ((t + gi * .6) % 1.9) / .5); ddpGI(gx - f * 330, gyv + 24, 1.35, f, { lean: -.05, h1: [18, -56 - 8 * pulse], h2: [10, -30] });
+          ddpGI(gx + f * 120, gyv + 12, 1.3, f, { lean: -.18, bino: true, h1: [11, -52], h2: [7, -50] }); }
         // muzzle position
         const L = (230 - rec[gi]) * 1.2, a = g.aim * f; g.muz = { x: g.x + f * Math.cos(g.aim) * L * U, y: (gyv - 70 * 1.2 + Math.sin(g.aim) * L) * U };
     });
@@ -4909,6 +4949,7 @@ function ddpM2Flak(t, u, w, h, S) {
         if (d < 1.2) for (let k = 0; k < 7; k++) { ctx.globalAlpha = (1 - d / 1.2) * .5; const r = 20 + k * 8 * d + 8; ctx.drawImage(P.grey, mx - g.flip * (14 * k * d) - r, my - k * 6 * d - d * 24 - r, r * 2, r * 2); } ctx.globalAlpha = 1;
         if (d < .22) { const gxx = g.x / U; for (let k = 0; k < 6; k++) { const r = (30 + d * 260) * (1 - k * .08); ctx.globalAlpha = (1 - d / .22) * .4; ctx.drawImage(P.smoke, gxx - r - k * 18 * g.flip, gyv - r * .3, r * 2, r * .6); } ctx.globalAlpha = 1; }
         if (d < .45) ddpTracer(mx, my, tx, ty, d / .45, .22, 3.4);
+        { const bxx = g.x / U, byy = gyv - 70 * 1.2; ddpCasing(bxx, byy, d / 1.0, g.flip, 30); }
     });
     // crash
     if (t >= S.crashT) { const d = t - S.crashT, bx = S.crashX / U, by = S.groundY / U; ddpBlast(bx, by, 1.6, d, 4, .8); if (d < 2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Math.max(0, 1 - d / 1.6); ctx.drawImage(P.fire, bx - 160, by - 140, 320, 220); ctx.restore(); } ddpSmoke(bx, by - 6, 1.7, t, 9, 20, 420, Math.min(1, d * 1.2)); ddpFire(bx, by, .8, t, 3); }
@@ -4940,13 +4981,10 @@ function ddpM2Shot3(u, w, h) {
     if (which >= 0 && age < .22) { const k = 1 - age / .22; ddpFlashGlow(mx, my, 340 * k + 60, k); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = k; ctx.translate(mx, my); ctx.rotate(aim); ctx.fillStyle = 'rgba(255,238,190,1)'; ctx.beginPath(); ctx.moveTo(0, -26); ctx.lineTo(300 * k, -6); ctx.lineTo(420 * k, 0); ctx.lineTo(300 * k, 6); ctx.lineTo(0, 26); ctx.closePath(); ctx.fill(); ctx.restore(); }
     if (which >= 0 && age < 3) for (let k = 0; k < 9; k++) { const a2 = age, r = (40 + a2 * 120 + k * 9) * 1.3; ctx.globalAlpha = Math.max(0, .6 - a2 * .22); ctx.drawImage(P.grey, mx + 40 + k * 46 * (1 + a2) - r, my - a2 * 60 - k * 4 - r, r * 2, r * 2); } ctx.globalAlpha = 1;
     if (which >= 0 && age < .6) { for (let k = 0; k < 7; k++) { const r = (60 + age * 520) * (1 - k * .08); ctx.globalAlpha = Math.max(0, .32 - age * .5); ctx.drawImage(P.smoke, gx - r + (k - 3) * 40, gy - r * .25, r * 2, r * .5); } ctx.globalAlpha = 1; }
-    // spent brass flying out the breech
-    if (which >= 0 && age < .8) { const bx = gx - 120 - age * 160, by = gy - 70 * 3.1 + 150 * age * age * 4 - age * 90 + 90, rr = age * 18; ctx.save(); ctx.translate(bx, by); ctx.rotate(rr); ctx.fillStyle = '#d3a62c'; ctx.fillRect(-26, -7, 52, 14); ctx.fillStyle = '#8a6b18'; ctx.fillRect(-26, -7, 8, 14); ctx.restore(); }
-    // crew silhouettes loading / lanyard
-    const phase = which < 0 ? u / .35 : Math.min(1, age / 1.0);
-    ddpMan(gx - 270, gy + 12, 2.6, u, { dir: 1, run: .35 * (1 - (which >= 0 && age < .4 ? 1 : 0)) + .1, carry: 1, ger: true, spd: 4 });
-    ddpMan(gx + 220, gy + 10, 2.5, u, { dir: -1, run: 0, ger: true, aim: 0, crouch: .5 });
-    ddpMan(gx - 400, gy + 20, 2.4, u, { dir: 1, run: 0, ger: true, aim: 1 });
+    // crew: loader cycles a shell into the breech, commander signals, spotter watches
+    { const sc = 2.9, per = 1.2, p = (((u + .5) / per) % 1 + 1) % 1, lp = ddpLoaderPose(p, f, gx, gy + 14, 3.1, aim, sc); ddpGI(lp.x, gy + 14, sc, f, { walk: lp.walk, crouch: lp.crouch, lean: lp.lean, h1: lp.h1, h2: lp.h2, shell: lp.shell });
+      const pulse = which >= 0 && age < .5 ? 1 : 0; ddpGI(gx - 560, gy + 24, 2.7, f, { lean: -.05, crouch: .2, h1: [18, -52 - 8 * pulse], h2: [10, -30] });
+      ddpGI(gx + 330, gy + 12, 2.6, -1, { lean: -.18, bino: true, h1: [11, -52], h2: [7, -50] }); ddpCasing(gx - 100, gy - 70 * 3.1 + 40, which >= 0 ? age / 1.0 : 9, f, 70); }
     // sandbag wall in front
     for (let r = 0; r < 3; r++) for (let i = 0; i < 22 - r; i++) { const bx = -180 + i * 86 + r * 43, by = hv * .97 - r * 46; ctx.fillStyle = (i + r) % 2 ? '#5a4c32' : '#66563a'; ctx.beginPath(); ctx.ellipse(bx, by, 48, 24, 0, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 2; ctx.stroke(); ctx.strokeStyle = 'rgba(255,196,120,.3)'; ctx.beginPath(); ctx.ellipse(bx, by - 2, 42, 18, 0, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke(); }
     ctx.restore();
@@ -5282,7 +5320,7 @@ function drawDDayCutscene(now) {
     let flash = 0, useGL = false;
     if (ddgInit(w, h)) { try { const S3 = ddglRender(Math.min(t, DD.dur), w, h); ctx.drawImage(DDGL.cv, 0, 0, w, h); useGL = true; flash = S3.flash || 0; } catch (e) { DDGL.why = 'render: ' + String(e && e.message).slice(0, 200); if (++DDGL.runErr > 3) DDGL.ok = false; } }
     if (!useGL) {
-    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } } } } } }
+    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } } } } } } } }
     }
     DD.cuts.forEach(function(c) { const d = t - c; if (d >= 0 && d < .16) flash = Math.max(flash, .5 * (1 - d / .16)); });
     if (!useGL && !DDP.ok) {
@@ -18055,6 +18093,10 @@ function m2csShot4(t0, w, h) {
     if (!ok4) {
     let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
     if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
     m2csSky(t0, w, h, yH, pan, .5);
     m2csRidge(t0, w, h, yH, pan, true);
     m2csFarGuns(t0, w, yH, pan, true);
@@ -18066,6 +18108,8 @@ function m2csShot4(t0, w, h) {
     // column in the distance starting to move out
     const road = h * .6; ctx.fillStyle = '#6e5e40'; ctx.fillRect(-w, road, w * 3, 30); 
     [[w * .70, 0], [w * .56, 1], [w * .42, 2], [w * .30, 3]].forEach(function(c, i) { const go = cs2C((u - 1.8) / 2.2, 0, 1), x = c[0] + go * go * 200 + i * 0; for (let k = 6; k >= 0; k--) { ctx.fillStyle = 'rgba(176,152,106,' + (.3 * (1 - k / 7) * (u > 2 ? 1 : .2)) + ')'; ctx.beginPath(); ctx.arc(x - 70 * .5 - k * 18, road + 18 - k * 2, 8 + k * 3.4, 0, 7); ctx.fill(); } m2csAllied(x, road + 2, .46, t0 + i * .3, i + 5, false); });
+    }
+    }
     }
     }
     }

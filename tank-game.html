@@ -4367,9 +4367,14 @@ function ddpBack(x, y, s, t, o) { // soldier seen from behind, shoulder line at 
     ctx.restore();
 }
 /* ---------- armour / obstacles / bunker ---------- */
+function ddpHex(h) { h = String(h || '#565a3e').replace('#', ''); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; const n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+function ddpSkinPaint(sk, cx, cy, sx, sy, haze, seed) { // paint the equipped skin pattern into the last filled path
+    if (typeof paintSkinUnit !== 'function') return; ctx.save(); ctx.clip(); ctx.translate(cx, cy); ctx.scale(sx, sy); ctx.globalAlpha = 1 - haze * .8; try { paintSkinUnit(sk, seed); } catch (e) {} ctx.restore(); ctx.globalAlpha = 1;
+}
+function ddpPlayerSkin() { try { const f = (campaignRun && campaignRun.faction) || campaignFaction; return SKINS[progression.equippedSkins[f]] || SKINS[f + '_classic'] || null; } catch (e) { return null; } }
 function ddpSherman(x, y, s, t, o) { // M4 Sherman side view, facing right, ground at y
-    o = o || {}; const haze = o.haze || 0, gun = o.gun || 0, rec = o.recoil || 0, wet = o.wet || 0, mv = o.move === undefined ? 1 : o.move;
-    const od = ddpMix([86, 90, 62], [150, 156, 146], haze), L = ddpRGB(ddpMix(od, [255, 220, 160], .28)), M = ddpRGB(od), D = ddpRGB(ddpMix(od, [14, 16, 10], .5)), DD = ddpRGB(ddpMix(od, [6, 8, 4], .75));
+    o = o || {}; const haze = o.haze || 0, gun = o.gun || 0, rec = o.recoil || 0, wet = o.wet || 0, mv = o.move === undefined ? 1 : o.move, sk = o.skin || null;
+    const od = ddpMix(sk ? ddpHex(sk.body) : [86, 90, 62], [150, 156, 146], haze), L = ddpRGB(ddpMix(od, [255, 220, 160], .28)), M = ddpRGB(od), D = ddpRGB(ddpMix(od, [14, 16, 10], .5)), DD = ddpRGB(ddpMix(od, [6, 8, 4], .75));
     ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(0, 2, 118, 8, 0, 0, 7); ctx.fill();
     // tracks + wheels
@@ -4378,7 +4383,7 @@ function ddpSherman(x, y, s, t, o) { // M4 Sherman side view, facing right, grou
     ctx.fillStyle = D; ctx.beginPath(); ctx.arc(98, -20, 13, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(-100, -20, 11, 0, 7); ctx.fill();
     ctx.strokeStyle = M; ctx.lineWidth = 1.2; const off = (t * 36 * mv) % 6; ctx.beginPath(); for (let i = -100; i < 100; i += 6) { ctx.moveTo(i + off, -34); ctx.lineTo(i + off, -30); } ctx.stroke();
     // lower hull + glacis
-    ctx.fillStyle = M; ctx.beginPath(); ctx.moveTo(-106, -28); ctx.lineTo(-110, -56); ctx.lineTo(66, -62); ctx.lineTo(108, -38); ctx.lineTo(108, -28); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = M; ctx.beginPath(); ctx.moveTo(-106, -28); ctx.lineTo(-110, -56); ctx.lineTo(66, -62); ctx.lineTo(108, -38); ctx.lineTo(108, -28); ctx.closePath(); ctx.fill(); if (sk) ddpSkinPaint(sk, 0, -44, 110, 18, haze, 3);
     ctx.fillStyle = D; ctx.beginPath(); ctx.moveTo(-106, -28); ctx.lineTo(108, -28); ctx.lineTo(108, -38); ctx.lineTo(-104, -40); ctx.closePath(); ctx.fill();
     ctx.fillStyle = L; ctx.beginPath(); ctx.moveTo(-110, -56); ctx.lineTo(66, -62); ctx.lineTo(108, -38); ctx.lineTo(106, -41); ctx.lineTo(66, -59); ctx.lineTo(-110, -53); ctx.closePath(); ctx.fill();
     ctx.fillStyle = D; ctx.fillRect(-100, -54, 40, 12); ctx.strokeStyle = DD; ctx.lineWidth = 1; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(-98 + i * 6.4, -54); ctx.lineTo(-98 + i * 6.4, -42); ctx.stroke(); }
@@ -4388,7 +4393,7 @@ function ddpSherman(x, y, s, t, o) { // M4 Sherman side view, facing right, grou
     ctx.fillStyle = D; ctx.fillRect(-108, -66, 26, 12); ctx.fillStyle = ddpRGB(ddpMix([110, 100, 70], od, haze)); ctx.beginPath(); ctx.ellipse(-92, -70, 14, 5.4, 0, 0, 7); ctx.fill();
     if (!o.noTurret) {
     // turret
-    ctx.fillStyle = M; ctx.beginPath(); ctx.moveTo(-44, -60); ctx.lineTo(-50, -76); ctx.lineTo(-34, -94); ctx.lineTo(4, -98); ctx.lineTo(34, -88); ctx.lineTo(44, -76); ctx.lineTo(40, -61); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = M; ctx.beginPath(); ctx.moveTo(-44, -60); ctx.lineTo(-50, -76); ctx.lineTo(-34, -94); ctx.lineTo(4, -98); ctx.lineTo(34, -88); ctx.lineTo(44, -76); ctx.lineTo(40, -61); ctx.closePath(); ctx.fill(); if (sk) ddpSkinPaint(sk, -3, -79, 48, 20, haze, 9);
     ctx.fillStyle = D; ctx.beginPath(); ctx.moveTo(-44, -60); ctx.lineTo(-50, -76); ctx.lineTo(-44, -76); ctx.lineTo(-40, -60); ctx.closePath(); ctx.fill(); ctx.fillRect(-44, -66, 86, 6);
     ctx.fillStyle = L; ctx.beginPath(); ctx.moveTo(-34, -94); ctx.lineTo(4, -98); ctx.lineTo(34, -88); ctx.lineTo(30, -88); ctx.lineTo(4, -95); ctx.lineTo(-32, -91); ctx.closePath(); ctx.fill();
     ctx.fillStyle = D; ctx.fillRect(-26, -102, 18, 5); ctx.fillStyle = M; ctx.fillRect(-20, -108, 4, 6);                                    // cupola + .50 cal
@@ -5387,7 +5392,7 @@ function ddpM4ShotA(t, hv) { // the column in the fog
     ddpBocage(hz + 100, 90, .38, pan * .7, t, 11, .16); ddpM4Fog(hz + 40, hz + 170, t, .55, 16, 7);
     ddpLane(ly, hv, t, .25);
     ddpCrows(t - 1.2, 7, 900, hz - 40, 3);
-    for (let i = 0; i < 3; i++) { const x = 860 - i * 520 + t * 46, s = 1.2, hzz = .16 + i * .12; ddpSherman(x, ly + i * 6, s, t, { gun: .02, haze: hzz }); ddpBust(x - 17 * s, ly + i * 6 - 100 * s, s * 1.35, i + 1, hzz, t, .3);
+    for (let i = 0; i < 3; i++) { const x = 1060 - i * 440 + t * 46, s = 1.2, hzz = .16 + i * .12; ddpSherman(x, ly + i * 6, s, t, { gun: .02, haze: hzz, skin: i === 2 ? ddpPlayerSkin() : null }); ddpBust(x - 17 * s, ly + i * 6 - 100 * s, s * 1.35, i + 1, hzz, t, .3);
         for (let k = 0; k < 2; k++) ddpMan(x - 190 - k * 60, ly + 34 + i * 6, 1.7, t, { run: .4, spd: 5, ph: i * 2 + k, haze: hzz + .1 }); }
     ddpM4Fog(ly - 120, ly + 40, t, .45, 20, 9);
     // foreground hedge banks framing the lane
@@ -5406,9 +5411,9 @@ function ddpM4ShotB(u, hv) { // ambush from the fog
     // the hidden Tiger, just a shape in the mist
     ddpTiger(tiger[0], tiger[1], .8, u, { dir: -1, haze: .8, move: 0, exhaust: false, tr: .05 });
     ddpLane(ly, hv, u, .25);
-    const tanks = [{ x: 860, hit: H1 }, { x: 380, hit: H2 }, { x: -60, hit: 99 }];
+    const tanks = [{ x: 1000, hit: H1 }, { x: 600, hit: H2 }, { x: 250, hit: 99 }];
     tanks.forEach(function (k, i) { const d = u - k.hit, x = k.x + Math.min(u, k.hit) * 40 + (i === 2 && u > H2 ? -(u - H2) * 30 : 0), y = ly + i * 6, s = 1.1;
-        ddpSherman(x, y, s, u, { gun: .02, haze: .18 + i * .08, noTurret: i === 0 && d > 0, move: d > 0 ? 0 : 1 });
+        ddpSherman(x, y, s, u, { gun: .02, haze: .18 + i * .08, noTurret: i === 0 && d > 0, move: d > 0 ? 0 : 1, skin: i === 2 ? ddpPlayerSkin() : null });
         if (d <= 0) ddpBust(x - 17 * s, y - 100 * s, s * 1.35, i + 1, .2, u, .3);
         if (d > 0) { ddpBlast(x, y - 50, 1.6, d, i * 7, .7); ddpSmoke(x, y - 70, 1.2, u, i * 3, 120, 380, Math.min(1, d)); ddpFire(x - 10, y - 60, .9, u, i);
             if (d < .3) ddpFlashGlow(x, y - 60, 380, 1 - d / .3);
@@ -5506,8 +5511,8 @@ function ddpM4Scene4(t0, u, w, h) {
     ddpBocage(hz + 100, 90, .38, 0, t0, 11, .16); ddpM4Fog(hz + 40, hz + 170, t0, .55, 16, 7);
     ddpTiger(1380, hv * .7, .7, t0, { dir: -1, haze: .88, move: 0, tr: .3, exhaust: false });
     ddpLane(ly, hv, t0, .25);
-    [[1020, 0], [700, 1]].forEach(function (k) { ddpSherman(k[0], ly + k[1] * 6, .9, t0, { gun: .1, haze: .2, noTurret: k[1] === 0, move: 0, exhaust: false }); ddpFire(k[0], ly - 50, .9, t0, k[1]); ddpSmoke(k[0], ly - 70, 1.2, t0, k[1] * 5, 130, 420, 1); });
-    for (let i = 0; i < 3; i++) { const go = cs2C((u - 1.6) / 4, 0, 1), x = 240 + i * 230 + go * 120; ddpSherman(x, ly + 30 + i * 8, .72, t0 + i, { gun: .02, haze: .12 + i * .04, move: go > 0 && go < 1 ? 1 : 0 }); }
+    [[1050, 0], [720, 1]].forEach(function (k) { ddpSherman(k[0], ly + k[1] * 6, .9, t0, { gun: .1, haze: .2, noTurret: k[1] === 0, move: 0, exhaust: false }); ddpFire(k[0], ly - 50, .9, t0, k[1]); ddpSmoke(k[0], ly - 70, 1.2, t0, k[1] * 5, 130, 420, 1); });
+    { const go = cs2C((u - 1.6) / 4, 0, 1), x = 860 + go * 140, s = 1.15; ddpSherman(x, ly + 70, s, t0, { gun: .02, haze: .08, move: go > 0 && go < 1 ? 1 : 0, skin: ddpPlayerSkin() }); ddpBust(x - 17 * s, ly + 70 - 100 * s, s * 1.35, 4, .08, t0, .3); }
     ddpM4Fog(ly - 120, ly + 40, t0, .45, 20, 9);
     const gnd = ctx.createLinearGradient(0, ly + 60, 0, hv); gnd.addColorStop(0, 'rgba(14,16,8,0)'); gnd.addColorStop(1, 'rgba(8,10,5,.9)'); ctx.fillStyle = gnd; ctx.fillRect(-800, ly + 60, 3200, hv);
     ctx.restore(); ddpBloom(w, h); return 0;
@@ -5839,7 +5844,7 @@ function drawDDayCutscene(now) {
     let flash = 0, useGL = false;
     if (ddgInit(w, h)) { try { const S3 = ddglRender(Math.min(t, DD.dur), w, h); ctx.drawImage(DDGL.cv, 0, 0, w, h); useGL = true; flash = S3.flash || 0; } catch (e) { DDGL.why = 'render: ' + String(e && e.message).slice(0, 200); if (++DDGL.runErr > 3) DDGL.ok = false; } }
     if (!useGL) {
-    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } }
+    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } }
     }
     DD.cuts.forEach(function(c) { const d = t - c; if (d >= 0 && d < .16) flash = Math.max(flash, .5 * (1 - d / .16)); });
     if (!useGL && !DDP.ok) {
@@ -18636,6 +18641,10 @@ function m2csShot4(t0, w, h) {
     if (!ok4) {
     let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
     if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
     m2csSky(t0, w, h, yH, pan, .5);
     m2csRidge(t0, w, h, yH, pan, true);
     m2csFarGuns(t0, w, yH, pan, true);
@@ -18647,6 +18656,8 @@ function m2csShot4(t0, w, h) {
     // column in the distance starting to move out
     const road = h * .6; ctx.fillStyle = '#6e5e40'; ctx.fillRect(-w, road, w * 3, 30); 
     [[w * .70, 0], [w * .56, 1], [w * .42, 2], [w * .30, 3]].forEach(function(c, i) { const go = cs2C((u - 1.8) / 2.2, 0, 1), x = c[0] + go * go * 200 + i * 0; for (let k = 6; k >= 0; k--) { ctx.fillStyle = 'rgba(176,152,106,' + (.3 * (1 - k / 7) * (u > 2 ? 1 : .2)) + ')'; ctx.beginPath(); ctx.arc(x - 70 * .5 - k * 18, road + 18 - k * 2, 8 + k * 3.4, 0, 7); ctx.fill(); } m2csAllied(x, road + 2, .46, t0 + i * .3, i + 5, false); });
+    }
+    }
     }
     }
     }
@@ -19666,7 +19677,7 @@ function m4Shot4(t0, w, h) {
         ctx.save(); ctx.globalAlpha = rp; ctx.fillStyle = 'rgba(8,10,6,.86)'; ctx.fillRect(w - 440, 90, 400, 130); ctx.strokeStyle = '#7e8355'; ctx.lineWidth = 2; ctx.strokeRect(w - 440, 90, 400, 130);
         ctx.fillStyle = '#9fb27a'; ctx.font = '700 12px monospace'; ctx.textAlign = 'left'; ctx.fillText('● RADIO · 38.4 MHz · CHANNEL 3', w - 424, 112);
         for (let i = 0; i < 38; i++) { const bh = 3 + Math.abs(Math.sin(u * 14 + i * 1.7) * Math.sin(u * 5 + i * .6)) * (u < 4.0 ? 20 : 3); ctx.fillStyle = 'rgba(140,200,110,.85)'; ctx.fillRect(w - 424 + i * 9.7, 136 - bh / 2, 6, bh); }
-        const msg = 'HQ: "IT FIGHTS FROM THE FOG. WATCH FOR THE FLASH, CLOSE IN, THEN HIT ITS SIDES."', n = Math.min(msg.length, Math.floor((u - .9) * 30));
+        const msg = 'HQ: "YOU ARE ALL THAT IS LEFT. WATCH FOR THE FLASH, CLOSE IN, HIT ITS SIDES."', n = Math.min(msg.length, Math.floor((u - .9) * 30));
         ctx.fillStyle = '#e7edc9'; ctx.font = '13px "Special Elite", "Courier New", monospace'; const words = msg.slice(0, Math.max(0, n)).split(' '); let line = '', yy = 164; words.forEach(function(wd) { if ((line + wd).length > 40) { ctx.fillText(line, w - 424, yy); line = ''; yy += 18; } line += wd + ' '; }); ctx.fillText(line, w - 424, yy);
         ctx.restore();
     }
@@ -19707,7 +19718,7 @@ function drawM4Cutscene(now) {
         ctx.fillStyle = '#f4ecd0'; ctx.font = '700 52px "Stardos Stencil", Impact, sans-serif'; ctx.fillText('THE HEDGEROW GHOST', w / 2, h * .2 + 80);
         ctx.font = '15px "Special Elite", "Courier New", monospace'; ctx.fillStyle = '#d9c88c'; ctx.fillText('9 JUNE 1944   ·   D+3   ·   05:40   ·   DENSE FOG', w / 2, h * .2 + 108); ctx.restore();
     }
-    const caps = [[4.6, 'FOG. THICK AS WOOL ACROSS THE BOCAGE.'], [6.6, 'YOU CANNOT SEE FIFTY YARDS.'], [8.6, 'THEN — A FLASH IN THE MIST.'], [10.0, 'ONE SHOT. ONE KILL.'], [12.0, 'THE GROUND BEGINS TO SHAKE.'], [16.4, ''], [18.8, 'TWENTY-SEVEN CONFIRMED KILLS IN THREE DAYS.'], [21.2, 'ITS FRONT ARMOUR SHRUGS OFF OUR SHELLS.'], [23.0, 'BUT IT CANNOT HIDE ITS MUZZLE FLASH.'], [25.6, 'THE ORDER COMES OVER THE RADIO.']];
+    const caps = [[4.6, 'FOG. THICK AS WOOL ACROSS THE BOCAGE.'], [6.6, 'YOU CANNOT SEE FIFTY YARDS.'], [8.6, 'THEN — A FLASH IN THE MIST.'], [10.0, 'TWO SHOTS. TWO SHERMANS GONE.'], [12.0, 'THE GROUND BEGINS TO SHAKE.'], [16.4, ''], [18.8, 'TWENTY-SEVEN CONFIRMED KILLS IN THREE DAYS.'], [21.2, 'ITS FRONT ARMOUR SHRUGS OFF OUR SHELLS.'], [23.0, 'BUT IT CANNOT HIDE ITS MUZZLE FLASH.'], [25.6, 'THE ORDER COMES OVER THE RADIO.']];
     let ci = -1; caps.forEach(function(c, i) { if (t >= c[0]) ci = i; });
     if (ci >= 0 && t < M4CS.dur - .8 && !(t > M4CS.cuts[2] + 4.3)) { const c = caps[ci], n = Math.min(c[1].length, Math.floor((t - c[0]) * 34)), txt = c[1].slice(0, n) + (Math.floor(t * 3) % 2 && n < c[1].length ? '▌' : ''); ctx.textAlign = 'center'; ctx.fillStyle = '#efe6c6'; ctx.font = '700 16px "Special Elite", "Courier New", monospace'; ctx.fillText(txt, w / 2, h - bar - 26 + bar * .62 + 4); }
     ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(239,230,198,.35)'; ctx.font = '11px monospace'; ctx.fillText('SPACE — SKIP', w - 18, h - 8);
@@ -19788,7 +19799,7 @@ function drawForestMap() {
 function m4Dir(from, to) { const a = Math.atan2(to.y - from.y, to.x - from.x), n = ['EAST', 'SOUTH-EAST', 'SOUTH', 'SOUTH-WEST', 'WEST', 'NORTH-WEST', 'NORTH', 'NORTH-EAST']; return n[(Math.round(a / (Math.PI / 4)) + 8) % 8]; }
 function m4SpawnTiger() {
     const h = M4_HIDES[1];
-    const t = m2Tank(h[0], h[1], 'heavy', { angle: Math.PI / 2, turretAngle: Math.PI / 2, health: 560, maxHealth: 560, armor: .6, damage: 58, reload: 2600, lastShot: Date.now() + 3000, m4boss: true });
+    const t = m2Tank(h[0], h[1], 'heavy', { angle: Math.PI / 2, turretAngle: Math.PI / 2, health: 560, maxHealth: 560, armor: .6, damage: 88, reload: 2400, lastShot: Date.now() + 3000, m4boss: true });
     t.m4 = { state: 'lurk', hide: 1, born: Date.now(), nextAmbush: Date.now() + 4000, shots: 0, revealUntil: 0, cover: 0, enraged: false, ambushAt: 0, relocAt: 0, announced: false };
     M4.tiger = t; enemies.push(t);
 }
@@ -19883,7 +19894,7 @@ function createMission4() {
     M4.active = true; M4.endHandled = false; M4.won = false; M4.wonAt = 0; M4.p1 = false; M4.p2 = false; M4.firstDone = false; M4.startAt = Date.now(); M4.tiger = null; M4.lostAllies = 0; M4.flashes = [];
     SUP.mode = 'off'; SUP.type = 'air'; SUP.cd = 0; SUP.strikes = []; SUP.CD = 35000;
     createMission4Map(); enemies = []; allies = [];
-    [['medium', .38, .93, 'ALPHA'], ['medium', .62, .93, 'BRAVO'], ['medium', .50, .98, 'CHARLIE']].forEach(function(s, i) { allies.push(m3MakeAlly(s[0], canvas.width * s[1], canvas.height * s[2], i, s[3], false)); });
+    // no allies: the platoon was wiped out in the ambush
     player.x = canvas.width * .5; player.y = canvas.height * .9; player.angle = -Math.PI / 2; player.turretAngle = -Math.PI / 2; player.abilityType = null;
     m4SpawnTiger();
     m2ShowHud(true); m4ShowHud(true);
@@ -20004,10 +20015,10 @@ function m4ShowBrief(go) {
     let b = document.getElementById('m2Brief'); if (!b) { b = document.createElement('div'); b.id = 'm2Brief'; document.body.appendChild(b); }
     b.innerHTML = '<div class="bSheet"><div class="bTape"><span>OPERATION OVERLORD</span><span>MISSION 04</span></div><div class="bBody">' +
         '<h2>TIGER HUNT</h2><p class="bText" id="m4Typed"></p>' +
-        '<ul><li>Find and destroy <b>Tiger No. 007</b>. No escorts — just you, your squad and the Tiger.</li><li>Dense fog: you only see <b>about 150 px</b> around your tank, less around your squad.</li><li>The Tiger fires from the mist, <b>holds for a few seconds</b>, then relocates. Its <b>front armour</b> almost shrugs off shells. Hit the <b>sides</b> — or the <b>rear for double damage</b>.</li><li>Hurt it badly and it charges.</li></ul>' +
+        '<ul><li>Find and destroy <b>Tiger No. 007</b>. Your platoon is gone. <b>No allies</b> — just you and the Tiger.</li><li>Dense fog: you only see <b>about 150 px</b> around your tank.</li><li>Its 88 hits <b>hard</b> — a couple of hits will finish you. Keep moving and repair when you can.</li><li>The Tiger fires from the mist, <b>holds for a few seconds</b>, then relocates. Its <b>front armour</b> almost shrugs off shells. Hit the <b>sides</b> — or the <b>rear for double damage</b>.</li><li>Hurt it badly and it charges.</li></ul>' +
         '<div class="bNew">★ FIELD NOTES ★</div><div class="bCards">' +
         '<div class="bCard" id="m4C1"><h3>READ THE FLASHES</h3>Every Tiger shot lights the fog with a <b>huge muzzle flash</b>. A faint <b>outline</b> marks where it sits in the mist. Close in until you can see it.</div>' +
-        '<div class="bCard" id="m4C2"><h3>USE YOUR SQUAD</h3>Allies see too. Spread out for different angles, then circle round while the Tiger is busy. Once it\'s in sight: <b>red front</b>, <b>green sides</b>, <b>gold rear</b>.</div>' +
+        '<div class="bCard" id="m4C2"><h3>ALONE IN THE FOG</h3>Use the hedges for cover. Wait for the flash, then circle round while it reloads. Once it\'s in sight: <b>red front</b>, <b>green sides</b>, <b>gold rear</b>.</div>' +
         '<div class="bCard" id="m4C3"><h3>AIRSTRIKE RUN</h3><kbd>E</kbd> then click: bombers sweep north in a line. Bombs only do about a third damage to the Tiger, but they light up the fog. 35 s recharge.</div>' +
         '<div class="bCard" id="m4C4"><h3>FIELD REPAIR</h3><kbd>R</kbd> works anywhere. Hold still while the gauge fills.</div></div>' +
         '<div class="bNote">W A S D move · mouse aim · click / space fire.</div>' +

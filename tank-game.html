@@ -6193,7 +6193,7 @@ function ddpM8Scene5(t0, u, w, h) { // background for the order: dusk hills, the
     const hz = hv * .58; ddpSky(hz + 60, t0, 0, 1200, .6, 0, DDP_M8PAL); ddpM8Clouds(hz - 60, t0);
     const tp = ddpTunnelCliff(hz, t0, 200, { lamps: true }); ddpFlashGlow(tp.px, tp.py - 80, 200, .25 + .1 * Math.sin(t0 * 3)); ctx.save(); ctx.beginPath(); ctx.rect(tp.px - 150, tp.py - 250, 300, 250); ctx.clip(); ddpGustav(tp.px + 60, tp.py, .45, t0, { el: .55, haze: .5 }); ctx.restore();
     const g = ctx.createLinearGradient(0, hz + 20, 0, hv); g.addColorStop(0, 'rgb(70,56,56)'); g.addColorStop(1, 'rgb(20,16,18)'); ctx.fillStyle = g; ctx.fillRect(-800, hz + 20, 3200, hv);
-    const go = cs2C((u - 1.4) / 5, 0, 1); ddpSherman(820 + go * 200, hv * .86, 1.05, t0, { skin: ddpPlayerSkin(), gun: .04 }); ddpBust(820 + go * 200 - 18, hv * .86 - 105, 1.4, 4, 0, t0, .4);
+    const go = cs2C((u - 1.0) / 6, 0, 1); [[0, 0], [-105, 16], [-200, -8], [-300, 12], [-395, -2]].forEach(function (q, i) { const x = 700 + go * 420 + q[0], y = hv * .86 + q[1]; ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(x, y + 2, 26, 5, 0, 0, 7); ctx.fill(); ddpMan(x, y, 2.4, t0 + i * .37, { run: go > 0 && go < 1 ? .55 : 0, crouch: 1, haze: .15 }); });
     ctx.restore(); ddpBloom(w, h); return 0;
 }
 function ddpM8Frame(t, w, h) {
@@ -6216,7 +6216,7 @@ function m8Shot5(t0, w, h) {
         ctx.save(); ctx.globalAlpha = rp; ctx.fillStyle = 'rgba(8,10,6,.86)'; ctx.fillRect(w - 470, 90, 430, 150); ctx.strokeStyle = '#7e8355'; ctx.lineWidth = 2; ctx.strokeRect(w - 470, 90, 430, 150);
         ctx.fillStyle = '#9fb27a'; ctx.font = '700 12px monospace'; ctx.textAlign = 'left'; ctx.fillText('● RADIO · 38.4 MHz · CHANNEL 3', w - 454, 112);
         for (let i = 0; i < 40; i++) { const bh = 3 + Math.abs(Math.sin(u * 14 + i * 1.7) * Math.sin(u * 5 + i * .6)) * (u < 4.2 ? 20 : 3); ctx.fillStyle = 'rgba(140,200,110,.85)'; ctx.fillRect(w - 454 + i * 9.7, 136 - bh / 2, 6, bh); }
-        const msg = 'HQ: "THE BEACH CANNOT TAKE ANOTHER ONE. GET INTO THAT YARD, BLIND IT, BREAK IT. NOTHING ELSE MATTERS."', n = Math.min(msg.length, Math.floor((u - .9) * 30));
+        const msg = 'HQ: "NO TANK WILL GET NEAR IT. TAKE YOUR SECTION IN AFTER DARK, BOARD THE GUN AND BLOW IT FROM THE INSIDE."', n = Math.min(msg.length, Math.floor((u - .9) * 30));
         ctx.fillStyle = '#e7edc9'; ctx.font = '13px "Special Elite", "Courier New", monospace'; const words = msg.slice(0, Math.max(0, n)).split(' '); let line = '', yy = 164; words.forEach(function (wd) { if ((line + wd).length > 42) { ctx.fillText(line, w - 454, yy); line = ''; yy += 18; } line += wd + ' '; }); ctx.fillText(line, w - 454, yy);
         ctx.restore();
     }
@@ -6226,9 +6226,9 @@ function m8Shot5(t0, w, h) {
         ctx.fillStyle = 'rgba(8,8,5,.86)'; ctx.fillRect(-w, -88, w * 2, 176);
         const tape = function (y) { ctx.save(); ctx.beginPath(); ctx.rect(-w, y, w * 2, 15); ctx.clip(); ctx.fillStyle = '#d6a91c'; ctx.fillRect(-w, y, w * 2, 15); ctx.fillStyle = '#16140f'; for (let x = -w - 40; x < w + 40; x += 40) { ctx.beginPath(); ctx.moveTo(x, y + 15); ctx.lineTo(x + 20, y + 15); ctx.lineTo(x + 34, y); ctx.lineTo(x + 14, y); ctx.closePath(); ctx.fill(); } ctx.restore(); };
         tape(-88); tape(73);
-        ctx.textAlign = 'center'; ctx.fillStyle = '#d9c88c'; ctx.font = '700 15px "Special Elite", "Courier New", monospace'; ctx.fillText('— ACT II · BOSS · MISSION 8 —', 0, -48);
+        ctx.textAlign = 'center'; ctx.fillStyle = '#d9c88c'; ctx.font = '700 15px "Special Elite", "Courier New", monospace'; ctx.fillText('— ACT II · COMMANDO RAID · MISSION 8 —', 0, -48);
         ctx.fillStyle = '#f4ecd0'; ctx.strokeStyle = '#000'; ctx.lineWidth = 7; ctx.font = '700 70px "Stardos Stencil", Impact, sans-serif'; ctx.strokeText('SCHWERER GUSTAV', 0, 22); ctx.fillText('SCHWERER GUSTAV', 0, 22);
-        ctx.fillStyle = '#e8c968'; ctx.font = '700 17px "Special Elite", "Courier New", monospace'; ctx.fillText('SILENCE THE GUN.', 0, 54);
+        ctx.fillStyle = '#e8c968'; ctx.font = '700 17px "Special Elite", "Courier New", monospace'; ctx.fillText('OPERATION DEADFALL.', 0, 54);
         ctx.restore();
     }
     return flash;
@@ -6261,362 +6261,457 @@ function drawM8Cutscene(now) {
     if (t < M8CS.dur) campaignCutsceneFrame = requestAnimationFrame(drawM8Cutscene); else finishCampaignCutscene();
 }
 /* =====================================================
-   CAMPAIGN MISSION 8 - SCHWERER GUSTAV (boss, large map 2400x1500)
-   Phase 1: kill the two flak wagons on the armoured escort train circling the yard.
-   Phase 2: the gun shells you from the tunnel - dodge the shadows, destroy both spotter towers.
-   Phase 3: Gustav rolls out. Fire cycle: RELOAD (hit the shell on the hoist) -> ELEVATE (hit the
-            exposed elevation gears) -> FIRE (shockwave; one more hit on the beachhead). 3 beach hits = fail.
+   CAMPAIGN MISSION 8 - OPERATION DEADFALL (stealth commando raid on Schwerer Gustav)
+   A five-man British commando section moves as a square with the leader (you) in the centre.
+   Slip past watchtowers, searchlights, sentries and patrols, reach Gustav, enter its four
+   compartments through the hatches, kill the crews and engineers, plant charges, get clear, blow it.
+   Self-contained: own loop, own entities, own HUD (the tank engine is not running).
 ===================================================== */
 const M8W = 2400, M8H = 1500;
-const M8 = { active: false, phase: 0, art: null, artKey: '', train: null, towers: [], gears: [], shots: [], craters: [], gus: null, won: false, wonAt: 0, endHandled: false, failWhy: '', nextShot: 0, phaseAt: 0, msgs: {}, waves: 0 };
-const M8_LOOP = { cx: 1200, cy: 1030, rx: 950, ry: 300 };
-const M8_GY = 470, M8_SHADOW = 3300, M8_SHOT_EVERY = 11000, M8_BEACH_MAX = 3;
-const M8_CYCLE = { reload: 8500, elevate: 5200, fire: 1600 };
-function m8LargeWorld() { return selectedGameMode === 'campaign' && campaignMission === 8; }
-function m8IsLarge() { return typeof M8 !== 'undefined' && !M8.cut && selectedGameMode === 'campaign' && campaignMission === 8 && canvas.width === M8W; }
-function m8LoopPt(s) { const a = s / 1000; return { x: M8_LOOP.cx + Math.cos(a) * M8_LOOP.rx, y: M8_LOOP.cy + Math.sin(a) * M8_LOOP.ry, ang: Math.atan2(Math.cos(a) * M8_LOOP.ry, -Math.sin(a) * M8_LOOP.rx) }; }
-function m8CarPos(i) { return m8LoopPt(M8.train.s - i * 128); }
-const M8_ROCKS = [[300, 640, 90, 60], [560, 420, 70, 50], [840, 300, 80, 46], [1560, 300, 80, 46], [1850, 400, 70, 50], [2090, 680, 90, 60], [140, 1100, 80, 60], [2200, 1120, 90, 60], [700, 1420, 80, 40], [1640, 1420, 90, 40], [980, 1180, 60, 44], [1420, 1180, 60, 44]];
-const M8_SANDS = [[700, 650, 160, 24], [1540, 650, 160, 24], [460, 980, 24, 150], [1916, 980, 24, 150], [1060, 1360, 120, 22], [1220, 1360, 120, 22]];
-const M8_HOUSES = [[520, 1180, 130, 90], [1760, 1170, 140, 90]];
-const M8_WOODS = [[90, 330, 150, 120], [2160, 300, 160, 130], [100, 1330, 170, 120], [2130, 1340, 180, 110]];
-function createMission8Map() {
-    obstacles = [];
-    addObstacle(-40, -40, M8W + 80, 270, 'm8Rock');
-    M8_ROCKS.forEach(function (b) { addObstacle(b[0], b[1], b[2], b[3], 'm8Rock'); });
-    M8_SANDS.forEach(function (b) { addObstacle(b[0], b[1], b[2], b[3], 'm8Sand'); });
-    M8_HOUSES.forEach(function (b) { addObstacle(b[0], b[1], b[2], b[3], 'm8House'); });
-    M8_WOODS.forEach(function (b) { addObstacle(b[0], b[1], b[2], b[3], 'm8Wood'); });
-    M8.towers.forEach(function (t) { if (!t.destroyed) addObstacle(t.x - 34, t.y - 34, 68, 68, 'm8Tower'); });
-    if (M8.phase >= 3 && M8.gus && M8.gus.out >= 1) addObstacle(1108, M8_GY - 200, 184, 400, 'm8Gustav');
-    navCache = { key: '', grids: {} };
+const M8 = { active: false, cut: false, running: false, raf: 0, scene: 'out', units: [], bullets: [], fx: [], bodies: [], obs: [], lamps: [], alarm: false, alarmAt: 0, reinf: 0, k: {}, mdown: false, cam: { x: 0, y: 0 }, rooms: {}, outPos: null, planted: 0, done: false, failed: false, msg: '', msgAt: 0, loadout: null, wi: 0, ammo: [0, 0], reloadUntil: [0, 0], lastShot: 0, plantT: 0, fade: 0, fadeTo: null, darkC: null, kills: 0, shots: 0, endAt: 0, mx: 550, my: 200 };
+function m8LargeWorld() { return false; } function m8IsLarge() { return false; }
+function m8Hit() { return false; } function m8Splash() {} function m8Enemy() {} function updateMission8() {} function createMission8() {} function createMission8Map() {} function drawGustavMap() {} function m8DrawOverlay() {}
+function m8ObjectiveText() { return M8.obj || ''; }
+
+const M8_PRIMARY = {
+    delisle: { name: 'DE LISLE CARBINE', short: 'DE LISLE', dmg: 120, rate: 1050, mag: 8, reload: 2300, spread: .008, range: 600, noise: 45, speed: 30, desc: 'Integrally silenced .45 bolt carbine. One shot, one kill, barely a whisper.' },
+    sten: { name: 'STEN Mk IIS', short: 'STEN IIS', dmg: 30, rate: 105, mag: 32, reload: 2000, spread: .08, range: 360, noise: 120, speed: 24, auto: true, desc: 'Suppressed SMG. Quiet and fast, but short-ranged.' },
+    bren: { name: 'BREN GUN', short: 'BREN', dmg: 46, rate: 100, mag: 30, reload: 2700, spread: .05, range: 650, noise: 800, speed: 28, auto: true, desc: 'Light machine gun. Shreds anything, wakes everyone.' },
+    enfield: { name: 'LEE-ENFIELD No.4 (T)', short: 'No.4 (T)', dmg: 160, rate: 1400, mag: 10, reload: 2500, spread: .003, range: 950, noise: 700, speed: 36, desc: 'Scoped sniper rifle. Long reach, loud crack.' }
+};
+const M8_SECONDARY = {
+    welrod: { name: 'WELROD Mk II', short: 'WELROD', dmg: 85, rate: 750, mag: 6, reload: 1900, spread: .02, range: 240, noise: 15, speed: 22, desc: 'Silent bolt pistol made for exactly this.' },
+    webley: { name: 'WEBLEY Mk VI', short: 'WEBLEY', dmg: 70, rate: 480, mag: 6, reload: 2200, spread: .03, range: 320, noise: 520, speed: 24, desc: 'Heavy service revolver. Reliable and loud.' },
+    knife: { name: 'FAIRBAIRN-SYKES KNIFE', short: 'F-S KNIFE', melee: true, dmg: 999, rate: 520, range: 40, noise: 0, desc: 'Silent takedown at arm\'s length. Best from behind.' }
+};
+const M8_NAMES = ['MAJ. (YOU)', 'SGT. HOLLIS', 'CPL. FINCH', 'L/CPL. DUNN', 'PTE. MACKAY'];
+const M8_FORM = [[-30, -30], [30, -30], [-30, 30], [30, 30]];
+const M8_GUS = { x: 1090, y: 240, w: 220, h: 620 };
+const M8_DOORS = [
+    { id: 'engine', name: 'ENGINE ROOM', x: 1078, y: 380, side: -1 }, { id: 'ammo', name: 'AMMUNITION ROOM', x: 1078, y: 700, side: -1 },
+    { id: 'breech', name: 'BREECH ROOM', x: 1322, y: 470, side: 1 }, { id: 'gears', name: 'ELEVATION ROOM', x: 1322, y: 760, side: 1 }];
+const M8_FENCE = { x0: 520, y0: 200, x1: 1880, y1: 1090, gate: [1140, 1260], gaps: [['w', 640, 720], ['e', 820, 900]] };
+
+/* ---------- geometry ---------- */
+function m8R(i) { const v = Math.sin(i * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); }
+function m8RectHit(x, y, r, o) { const cx = Math.max(o.x, Math.min(x, o.x + o.w)), cy = Math.max(o.y, Math.min(y, o.y + o.h)); return (x - cx) * (x - cx) + (y - cy) * (y - cy) < r * r; }
+function m8Blocked(x, y, r) { for (let i = 0; i < M8.obs.length; i++) if (m8RectHit(x, y, r, M8.obs[i])) return true; const W = M8.scene === 'out' ? M8W : 1100, H = M8.scene === 'out' ? M8H : 700; return x < r || y < r || x > W - r || y > H - r; }
+function m8SegRect(x0, y0, x1, y1, o) { let t0 = 0, t1 = 1; const dx = x1 - x0, dy = y1 - y0; const p = [-dx, dx, -dy, dy], q = [x0 - o.x, o.x + o.w - x0, y0 - o.y, o.y + o.h - y0]; for (let i = 0; i < 4; i++) { if (p[i] === 0) { if (q[i] < 0) return false; } else { const t = q[i] / p[i]; if (p[i] < 0) { if (t > t1) return false; if (t > t0) t0 = t; } else { if (t < t0) return false; if (t < t1) t1 = t; } } } return true; }
+function m8LOS(x0, y0, x1, y1) { for (let i = 0; i < M8.obs.length; i++) { const o = M8.obs[i]; if (o.low) continue; if (m8SegRect(x0, y0, x1, y1, o)) return false; } return true; }
+function m8Move(u, dx, dy) { if (!m8Blocked(u.x + dx, u.y, u.r)) u.x += dx; if (!m8Blocked(u.x, u.y + dy, u.r)) u.y += dy; }
+function m8Turn(a, b, k) { return a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k; }
+function m8Steer(u, tx, ty, sp) { const d = Math.hypot(tx - u.x, ty - u.y); if (d < Math.max(2, sp)) { if (!m8Blocked(tx, ty, u.r)) { u.x = tx; u.y = ty; } return true; } const a = Math.atan2(ty - u.y, tx - u.x); const offs = [0, .6, -.6, 1.2, -1.2, 1.9, -1.9]; for (let i = 0; i < offs.length; i++) { const off = offs[i], nx = u.x + Math.cos(a + off) * sp, ny = u.y + Math.sin(a + off) * sp; if (!m8Blocked(nx, ny, u.r)) { u.x = nx; u.y = ny; u.ang = m8Turn(u.ang, a + off, .2); u.moving = true; return false; } } u.stuck = (u.stuck || 0) + 1; return u.stuck > 90 ? (u.stuck = 0, true) : false; }
+function m8Lit(x, y) {
+    let L = 0; if (M8.scene !== 'out') return .45;
+    M8.units.forEach(function (u) { if (u.kind !== 'tower' || u.dead) return; const lx = u.x + Math.cos(u.la) * 230, ly = u.y + Math.sin(u.la) * 230; const d = Math.hypot(x - lx, y - ly); if (d < 95) L = Math.max(L, 1 - d / 95 * .4); });
+    M8.lamps.forEach(function (l) { const d = Math.hypot(x - l.x, y - l.y); if (d < l.r) L = Math.max(L, .8 * (1 - d / l.r)); });
+    return L;
 }
-function createMission8() {
-    M2.active = true; M2.aa = []; M2.phase = 0; M2.alerted = true; M2.endHandled = false;
-    SUP.mode = 'off'; SUP.type = 'air'; SUP.cd = 0; SUP.strikes = []; SUP.CD = 30000;
-    const now = Date.now();
-    Object.assign(M8, { active: true, phase: 1, shots: [], craters: [], won: false, wonAt: 0, endHandled: false, failWhy: '', nextShot: 0, phaseAt: now, msgs: {}, waves: 0,
-        gus: { y: -300, out: 0, hp: 100, state: 'hidden', stateAt: 0, el: 0, hoist: 0, beach: 0, stun: 0, fireAt: 0, ring: 0, droop: 0, shellLive: false, cycles: 0 } });
-    M8.train = { s: 2600, v: 82, alive: true, stopped: false, lastT: 0, cars: [
-        { k: 'loco', armoured: true, hp: 1 }, { k: 'flak', hp: 380, maxHp: 380, name: 'FLAK WAGON 1', last: 0, burst: 0, ang: 0 }, { k: 'box', armoured: true, hp: 1 },
-        { k: 'flak', hp: 380, maxHp: 380, name: 'FLAK WAGON 2', last: 0, burst: 0, ang: 0 }, { k: 'van', armoured: true, hp: 1 }] };
-    M8.towers = [{ x: 330, y: 470, hp: 360, maxHp: 360, destroyed: false, name: 'WEST SPOTTER' }, { x: 2070, y: 490, hp: 360, maxHp: 360, destroyed: false, name: 'EAST SPOTTER' }];
-    M8.gears = [{ dx: -104, hp: 300, maxHp: 300, destroyed: false, name: 'LEFT ELEVATION GEAR' }, { dx: 104, hp: 300, maxHp: 300, destroyed: false, name: 'RIGHT ELEVATION GEAR' }];
-    enemies = []; allies = [];
-    createMission8Map();
-    player.x = 1200; player.y = 1420; player.angle = -Math.PI / 2; player.turretAngle = -Math.PI / 2; player.abilityType = null; player.componentDamage = null; player.componentBroken = null;
-    m8Spawn(420, 1300, 'light');
-    m2ShowHud(true); m8ShowHud(true);
-    setTimeout(function () { if (M8.active) showRadioText('THE ESCORT TRAIN IS ARMOURED — ONLY THE TWO FLAK WAGONS WILL BREAK!', true); }, 1500);
+
+/* ---------- world building ---------- */
+function m8Obs(x, y, w, h, kind, low) { M8.obs.push({ x: x, y: y, w: w, h: h, kind: kind, low: !!low }); }
+function m8BuildOutside() {
+    M8.obs = [];
+    m8Obs(-50, -50, M8W + 100, 230, 'ridge');
+    m8Obs(M8_GUS.x, M8_GUS.y, M8_GUS.w, M8_GUS.h, 'gustav');
+    const F = M8_FENCE, fw = 10;
+    const seg = function (x0, y0, x1, y1) { if (x0 === x1) m8Obs(x0 - fw / 2, Math.min(y0, y1), fw, Math.abs(y1 - y0), 'fence', true); else m8Obs(Math.min(x0, x1), y0 - fw / 2, Math.abs(x1 - x0), fw, 'fence', true); };
+    seg(F.x0, F.y1, F.gate[0], F.y1); seg(F.gate[1], F.y1, F.x1, F.y1);
+    seg(F.x0, F.y0, F.x0, F.gaps[0][1]); seg(F.x0, F.gaps[0][2], F.x0, F.y1);
+    seg(F.x1, F.y0, F.x1, F.gaps[1][1]); seg(F.x1, F.gaps[1][2], F.x1, F.y1);
+    [[640, 320, 210, 90, 'hut'], [1560, 320, 210, 90, 'hut'], [700, 860, 130, 70, 'crates'], [900, 600, 70, 150, 'truck'], [1500, 880, 150, 66, 'truck'], [1700, 600, 110, 80, 'crates'], [1440, 1150, 120, 60, 'hut2'], [300, 1200, 140, 60, 'crates'], [840, 1180, 110, 60, 'crates'], [1880, 1200, 70, 140, 'truck']].forEach(function (b) { m8Obs(b[0], b[1], b[2], b[3], b[4]); });
+    [[1150, 1000, 100, 22], [600, 520, 22, 110], [1760, 480, 22, 110]].forEach(function (b) { m8Obs(b[0], b[1], b[2], b[3], 'sand', true); });
+    for (let i = 0; i < 46; i++) { const x = m8R(i + 3) * M8W, y = 1180 + m8R(i + 9) * 300; if (Math.abs(x - 1200) < 150 && y > 1330) continue; if (x > 480 && x < 1920 && y < 1300) continue; m8Obs(x - 24, y - 24, 48, 48, 'tree'); }
+    for (let i = 0; i < 26; i++) { const side = i % 2, x = side ? 2000 + m8R(i) * 360 : 40 + m8R(i) * 400, y = 260 + m8R(i + 4) * 900; m8Obs(x - 26, y - 26, 52, 52, 'tree'); }
+    M8.lamps = [{ x: 1200, y: 1060, r: 170 }, { x: 745, y: 420, r: 150 }, { x: 1665, y: 420, r: 150 }, { x: 1200, y: 230, r: 220 }, { x: 1050, y: 540, r: 120 }, { x: 1350, y: 620, r: 120 }];
 }
-function m8Spawn(x, y, cls) { const t = m2Tank(x, y, cls, { lastShot: Date.now() + 2400, aiSmart: 1 }); t.m8 = { born: Date.now() }; enemies.push(t); return t; }
-function m8Alive() { return enemies.filter(function (e) { return !e.destroyed; }).length; }
-function m8Enemy(e, now) {
-    const dt = Math.min(0.05, Math.max(0.001, (now - (e.aiLastUpdateAt || now)) / 1000)); e.aiLastUpdateAt = now;
-    if (M8.won) return;
-    const S = aiS(e), nt = m4NearestTarget(e), target = nt.t;
-    if (target && nt.d > 320) m4Move(e, target.x, target.y, .75, 0, dt);
-    e.x = Math.max(e.size + 6, Math.min(M8W - e.size - 6, e.x)); e.y = Math.max(250 + e.size, Math.min(M8H - e.size - 6, e.y));
-    separateTankFromOthers(e, [player].concat(allies).concat(enemies));
-    if (target && !(e.turretDisabledUntil && Date.now() < e.turretDisabledUntil) && nt.d < 700) m4Aim(e, target, dt, [0.16, 0.10, 0.07, 0.05][S], true, now);
+function m8Unit(o) { return Object.assign({ r: 9, ang: Math.PI / 2, hp: 100, maxHp: 100, dead: false, state: 'patrol', sus: 0, lastShot: 0, ri: 0, spd: 1.1, fov: 1.05, view: 230, alertAt: 0, seen: 0 }, o); }
+function m8Populate() {
+    const U = [];
+    U.push(m8Unit({ team: 'sq', kind: 'leader', x: 1200, y: 1430, ang: -Math.PI / 2, hp: 120, maxHp: 120, name: M8_NAMES[0] }));
+    for (let i = 0; i < 4; i++) U.push(m8Unit({ team: 'sq', kind: 'cmdo', slot: i, x: 1200 + M8_FORM[i][0], y: 1430 + M8_FORM[i][1], ang: -Math.PI / 2, hp: 80, maxHp: 80, name: M8_NAMES[i + 1] }));
+    const F = M8_FENCE;
+    [[F.x0, F.y0, .6], [F.x1, F.y0, 2.5], [F.x0, F.y1, -.6], [F.x1, F.y1, -2.5]].forEach(function (p, i) { U.push(m8Unit({ team: 'en', kind: 'tower', x: p[0], y: p[1], base: p[2], la: p[2], view: 340, fov: .42, hp: 50, maxHp: 50, ph: i * 1.7, state: 'post' })); });
+    const pat = function (route, n, spd) { for (let k = 0; k < n; k++) U.push(m8Unit({ team: 'en', kind: 'sold', x: route[0][0], y: route[0][1], route: route, ri: 0, spd: spd || 1.0, delay: k * 26 })); };
+    pat([[560, 1150], [1080, 1150], [1080, 1270], [560, 1270]], 2);
+    pat([[1320, 1150], [1840, 1150], [1840, 1270], [1320, 1270]], 2);
+    pat([[640, 480], [640, 980], [1020, 980], [1020, 480]], 2);
+    pat([[1760, 480], [1760, 980], [1380, 980], [1380, 480]], 2);
+    pat([[1030, 300], [1370, 300], [1370, 900], [1030, 900]], 1, .9);
+    [[1155, 1110, Math.PI / 2], [1245, 1110, Math.PI / 2], [1200, 970, Math.PI / 2], [745, 450, Math.PI / 2], [1665, 450, Math.PI / 2], [1040, 420, Math.PI], [1360, 520, 0]].forEach(function (s, i) { U.push(m8Unit({ team: 'en', kind: i === 2 ? 'mg' : 'sold', x: s[0], y: s[1], ang: s[2], base: s[2], state: 'post', view: i === 2 ? 300 : 220, fov: i === 2 ? 1.3 : 1.05 })); });
+    M8.units = U;
 }
-function m8GearPos(g) { return { x: 1200 + g.dx, y: M8.gus.y + 70 }; }
-function m8HoistPos() { const G = M8.gus; return { x: 1200, y: G.y - 196 + G.hoist * 44 }; }
-function m8Text(x, y, txt, col, size) { hitTexts.push({ x: x, y: y, text: txt, life: 60, maxLife: 60, color: col || '#ffd24a', size: size || 13, stroke: true, vy: .6 }); }
-function m8Hit(shell) {
-    if (!M8.active) return false;
-    const dmg = shell.damage || (player && player.damage) || 40, G = M8.gus;
-    if (M8.train && M8.train.alive) for (let i = 0; i < M8.train.cars.length; i++) { const c = M8.train.cars[i], p = m8CarPos(i); if (Math.hypot(shell.x - p.x, shell.y - p.y) < 34) {
-        createImpact(shell.x, shell.y); createHitSparks(shell.x, shell.y);
-        if (c.armoured || c.hp <= 0) { if (Math.random() < .4) m8Text(p.x, p.y - 26, 'ARMOURED', '#c9c3a6', 12); return true; }
-        m8Damage(c, dmg, p.x, p.y); return true; } }
-    for (let i = 0; i < M8.towers.length; i++) { const t = M8.towers[i]; if (!t.destroyed && Math.hypot(shell.x - t.x, shell.y - t.y) < 38) { createImpact(shell.x, shell.y); createHitSparks(shell.x, shell.y); m8Damage(t, dmg, t.x, t.y); return true; } }
-    if (M8.phase >= 3 && G.out >= 1 && !M8.won) {
-        if (G.state === 'reload' && G.shellLive) { const h = m8HoistPos(); if (Math.hypot(shell.x - h.x, shell.y - h.y) < 30) { m8Detonate(h.x, h.y); return true; } }
-        for (let i = 0; i < M8.gears.length; i++) { const g = M8.gears[i], p = m8GearPos(g); if (g.destroyed || Math.hypot(shell.x - p.x, shell.y - p.y) > 36) continue; createImpact(shell.x, shell.y); createHitSparks(shell.x, shell.y);
-            if (G.state !== 'elevate') { m8Text(p.x, p.y - 30, 'COVERED — WAIT FOR IT TO ELEVATE', '#ffb070', 12); return true; }
-            m8Damage(g, dmg, p.x, p.y); if (g.destroyed) m8GusDamage(25, 'GEAR WRECKED'); return true; }
-        if (shell.x > 1108 && shell.x < 1292 && shell.y > G.y - 210 && shell.y < G.y + 200) { createImpact(shell.x, shell.y); createHitSparks(shell.x, shell.y); m8GusDamage(1); if (Math.random() < .35) m8Text(shell.x, shell.y - 20, G.state === 'reload' ? 'HIT THE SHELL ON THE HOIST!' : G.state === 'elevate' ? 'HIT THE GEARS!' : 'TOO THICK', '#ffb070', 12); return true; }
+function m8RoomDef(id) {
+    const R = { id: id, obs: [], target: null, units: [], exit: { x: 500, y: 650, w: 100, h: 50 }, bell: null, planted: false, cleared: false };
+    const box = function (x, y, w, h, k, low) { R.obs.push({ x: x, y: y, w: w, h: h, kind: k, low: !!low }); };
+    box(0, 0, 1100, 40, 'wall'); box(0, 0, 40, 700, 'wall'); box(1060, 0, 40, 700, 'wall'); box(0, 660, 500, 40, 'wall'); box(600, 660, 500, 40, 'wall');
+    if (id === 'engine') { box(160, 140, 260, 140, 'diesel'); box(160, 400, 260, 140, 'diesel'); box(640, 200, 160, 120, 'gen'); box(880, 120, 80, 420, 'pipes'); R.target = { x: 720, y: 370, name: 'GENERATOR' }; R.bell = { x: 1030, y: 330 }; }
+    if (id === 'ammo') { for (let i = 0; i < 4; i++) box(140 + i * 210, 120, 150, 70, 'shellrack'); for (let i = 0; i < 3; i++) box(180 + i * 260, 400, 140, 110, 'charges'); R.target = { x: 550, y: 570, name: 'PROPELLANT STACK' }; R.bell = { x: 70, y: 330 }; }
+    if (id === 'breech') { box(380, 140, 340, 260, 'breech'); box(200, 470, 700, 40, 'tray', true); box(120, 120, 60, 200, 'panel'); R.target = { x: 550, y: 430, name: 'BREECH MECHANISM' }; R.bell = { x: 1030, y: 200 }; }
+    if (id === 'gears') { box(170, 170, 220, 220, 'gear'); box(710, 170, 220, 220, 'gear'); box(470, 440, 160, 100, 'gearbox'); R.target = { x: 550, y: 570, name: 'ELEVATION GEARBOX' }; R.bell = { x: 70, y: 560 }; }
+    const g = function (x, y, route) { R.units.push(m8Unit({ team: 'en', kind: 'sold', x: x, y: y, route: route, view: 260, spd: .9 })); };
+    const e = function (x, y, a) { R.units.push(m8Unit({ team: 'en', kind: 'eng', x: x, y: y, ang: a, base: a, state: 'work', hp: 60, maxHp: 60, view: 200, fov: 1.2 })); };
+    if (id === 'engine') { g(520, 100, [[520, 100], [520, 600], [980, 600], [980, 100]]); g(100, 600, [[100, 600], [460, 600]]); e(470, 210, Math.PI); e(620, 370, 0); e(110, 340, 0); }
+    if (id === 'ammo') { g(100, 300, [[100, 300], [1000, 300]]); g(1000, 590, [[1000, 590], [100, 590]]); e(300, 230, -Math.PI / 2); e(720, 360, Math.PI / 2); }
+    if (id === 'breech') { g(200, 580, [[200, 580], [960, 580], [960, 90], [800, 90]]); g(900, 300, [[900, 300], [900, 430]]); e(340, 270, 0); e(760, 270, Math.PI); e(560, 100, Math.PI / 2); }
+    if (id === 'gears') { g(550, 100, [[550, 100], [550, 400]]); g(120, 600, [[120, 600], [980, 600]]); e(430, 290, Math.PI); e(670, 290, 0); }
+    return R;
+}
+
+/* ---------- start / stop ---------- */
+function m8Begin() {
+    try { resetBattleStats(); } catch (e) {}
+    const P = progression.m8Loadout || { p: 'delisle', s: 'welrod' }; M8.loadout = { p: M8_PRIMARY[P.p] ? P.p : 'delisle', s: M8_SECONDARY[P.s] ? P.s : 'welrod' };
+    Object.assign(M8, { active: true, running: true, cut: true, scene: 'out', bullets: [], fx: [], bodies: [], alarm: false, alarmAt: 0, reinf: 0, last: performance.now(), k: {}, mdown: false, rooms: {}, outPos: null, planted: 0, done: false, failed: false, failWhy: '', msg: '', msgAt: 0, wi: 0, reloadUntil: [0, 0], lastShot: 0, plantT: 0, fade: 1, fadeTo: null, kills: 0, shots: 0, endAt: 0, detonated: 0, exfil: false, cam: { x: 650, y: 800 } });
+    M8.ammo = [M8_PRIMARY[M8.loadout.p].mag, M8_SECONDARY[M8.loadout.s].mag || 0];
+    M8_DOORS.forEach(function (d) { M8.rooms[d.id] = m8RoomDef(d.id); });
+    m8BuildOutside(); m8Populate();
+    gameRunning = false; campaignMissionComplete = false; try { for (const kk in keys) keys[kk] = false; } catch (e) {}
+    ['controls', 'gameInfo', 'pointScoreBar', 'battleMessage', 'killFeed', 'radioText', 'campaignObjectiveBox'].forEach(function (id) { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+    ['m2Hud', 'm4Hud', 'm8Hud'].forEach(function (id) { const e = document.getElementById(id); if (e) e.hidden = true; });
+    const mb = document.getElementById('battleMainMenuButton'); if (mb) { mb.style.display = 'block'; mb.textContent = '↩️ ABORT MISSION'; }
+    canvas.style.cursor = 'none';
+    if (!M8.listeners) { M8.listeners = true;
+        window.addEventListener('keydown', function (e) { if (!M8.running) return; M8.k[e.code] = true; if (e.code === 'Digit1') m8Switch(0); if (e.code === 'Digit2') m8Switch(1); if (e.code === 'KeyQ') m8Switch(1 - M8.wi); if (e.code === 'KeyR') m8Reload(); if (e.code === 'Space') e.preventDefault(); });
+        window.addEventListener('keyup', function (e) { M8.k[e.code] = false; });
+        canvas.addEventListener('mousedown', function (e) { if (M8.running && e.button === 0) M8.mdown = true; });
+        window.addEventListener('mouseup', function () { M8.mdown = false; });
+        window.addEventListener('blur', function () { M8.k = {}; M8.mdown = false; });
+        canvas.addEventListener('mousemove', function (e) { const r = canvas.getBoundingClientRect(); M8.mx = (e.clientX - r.left) * 1100 / r.width; M8.my = (e.clientY - r.top) * 700 / r.height; });
     }
-    return false;
+    M8.mx = 550; M8.my = 200;
+    m8Say('WE GO IN QUIET, LADS. KEEP OUT OF THE LIGHTS AND THEIR EYELINES. SHIFT TO CREEP.', 6500);
+    try { initAudio(); } catch (e) {}
+    cancelAnimationFrame(M8.raf); M8.raf = requestAnimationFrame(m8Loop);
 }
-function m8Splash(x, y, r, dmg) {
-    if (!M8.active) return;
-    if (M8.train && M8.train.alive) M8.train.cars.forEach(function (c, i) { if (!c.armoured && c.hp > 0) { const p = m8CarPos(i), d = Math.hypot(p.x - x, p.y - y); if (d < r + 34) m8Damage(c, Math.round(dmg * .7), p.x, p.y); } });
-    M8.towers.forEach(function (t) { if (!t.destroyed && Math.hypot(t.x - x, t.y - y) < r + 34) m8Damage(t, Math.round(dmg * .7), t.x, t.y); });
-    const G = M8.gus; if (M8.phase >= 3 && G.out >= 1 && !M8.won) {
-        if (G.state === 'reload' && G.shellLive) { const h = m8HoistPos(); if (Math.hypot(h.x - x, h.y - y) < r) { m8Detonate(h.x, h.y); return; } }
-        if (Math.abs(x - 1200) < 140 && y > G.y - 230 && y < G.y + 230) m8GusDamage(3);
-        if (G.state === 'elevate') M8.gears.forEach(function (g) { const p = m8GearPos(g); if (!g.destroyed && Math.hypot(p.x - x, p.y - y) < r + 20) { m8Damage(g, Math.round(dmg * .6), p.x, p.y); if (g.destroyed) m8GusDamage(25, 'GEAR WRECKED'); } });
-    }
+function m8Stop() { M8.running = false; cancelAnimationFrame(M8.raf); canvas.style.cursor = ''; const mb = document.getElementById('battleMainMenuButton'); if (mb) mb.textContent = '↩️ RETURN TO MAIN MENU'; }
+function m8Cleanup() { if (M8.running) m8Stop(); M8.active = false; M8.cut = false; const h = document.getElementById('m8Hud'); if (h) h.hidden = true; }
+function m8Say(t, ms) { M8.msg = t; M8.msgAt = performance.now(); M8.msgDur = ms || 4200; }
+function m8Leader() { return M8.units[0]; }
+function m8Switch(i) { if (i === M8.wi) return; M8.wi = i; M8.lastShot = 0; try { playTone(900, 700, .05, .04, 'square'); } catch (e) {} }
+function m8Gun() { return M8.wi === 0 ? M8_PRIMARY[M8.loadout.p] : M8_SECONDARY[M8.loadout.s]; }
+function m8Reload() { const g = m8Gun(); if (g.melee) return; const now = performance.now(); if (M8.reloadUntil[M8.wi] > now || M8.ammo[M8.wi] === g.mag) return; M8.reloadUntil[M8.wi] = now + g.reload; try { playTone(300, 500, .08, .04, 'square'); } catch (e) {} }
+
+/* ---------- combat ---------- */
+function m8Units() { return M8.scene === 'out' ? M8.units : M8.units.slice(0, 5).concat(M8.rooms[M8.scene].units); }
+function m8Noise(x, y, r) { if (r <= 0) return; m8Units().forEach(function (u) { if (u.team !== 'en' || u.dead || u.kind === 'tower') return; const d = Math.hypot(u.x - x, u.y - y); if (d < r) { if (r > 300 || d < r * .45) m8Alerting(u, x, y); else if (u.state !== 'alert' && u.state !== 'alerting' && u.state !== 'flee') { u.state = 'investigate'; u.ix = x; u.iy = y; u.sus = Math.max(u.sus, .5); } } }); }
+function m8Alerting(u, x, y) { if (x !== undefined) { u.lx = x; u.ly = y; } if (u.dead || u.state === 'alert' || u.state === 'alerting' || u.state === 'flee' || u.state === 'cower') return; if (M8.alarm && u.kind !== 'eng') { u.state = 'alert'; return; } u.state = u.kind === 'eng' ? 'flee' : 'alerting'; u.alertAt = performance.now() + (u.kind === 'tower' ? 1600 : 1300); u.sus = 1; }
+function m8RaiseAlarm(why) { if (M8.alarm) return; M8.alarm = true; M8.alarmAt = performance.now(); m8Say('ALARM! ' + (why || 'WE\'VE BEEN SPOTTED') + ' — FIGHT THROUGH!', 5000);
+    try { playTone(500, 800, .7, .05, 'sawtooth'); setTimeout(function () { try { playTone(800, 500, .7, .05, 'sawtooth'); } catch (e) {} }, 700); } catch (e) {}
+    const L = m8Leader(); M8.units.concat(Object.keys(M8.rooms).reduce(function (a, k) { return a.concat(M8.rooms[k].units); }, [])).forEach(function (u) { if (u.team === 'en' && !u.dead && u.kind !== 'eng') { u.state = 'alert'; u.lx = L.x; u.ly = L.y; } }); }
+function m8Fire(u, ang, g, team) {
+    const now = performance.now(); M8.shots++;
+    if (g.melee) { const tgt = m8Units().filter(function (e) { return e.team !== team && !e.dead && e.kind !== 'tower' && Math.hypot(e.x - u.x, e.y - u.y) < g.range + e.r; })[0]; M8.fx.push({ k: 'slash', x: u.x + Math.cos(ang) * 16, y: u.y + Math.sin(ang) * 16, a: ang, t: now }); try { playTone(1400, 400, .08, .04, 'triangle'); } catch (e) {} if (tgt) m8DamageUnit(tgt, g.dmg, ang, u); return; }
+    const sp = (Math.random() - .5) * 2 * g.spread * (u.kind === 'leader' && (M8.k.ShiftLeft || M8.k.ShiftRight) ? .6 : 1), a = ang + sp, x = u.x + Math.cos(ang) * 14, y = u.y + Math.sin(ang) * 14;
+    M8.bullets.push({ x: x, y: y, vx: Math.cos(a) * g.speed, vy: Math.sin(a) * g.speed, dmg: g.dmg, life: g.range / g.speed, team: team, from: u });
+    M8.fx.push({ k: 'flash', x: x, y: y, a: ang, t: now, big: g.noise > 300 });
+    try { if (g.noise > 300) { if (g.dmg > 100) playTone(180, 60, .18, .09, 'sawtooth'); else playTone(260, 90, .07, .07, 'sawtooth'); } else if (team === 'sq') playTone(1200, 600, .03, .025, 'square'); else playTone(300, 120, .06, .04, 'sawtooth'); } catch (e) {}
+    m8Noise(u.x, u.y, g.noise);
 }
-function m8Damage(o, d, x, y) {
-    if (o.destroyed || o.hp <= 0) return; o.hp = Math.max(0, o.hp - d);
-    m8Text(x, y - 30, '-' + Math.round(d), '#ffd24a', 14);
-    if (o.hp <= 0) {
-        o.destroyed = true; createExplosion(x, y, 1.8); createShockwave(x, y, 80); createDebris(x, y, 30, 1.6); addShake(14); try { playExplosionSound(1.3); } catch (e) {}
-        hitTexts.push({ x: x, y: y - 50, text: (o.name || 'TARGET') + ' DESTROYED', life: 100, maxLife: 100, color: '#ffd24a', size: 20, stroke: true, vy: .5 }); addXP(140, 'target');
-        M8.craters.push({ x: x, y: y, r: 40, t: Date.now() });
-        if (M8.towers.indexOf(o) >= 0) { createMission8Map(); const left = M8.towers.filter(function (t) { return !t.destroyed; }).length; if (left) showRadioText(o.name + ' DOWN — ONE SPOTTER LEFT. ITS AIM IS GETTING WORSE!', true); }
-    }
+function m8DamageUnit(t, d, ang, src) {
+    if (t.dead) return; const now = performance.now();
+    t.hp -= d; if (t.kind !== 'tower') M8.fx.push({ k: 'blood', x: t.x, y: t.y, a: ang, t: now });
+    if (t.team === 'en' && t.hp > 0) m8Alerting(t, src ? src.x : t.x, src ? src.y : t.y);
+    if (t.team === 'sq' && t.hp > 0 && t.kind === 'leader') { try { addShake && 0; } catch (e) {} M8.hurtAt = now; }
+    if (t.hp <= 0) { t.dead = true; t.deadAt = now;
+        if (t.team === 'en') { M8.kills++; if (t.kind === 'tower') { M8.fx.push({ k: 'spark', x: t.x, y: t.y, t: now }); m8Say('SEARCHLIGHT OUT.', 1800); } else M8.bodies.push({ x: t.x, y: t.y, scene: M8.scene, found: false }); try { playTone(160, 80, .12, .04, 'triangle'); } catch (e) {} }
+        else { m8Say(t.name + ' IS DOWN!', 3000); if (t.kind === 'leader') m8Fail('leader'); } }
 }
-function m8GusDamage(d, why) {
-    const G = M8.gus; if (M8.won) return; G.hp = Math.max(0, G.hp - d);
-    if (why) { hitTexts.push({ x: 1200, y: G.y - 260, text: why + '  -' + d + '%', life: 110, maxLife: 110, color: '#ff7050', size: 22, stroke: true, vy: .4 }); addShake(18); }
-    if (G.hp <= 0) m8Win();
+function m8Fail(why) { if (M8.failed || M8.done) return; M8.failed = true; M8.endAt = performance.now() + 2600; M8.failWhy = why; }
+
+/* ---------- loop ---------- */
+function m8Loop(ts) {
+    if (!M8.running) return;
+    const dt = Math.min(50, ts - (M8.last || ts)) / 16.67; M8.last = ts;
+    try { m8Update(dt, ts); m8Draw(ts); } catch (e) { console.error(e); if (typeof DDP !== 'undefined') DDP.err = e; }
+    if (M8.endAt && ts > M8.endAt) { m8End(); return; }
+    M8.raf = requestAnimationFrame(m8Loop);
 }
-function m8Detonate(x, y) {
-    const G = M8.gus, now = Date.now(); G.shellLive = false; G.state = 'reload'; G.stateAt = now + 2200; G.stun = now + 2200; G.hoist = 0;
-    createExplosion(x, y, 3.0); createExplosion(x - 40, y + 30, 2.0); createExplosion(x + 40, y + 20, 2.0); createShockwave(x, y, 220); createDebris(x, y, 60, 2.2); addShake(34); try { playExplosionSound(2); } catch (e) {}
-    M8.craters.push({ x: x, y: y + 10, r: 70, t: now });
-    const d = Math.hypot(player.x - x, player.y - y); if (d < 220) m8DamagePlayer(Math.round(60 * (1 - d / 220)), x, y);
-    showRadioText('DIRECT HIT ON THE SHELL HOIST! SEVEN TONNES WENT UP IN ITS FACE!', true);
-    m8GusDamage(22, 'SHELL DETONATED');
+function m8End() {
+    m8Stop();
+    if (M8.done) { progression.campaignM8Done = true; try { addXP(900, 'victory'); } catch (e) {} try { saveProgression(); } catch (e) {} }
+    campaignMission = 8; selectedGameMode = 'campaign'; showCampaignResult(!!M8.done);
 }
-function m8Win() {
-    const now = Date.now(); if (M8.won) return; M8.won = true; M8.wonAt = now; showRadioText('GUSTAV IS FINISHED — THE BARREL IS COMING DOWN!', true); addShake(30);
-    for (let i = 0; i < 9; i++) setTimeout(function () { try { createExplosion(1120 + Math.random() * 160, M8.gus.y - 200 + Math.random() * 520, 2.4); playExplosionSound(1.4); addShake(18); } catch (e) {} }, 300 + i * 360);
-    enemies.forEach(function (en) { if (!en.destroyed) { en.health = 0; destroyTank(en); } });
-}
-function m8Say(key, txt) { if (M8.msgs[key]) return; M8.msgs[key] = true; showRadioText(txt, true); }
-function m8DamagePlayer(d, x, y) {
-    if (!player || player.destroyed || d <= 0) return; player.health -= d; addShake(8 + d * .1);
-    hitTexts.push({ x: player.x, y: player.y - 34, text: '-' + Math.round(d), life: 60, maxLife: 60, color: '#ff5a40', size: 18, stroke: true, vy: .8 });
-    if (player.health <= 0) { player.health = 0; try { destroyTank(player); } catch (e) {} }
-}
-function m8ShellAt(now, tx, ty, r) { M8.shots.push({ x: tx, y: ty, t0: now, at: now + M8_SHADOW, r: r || 130, done: false }); try { playDistantArtillery(); playTone(60, 30, 1.6, .1, 'sawtooth'); } catch (e) {} addShake(6); }
-function updateMission8() {
-    if (!M8.active || !player || player.destroyed) return;
-    const now = Date.now(); m2UpdateStrikes(now);
-    const tr = M8.train, G = M8.gus;
-    // ---- escort train
-    if (tr.alive) {
-        const dt = Math.min(.05, (now - (tr.lastT || now)) / 1000); tr.lastT = now; if (!tr.stopped) tr.s += (tr.v / 625) * 1000 * dt;
-        tr.cars.forEach(function (c, i) { const p = m8CarPos(i);
-            if (!tr.stopped && Math.hypot(player.x - p.x, player.y - p.y) < 36 + player.size * .5) { const a = Math.atan2(player.y - p.y, player.x - p.x); player.x = p.x + Math.cos(a) * (38 + player.size * .5); player.y = p.y + Math.sin(a) * (38 + player.size * .5); m8DamagePlayer(1, p.x, p.y); m8Say('crush', 'GET OFF THE TRACKS!'); }
-            if (c.k === 'flak' && c.hp > 0) { const d = Math.hypot(player.x - p.x, player.y - p.y), want = Math.atan2(player.y - p.y, player.x - p.x); c.ang = c.ang + Math.atan2(Math.sin(want - c.ang), Math.cos(want - c.ang)) * .08;
-                if (d < 620 && now - c.last > (c.burst > 0 ? 180 : 2300)) { c.last = now; c.burst = c.burst > 0 ? c.burst - 1 : 4; const ps = { x: p.x, y: p.y, turretAngle: c.ang + (Math.random() - .5) * .1, size: 18, damage: 7, name: c.name }; createShell(ps, true); try { createMuzzleFlash(ps); } catch (e) {} } } });
-        if (tr.cars.every(function (c) { return c.armoured || c.hp <= 0; })) { tr.alive = false; tr.stopped = true; }
-    }
-    if (M8.phase === 1 && now - M8.phaseAt > 22000 && !M8.msgs.w1) { M8.msgs.w1 = 1; m8Spawn(2250, 1250, 'medium'); }
-    if (M8.phase === 1 && !tr.alive) {
-        M8.phase = 2; M8.phaseAt = now; M8.nextShot = now + 3000;
-        showRadioText('FLAK WAGONS DOWN! ...THE MOUNTAIN IS FIRING AT YOU — TWO SPOTTERS ARE GUIDING IT. KNOCK THEM OUT!', true);
-        m8Spawn(300, 900, 'medium'); m8Spawn(2100, 900, 'light');
-    }
-    // ---- phase 2: shelling from the tunnel, guided by the spotters
-    if (M8.phase === 2) {
-        const left = M8.towers.filter(function (t) { return !t.destroyed; }).length;
-        if (now > M8.nextShot) { M8.nextShot = now + M8_SHOT_EVERY; const err = left >= 2 ? 30 : 170, lead = 60; m8ShellAt(now, player.x + Math.cos(player.angle || 0) * lead + (Math.random() - .5) * err, player.y + Math.sin(player.angle || 0) * lead + (Math.random() - .5) * err, 150); m8Say('shadow1', 'SHELL INBOUND — GET OUT OF THE SHADOW!'); }
-        if (!left) {
-            M8.phase = 3; M8.phaseAt = now; G.state = 'emerge'; G.stateAt = now;
-            showRadioText('SPOTTERS DOWN. ...SOMETHING IS COMING OUT OF THAT TUNNEL!', true); try { playTone(40, 50, 6, .14, 'sawtooth'); } catch (e) {}
-            if (m8Alive() < 3) m8Spawn(200, 1200, 'medium');
+function m8Stars() { return 1 + (M8.alarm ? 0 : 1) + (M8.units.slice(1, 5).every(function (u) { return !u.dead; }) ? 1 : 0); }
+
+function m8Update(dt, now) {
+    const L = m8Leader(), units = m8Units(), sneak = !!(M8.k.ShiftLeft || M8.k.ShiftRight);
+    if (M8.fadeTo) { M8.fade = Math.min(1, M8.fade + .08 * dt); if (M8.fade >= 1) { const f = M8.fadeTo; M8.fadeTo = null; f(); } return; } else M8.fade = Math.max(0, M8.fade - .05 * dt);
+    if (M8.scene === 'out') m8Camera(L, dt);
+    if (M8.failed || M8.done) return;
+    // ---- leader
+    let dx = 0, dy = 0; if (keys.w || M8.k.KeyW || M8.k.ArrowUp) dy--; if (keys.s || M8.k.KeyS || M8.k.ArrowDown) dy++; if (keys.a || M8.k.KeyA || M8.k.ArrowLeft) dx--; if (keys.d || M8.k.KeyD || M8.k.ArrowRight) dx++;
+    const lsp = (sneak ? 1.05 : 2.2) * dt; L.moving = !!(dx || dy); if (L.moving) { const l = Math.hypot(dx, dy); m8Move(L, dx / l * lsp, dy / l * lsp); L.mvAng = m8Turn(L.mvAng === undefined ? -Math.PI / 2 : L.mvAng, Math.atan2(dy, dx), .12); }
+    if (L.moving && !sneak && M8.scene === 'out') m8Noise(L.x, L.y, 55); // boots on gravel
+    const wx = M8.mx + (M8.scene === 'out' ? M8.cam.x : 0), wy = M8.my + (M8.scene === 'out' ? M8.cam.y : 0); L.ang = Math.atan2(wy - L.y, wx - L.x);
+    const g = m8Gun(); if (M8.reloadUntil[M8.wi] && now > M8.reloadUntil[M8.wi]) { M8.reloadUntil[M8.wi] = 0; M8.ammo[M8.wi] = g.mag; }
+    if ((M8.mdown || M8.k.Space) && now - M8.lastShot > g.rate && !M8.reloadUntil[M8.wi]) { if (g.melee || M8.ammo[M8.wi] > 0) { M8.lastShot = now; if (!g.melee) M8.ammo[M8.wi]--; m8Fire(L, L.ang, g, 'sq'); if (!g.melee && M8.ammo[M8.wi] === 0) m8Reload(); if (!g.auto) M8.mdown = false; } else m8Reload(); }
+    // ---- squad: hold the square around the leader, engage threats
+    const fa = L.mvAng === undefined ? -Math.PI / 2 : L.mvAng, ca = Math.cos(fa + Math.PI / 2), sa = Math.sin(fa + Math.PI / 2);
+    units.forEach(function (u) { if (u.kind !== 'cmdo' || u.dead) return; const o = M8_FORM[u.slot], tx = L.x + o[0] * ca - o[1] * sa, ty = L.y + o[0] * sa + o[1] * ca, d = Math.hypot(tx - u.x, ty - u.y);
+        u.moving = false; if (d > 3) m8Steer(u, tx, ty, Math.min(d * .25, (sneak ? 1.3 : 2.6) + d * .02) * dt); if (d > 240 || (d > 90 && m8Blocked(u.x, u.y, u.r))) { if (!m8Blocked(tx, ty, u.r)) { u.x = tx; u.y = ty; } else { u.x = L.x; u.y = L.y; } }
+        let best = null, bd = 1e9; units.forEach(function (e) { if (e.team !== 'en' || e.dead) return; const aware = e.state === 'alert' || e.state === 'alerting' || e.state === 'flee' || (M8.lastTarget === e && now - M8.lastTargetAt < 2500); if (!aware || (e.kind === 'tower' && !M8.alarm)) return; const dd = Math.hypot(e.x - u.x, e.y - u.y); if (dd < 420 && dd < bd && m8LOS(u.x, u.y, e.x, e.y)) { bd = dd; best = e; } });
+        if (best) { const a = Math.atan2(best.y - u.y, best.x - u.x); u.ang = m8Turn(u.ang, a, .25); if (now - u.lastShot > 650 + m8R(u.slot * 13 + Math.floor(now / 500)) * 350) { u.lastShot = now; m8Fire(u, a, { dmg: 34, spread: .07, range: 430, speed: 24, noise: M8.alarm ? 400 : 90 }, 'sq'); } }
+        else u.ang = m8Turn(u.ang, L.moving ? fa + (u.slot < 2 ? (u.slot ? .5 : -.5) : (u.slot === 2 ? -2.6 : 2.6)) : L.ang, .08); });
+    // ---- enemies
+    const sq = units.filter(function (u) { return u.team === 'sq' && !u.dead; });
+    units.forEach(function (e) { if (e.team !== 'en' || e.dead) return;
+        if (e.kind === 'tower') e.la = (e.state === 'alert' && e.lx !== undefined) ? m8Turn(e.la, Math.atan2(e.ly - e.y, e.lx - e.x), .05) : e.base + Math.sin(now / 2200 + e.ph) * .75;
+        let sees = null, sd = 1e9; const vang = e.kind === 'tower' ? e.la : e.ang, vr = (e.state === 'alert' ? 1.25 : 1) * e.view;
+        if (e.state !== 'cower') sq.forEach(function (s) { const d = Math.hypot(s.x - e.x, s.y - e.y); if (d > vr) return; const aa = Math.atan2(s.y - e.y, s.x - e.x), da = Math.abs(Math.atan2(Math.sin(aa - vang), Math.cos(aa - vang))); if (da > e.fov / 2 && d > 30) return; if (!m8LOS(e.x, e.y, s.x, s.y)) return; if (d < sd) { sd = d; sees = s; } });
+        if (sees && e.state !== 'alert') { const lit = m8Lit(sees.x, sees.y), k = (1.3 - sd / vr) * (sneak ? .45 : 1) * (.5 + lit * 1.4) * (e.kind === 'tower' ? 1.5 : 1) * (sd < 60 ? 3 : 1); e.sus = Math.min(1, e.sus + .02 * k * dt); if (e.sus >= 1) m8Alerting(e, sees.x, sees.y); else if (e.sus > .35 && (e.state === 'patrol' || e.state === 'post' || e.state === 'work' || e.state === 'investigate') && e.kind !== 'tower') { e.state = 'investigate'; e.ix = sees.x; e.iy = sees.y; } }
+        else if (e.state !== 'alert' && e.state !== 'alerting') e.sus = Math.max(0, e.sus - .003 * dt);
+        if (sees) { e.lx = sees.x; e.ly = sees.y; e.seen = now; }
+        if (e.kind !== 'tower' && (e.state === 'patrol' || e.state === 'post' || e.state === 'work')) M8.bodies.forEach(function (b) { if (b.found || b.scene !== M8.scene) return; const d = Math.hypot(b.x - e.x, b.y - e.y), aa = Math.atan2(b.y - e.y, b.x - e.x); if (d < 170 && Math.abs(Math.atan2(Math.sin(aa - e.ang), Math.cos(aa - e.ang))) < e.fov / 2 && m8LOS(e.x, e.y, b.x, b.y)) { b.found = true; m8Alerting(e, b.x, b.y); } });
+        if (e.state === 'alerting' && now > e.alertAt) { m8RaiseAlarm(e.kind === 'tower' ? 'A SEARCHLIGHT HAS US' : 'A SENTRY RAISED THE ALARM'); e.state = 'alert'; }
+        if (e.kind === 'tower') { if ((e.state === 'alert' || M8.alarm) && sees && now - e.lastShot > 900) { e.lastShot = now; m8Fire(e, Math.atan2(sees.y - e.y, sees.x - e.x), { dmg: 10, spread: .07, range: 520, speed: 24, noise: 0 }, 'en'); } return; }
+        const sp = e.spd * dt;
+        if (e.state === 'patrol' && e.route) { if (e.delay > 0) { e.delay -= dt; return; } const p = e.route[e.ri]; e.moving = true; if (m8Steer(e, p[0], p[1], sp)) e.ri = (e.ri + 1) % e.route.length; }
+        else if (e.state === 'post' || e.state === 'work') { e.moving = false; e.ang = m8Turn(e.ang, (e.base || 0) + Math.sin(now / 3000 + e.x) * .6, .03); }
+        else if (e.state === 'investigate') { e.moving = true; if (m8Steer(e, e.ix, e.iy, sp * .9)) { e.state = e.route ? 'patrol' : (e.kind === 'eng' ? 'work' : 'post'); e.sus = .3; } }
+        else if (e.state === 'flee') { e.moving = true; const R = M8.scene !== 'out' ? M8.rooms[M8.scene] : null; if (R && R.bell) { m8Steer(e, R.bell.x, R.bell.y, 1.5 * dt); if (Math.hypot(e.x - R.bell.x, e.y - R.bell.y) < 30) { m8RaiseAlarm('AN ENGINEER RANG THE ALARM BELL'); e.state = 'cower'; } } else e.state = 'cower'; }
+        else if (e.state === 'alerting') { e.moving = false; if (e.lx !== undefined) e.ang = m8Turn(e.ang, Math.atan2(e.ly - e.y, e.lx - e.x), .15); }
+        else if (e.state === 'alert') {
+            if (sees) { const a = Math.atan2(sees.y - e.y, sees.x - e.x); e.ang = m8Turn(e.ang, a, .2); e.moving = sd > 170 && e.kind !== 'mg'; if (e.moving) m8Steer(e, sees.x, sees.y, sp * .7); const rate = e.kind === 'mg' ? 150 : 950; if (now - e.lastShot > rate) { e.lastShot = now; m8Fire(e, e.ang, { dmg: e.kind === 'mg' ? 8 : 13, spread: e.kind === 'mg' ? .13 : .09, range: 520, speed: 22, noise: 0 }, 'en'); } }
+            else if (e.lx !== undefined && e.kind !== 'mg') { e.moving = true; if (m8Steer(e, e.lx, e.ly, sp * 1.3)) { e.lx = L.x + (Math.random() - .5) * 200; e.ly = L.y + (Math.random() - .5) * 200; } }
         }
+    });
+    // reinforcements while the alarm runs
+    if (M8.alarm && M8.scene === 'out' && M8.reinf < 4 && now - M8.alarmAt > 9000 + M8.reinf * 16000) { M8.reinf++; for (let k = 0; k < 3; k++) { const h = k % 2 ? [745, 440] : [1665, 440]; const u = m8Unit({ team: 'en', kind: 'sold', x: h[0] + k * 14, y: h[1] + 30, state: 'alert', spd: 1.3, lx: L.x, ly: L.y }); M8.units.push(u); } m8Say('REINFORCEMENTS FROM THE BARRACKS!', 2600); }
+    // ---- bullets
+    M8.bullets.forEach(function (b) { for (let s = 0; s < 3 && b.life > 0; s++) { b.x += b.vx / 3 * dt; b.y += b.vy / 3 * dt;
+        if (m8BlockedBullet(b.x, b.y)) { b.life = 0; M8.fx.push({ k: 'spark', x: b.x, y: b.y, t: now }); break; }
+        const hit = units.find(function (u) { return !u.dead && u.team !== b.team && u !== b.from && Math.hypot(u.x - b.x, u.y - b.y) < (u.kind === 'tower' ? 18 : u.r + 2); });
+        if (hit) { b.life = 0; m8DamageUnit(hit, b.dmg, Math.atan2(b.vy, b.vx), b.from); if (b.team === 'sq') { M8.lastTarget = hit; M8.lastTargetAt = now; } break; } } b.life -= dt; });
+    M8.bullets = M8.bullets.filter(function (b) { return b.life > 0; });
+    M8.fx = M8.fx.filter(function (f) { return now - f.t < 900; });
+    // ---- doors, planting, exfil
+    const fPress = M8.k.KeyF || M8.k.KeyE;
+    if (M8.scene === 'out') {
+        M8.nearDoor = null; M8_DOORS.forEach(function (d) { if (Math.hypot(L.x - d.x, L.y - d.y) < 46) M8.nearDoor = d; });
+        if (M8.nearDoor && !M8.rooms[M8.nearDoor.id].planted && fPress) { M8.k.KeyF = M8.k.KeyE = false; m8Enter(M8.nearDoor); }
+        if (M8.planted >= 4) { M8.exfil = true; if (L.y > 1320 && !M8.done) { M8.done = true; M8.detonated = now; M8.endAt = now + 6000; m8Say('CLEAR! BLOW IT!', 3000); try { for (let i = 0; i < 9; i++) setTimeout(function () { try { playExplosionSound(1.6); } catch (e) {} }, i * 380); } catch (e) {} } }
+    } else {
+        const R = M8.rooms[M8.scene]; R.cleared = R.units.every(function (u) { return u.dead; });
+        const nt = Math.hypot(L.x - R.target.x, L.y - R.target.y) < 70;
+        if (nt && !R.planted && fPress) { if (!R.cleared) { if (!M8.clearMsg || now - M8.clearMsg > 2500) { M8.clearMsg = now; m8Say('CLEAR THE ROOM FIRST — NO WITNESSES.', 2400); } } else { M8.plantT += dt / 60; if (M8.plantT >= 2.2) { R.planted = true; M8.planted++; M8.plantT = 0; m8Say('CHARGE SET ON THE ' + R.target.name + '. ' + (4 - M8.planted ? (4 - M8.planted) + ' TO GO.' : 'ALL FOUR SET — GET OUT AND GET CLEAR!'), 4000); try { playTone(700, 1100, .3, .06, 'triangle'); } catch (e) {} } } } else M8.plantT = Math.max(0, M8.plantT - dt / 30);
+        const ex = R.exit; if (L.x > ex.x && L.x < ex.x + ex.w && L.y > 640) m8Exit();
     }
-    // ---- phase 3: the gun itself
-    if (M8.phase === 3 && !M8.won) {
-        if (G.state === 'emerge') { G.out = Math.min(1, (now - M8.phaseAt) / 7000); G.y = cs2L(-300, M8_GY, cs2E(G.out)); if (Math.random() < .3) addShake(3);
-            if (G.out >= 1) { createMission8Map(); G.state = 'reload'; G.stateAt = now; G.shellLive = true; G.hoist = 0; showRadioText('SCHWERER GUSTAV! WHILE IT RELOADS, HIT THE SHELL ON THE HOIST AT THE BACK. WHEN IT ELEVATES, HIT THE GEARS!', true); } }
-        else {
-            const el = now - G.stateAt, gearsOk = M8.gears.some(function (g) { return !g.destroyed; });
-            if (G.state === 'reload') { G.el = Math.max(0, G.el - .02); if (now > G.stun) { if (!G.shellLive && el > 0) { G.shellLive = true; G.hoist = 0; } G.hoist = Math.min(1, Math.max(0, el / M8_CYCLE.reload)); }
-                if (el > M8_CYCLE.reload && G.shellLive) { G.shellLive = false; G.cycles++; if (gearsOk) { G.state = 'elevate'; G.stateAt = now; showRadioText('IT\'S ELEVATING — THE GEARS ARE EXPOSED!', true); try { playTone(70, 110, 4, .06, 'square'); } catch (e) {} } else { G.state = 'reload'; G.stateAt = now; m8Say('jam', 'BOTH GEARS GONE — IT CAN\'T AIM! FINISH IT AT THE HOIST!'); }
-                    if (G.cycles % 2 === 0 && m8Alive() < 3) m8Spawn(G.cycles % 4 ? 2250 : 150, 1200, 'medium'); } }
-            else if (G.state === 'elevate') { G.el = Math.min(1, el / M8_CYCLE.elevate); if (!gearsOk) { G.state = 'reload'; G.stateAt = now; m8Say('jam', 'BOTH GEARS GONE — IT CAN\'T AIM! FINISH IT AT THE HOIST!'); }
-                else if (el > M8_CYCLE.elevate) { G.state = 'fire'; G.stateAt = now; G.fireAt = now; G.beach++; addShake(40); try { playExplosionSound(2.2); playTone(45, 20, 2, .16, 'sawtooth'); } catch (e) {}
-                    const d = Math.hypot(player.x - 1200, player.y - G.y); if (d < 520) { m8DamagePlayer(Math.round(55 * (1 - d / 520)), 1200, G.y); const a = Math.atan2(player.y - G.y, player.x - 1200); for (let k = 0; k < 14; k++) { const nx = player.x + Math.cos(a) * 6, ny = player.y + Math.sin(a) * 6; if (!tankHitsObstacle(player, nx, ny)) { player.x = nx; player.y = ny; } } }
-                    enemies.forEach(function (en) { if (!en.destroyed && Math.hypot(en.x - 1200, en.y - G.y) < 260) { en.health = 0; destroyTank(en); } });
-                    showRadioText(G.beach >= M8_BEACH_MAX ? 'THE BEACHHEAD IS HIT AGAIN...' : 'IT FIRED! THE BEACH IS HIT — ' + G.beach + ' OF ' + M8_BEACH_MAX + '. STOP THE NEXT ONE!', true); } }
-            else if (G.state === 'fire') { if (el > M8_CYCLE.fire) { G.state = 'reload'; G.stateAt = now; } }
-            if (G.beach >= M8_BEACH_MAX && !M8.endHandled) { M8.endHandled = true; M8.failWhy = 'beach'; document.getElementById('battleMessage').textContent = '💥 GUSTAV DESTROYED THE BEACHHEAD'; setTimeout(function () { gameRunning = false; showCampaignResult(false); }, 1600); }
-        }
-    }
-    if (M8.won) { G.droop = Math.min(1, (now - M8.wonAt) / 2400); G.el = Math.max(0, G.el - .02); }
-    // ---- shells land
-    M8.shots.forEach(function (s) { if (s.done || now < s.at) return; s.done = true;
-        createExplosion(s.x, s.y, 3.2); createShockwave(s.x, s.y, s.r * 1.4); createDebris(s.x, s.y, 50, 2.4); addShake(26); try { playExplosionSound(2); } catch (e) {}
-        const d = Math.hypot(player.x - s.x, player.y - s.y); if (d < s.r) m8DamagePlayer(Math.round(130 * (1 - d / s.r) + 20), s.x, s.y);
-        enemies.forEach(function (en) { if (!en.destroyed && Math.hypot(en.x - s.x, en.y - s.y) < s.r * .8) { en.health = 0; destroyTank(en); } });
-        M8.craters.push({ x: s.x, y: s.y, r: s.r * .5, t: now }); });
-    M8.shots = M8.shots.filter(function (s) { return !s.done || now - s.at < 1500; });
-    if (M8.won && now - M8.wonAt > 4800 && !M8.endHandled) {
-        M8.endHandled = true; campaignMissionComplete = true; gameRunning = false; addXP(800, 'victory'); progression.campaignM8Done = true; saveProgression();
-        document.getElementById('battleMessage').textContent = 'MISSION COMPLETE — GUSTAV SILENCED'; showRadioText('MISSION 08 COMPLETE!', true); showCampaignResult(true);
-    }
-    m2UpdateHud(now); m8UpdateHud(now); updateCampaignObjectiveUI();
 }
-function m8ObjectiveText() {
-    const G = M8.gus; if (M8.won) return 'Gustav is silenced';
-    if (M8.phase === 1) { const n = M8.train.cars.filter(function (c) { return c.k === 'flak' && c.hp > 0; }).length; return 'Destroy the 2 flak wagons on the circling escort train (' + (2 - n) + '/2). The rest of it is armoured.'; }
-    if (M8.phase === 2) return 'Destroy both spotter towers (' + M8.towers.filter(function (t) { return t.destroyed; }).length + '/2). Get out of the shell shadows!';
-    if (G.state === 'emerge') return 'Gustav is coming out of the tunnel...';
-    return (G.state === 'reload' ? 'RELOADING: shoot the shell on the hoist at its rear' : G.state === 'elevate' ? 'ELEVATING: shoot the exposed gears on its sides' : 'FIRED!') + ' · beach hits ' + G.beach + '/' + M8_BEACH_MAX;
+function m8Camera(L, dt) { const tx = L.x - 550 + (M8.mx - 550) * .25, ty = L.y - 350 + (M8.my - 350) * .25; M8.cam.x += (Math.max(0, Math.min(M8W - 1100, tx)) - M8.cam.x) * Math.min(1, .12 * dt); M8.cam.y += (Math.max(0, Math.min(M8H - 700, ty)) - M8.cam.y) * Math.min(1, .12 * dt); }
+function m8BlockedBullet(x, y) { for (let i = 0; i < M8.obs.length; i++) { const o = M8.obs[i]; if (o.low && o.kind !== 'sand') continue; if (o.kind === 'ridge') continue; if (x > o.x && x < o.x + o.w && y > o.y && y < o.y + o.h) return true; } return false; }
+function m8Enter(d) {
+    M8.fadeTo = function () {
+        M8.outPos = { x: d.x + d.side * 30, y: d.y + 30, saveObs: M8.obs }; M8.scene = d.id; const R = M8.rooms[d.id]; M8.obs = R.obs; M8.bullets = [];
+        const L = m8Leader(); L.x = 550; L.y = 615; L.mvAng = -Math.PI / 2; M8.units.slice(1, 5).forEach(function (u, i) { if (!u.dead) { u.x = 550 + M8_FORM[i][0]; u.y = 600 + M8_FORM[i][1] * .5; } });
+        try { playTone(220, 120, .25, .05, 'square'); } catch (e) {}
+        m8Say(d.name + (R.planted ? ' — ALREADY SET.' : ' — KILL THE CREW, THEN HOLD F ON THE ' + R.target.name + '.'), 4200);
+    };
+}
+function m8Exit() {
+    M8.fadeTo = function () { M8.scene = 'out'; M8.obs = M8.outPos.saveObs; M8.bullets = []; const L = m8Leader(); L.x = M8.outPos.x; L.y = M8.outPos.y; M8.units.slice(1, 5).forEach(function (u, i) { if (!u.dead) { u.x = L.x; u.y = L.y + 4; } }); if (M8.planted >= 4) m8Say('ALL CHARGES SET — BACK TO THE SOUTH TREELINE AND WE BLOW IT!', 5000); };
 }
 
 /* ---------- drawing ---------- */
-function buildM8Art(W, H) {
-    const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.scale(W / M8W, H / M8H);
-    const gr = g.createLinearGradient(0, 0, 0, M8H); gr.addColorStop(0, '#5a5642'); gr.addColorStop(.35, '#66664a'); gr.addColorStop(1, '#58603f'); g.fillStyle = gr; g.fillRect(0, 0, M8W, M8H);
-    for (let i = 0; i < 2600; i++) { const x = m2R(i + 7) * M8W, y = m2R(i + 9907) * M8H, r = 4 + m2R(i + 1907) * 26, k = m2R(i + 2907); g.fillStyle = k < .3 ? 'rgba(90,104,58,.2)' : k < .6 ? 'rgba(124,112,80,.16)' : 'rgba(58,54,38,.16)'; g.beginPath(); g.ellipse(x, y, r, r * .6, k * 3, 0, 7); g.fill(); }
-    // dirt roads
-    g.strokeStyle = 'rgba(120,100,70,.55)'; g.lineWidth = 46; g.lineCap = 'round'; g.beginPath(); g.moveTo(1200, 1520); g.bezierCurveTo(1180, 1300, 900, 1200, 600, 1230); g.moveTo(1200, 1520); g.bezierCurveTo(1230, 1300, 1500, 1200, 1830, 1215); g.stroke();
-    g.strokeStyle = 'rgba(120,100,70,.4)'; g.lineWidth = 34; g.beginPath(); g.moveTo(330, 470); g.bezierCurveTo(500, 700, 800, 720, 1100, 700); g.moveTo(2070, 490); g.bezierCurveTo(1900, 700, 1600, 720, 1300, 700); g.stroke();
-    // the gravel yard under the gun
-    g.fillStyle = 'rgba(112,102,86,.65)'; g.beginPath(); g.moveTo(1040, 240); g.lineTo(1360, 240); g.lineTo(1400, 960); g.lineTo(1000, 960); g.closePath(); g.fill();
-    // ridge + tunnel portal
-    const rg = g.createLinearGradient(0, 0, 0, 250); rg.addColorStop(0, '#34342e'); rg.addColorStop(1, '#5a584c'); g.fillStyle = rg; g.beginPath(); g.moveTo(0, 0); g.lineTo(M8W, 0); g.lineTo(M8W, 236); for (let x = M8W; x >= 0; x -= 24) g.lineTo(x, 226 + Math.sin(x * .03) * 8 + m2R(x) * 10); g.closePath(); g.fill();
-    for (let i = 0; i < 260; i++) { const x = m2R(i + 50) * M8W, y = m2R(i + 150) * 215; g.fillStyle = m2R(i + 250) > .5 ? 'rgba(0,0,0,.2)' : 'rgba(210,210,190,.12)'; g.beginPath(); g.ellipse(x, y, 10 + m2R(i) * 34, 6 + m2R(i + 9) * 12, m2R(i + 4), 0, 7); g.fill(); }
-    g.fillStyle = '#7a776a'; g.fillRect(1060, 150, 280, 90); g.fillStyle = '#08080a'; g.beginPath(); g.moveTo(1080, 242); g.lineTo(1080, 196); g.quadraticCurveTo(1200, 136, 1320, 196); g.lineTo(1320, 242); g.fill(); g.fillStyle = '#9b2a1f'; g.fillRect(1060, 144, 280, 7);
-    g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 2; for (let i = 0; i < 9; i++) { g.beginPath(); g.moveTo(1060 + i * 35, 150); g.lineTo(1060 + i * 35, 172); g.stroke(); }
-    // Gustav's double track
-    [1150, 1250].forEach(function (x) { g.fillStyle = '#4a3e30'; for (let y = 236; y < 980; y += 13) g.fillRect(x - 36, y, 72, 6); g.fillStyle = '#a0a098'; g.fillRect(x - 24, 236, 4, 744); g.fillRect(x + 20, 236, 4, 744); });
-    // the escort loop
-    const L = M8_LOOP; for (let a = 0; a < 6.283; a += .02) { const x = L.cx + Math.cos(a) * L.rx, y = L.cy + Math.sin(a) * L.ry, t = Math.atan2(Math.cos(a) * L.ry, -Math.sin(a) * L.rx); g.save(); g.translate(x, y); g.rotate(t); g.fillStyle = '#4a3e30'; g.fillRect(-3, -20, 6, 40); g.restore(); }
-    [-13, 13].forEach(function (o) { g.strokeStyle = '#a2a29a'; g.lineWidth = 3; g.beginPath(); g.ellipse(L.cx, L.cy, L.rx + o, L.ry + o, 0, 0, 7); g.stroke(); });
-    // spotter hills
-    [[330, 470], [2070, 490]].forEach(function (p) { g.fillStyle = 'rgba(96,84,58,.6)'; g.beginPath(); g.ellipse(p[0], p[1], 150, 110, 0, 0, 7); g.fill(); g.strokeStyle = 'rgba(60,50,30,.4)'; g.lineWidth = 2; for (let k = 0; k < 5; k++) { g.beginPath(); g.ellipse(p[0], p[1], 150 - k * 26, 110 - k * 20, 0, 0, 7); g.stroke(); } for (let k = 0; k < 16; k++) { const a = k / 16 * 6.283; g.fillStyle = k % 2 ? '#8a7a54' : '#9a8862'; g.beginPath(); g.ellipse(p[0] + Math.cos(a) * 66, p[1] + Math.sin(a) * 58, 14, 10, a, 0, 7); g.fill(); } });
-    // obstacles
-    obstacles.forEach(function (o) {
-        if (o.type === 'm8Rock' && o.y > 0) { g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(o.x + o.width / 2 + 6, o.y + o.height / 2 + 8, o.width / 2 + 4, o.height / 2 + 4, 0, 0, 7); g.fill(); g.fillStyle = '#5a584c'; g.beginPath(); g.ellipse(o.x + o.width / 2, o.y + o.height / 2, o.width / 2 + 4, o.height / 2 + 4, 0, 0, 7); g.fill(); g.fillStyle = 'rgba(220,220,200,.18)'; g.beginPath(); g.ellipse(o.x + o.width * .4, o.y + o.height * .35, o.width * .3, o.height * .2, 0, 0, 7); g.fill(); }
-        if (o.type === 'm8Sand') { const hor = o.width > o.height; for (let k = 0; k < (hor ? o.width : o.height); k += 20) { const x = hor ? o.x + k + 10 : o.x + 12, y = hor ? o.y + 12 : o.y + k + 10; g.fillStyle = (k / 20) % 2 ? '#8a7a54' : '#9a8862'; g.beginPath(); g.ellipse(x, y, hor ? 12 : 11, hor ? 10 : 12, 0, 0, 7); g.fill(); g.strokeStyle = 'rgba(0,0,0,.3)'; g.lineWidth = 1; g.stroke(); } }
-        if (o.type === 'm8House') { g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(o.x + 8, o.y + 10, o.width, o.height); g.fillStyle = '#7d766a'; g.fillRect(o.x, o.y, o.width, o.height); g.fillStyle = '#5a3a2a'; g.fillRect(o.x + 6, o.y + 6, o.width - 12, o.height - 12); g.strokeStyle = 'rgba(0,0,0,.3)'; for (let y = o.y + 12; y < o.y + o.height - 6; y += 8) { g.beginPath(); g.moveTo(o.x + 6, y); g.lineTo(o.x + o.width - 6, y); g.stroke(); } g.fillStyle = '#16140f'; g.beginPath(); g.moveTo(o.x + o.width * .5, o.y + 6); g.lineTo(o.x + o.width * .9, o.y + 10); g.lineTo(o.x + o.width * .8, o.y + o.height * .6); g.closePath(); g.fill(); }
-        if (o.type === 'm8Wood') { for (let k = 0; k < 18; k++) { const x = o.x + m2R(k + o.x) * o.width, y = o.y + m2R(k + o.y) * o.height, r = 18 + m2R(k * 3 + o.x) * 16; g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.arc(x + 6, y + 8, r, 0, 7); g.fill(); g.fillStyle = k % 2 ? '#3a5228' : '#4a6430'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); } }
-    });
-    for (let i = 0; i < 18; i++) { const x = 200 + m2R(i + 70) * 2000, y = 320 + m2R(i + 80) * 1100, r = 16 + m2R(i + 90) * 30; g.fillStyle = 'rgba(40,34,24,.5)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.strokeStyle = 'rgba(150,130,90,.4)'; g.lineWidth = 3; g.beginPath(); g.arc(x, y, r + 3, 0, 7); g.stroke(); }
+function m8DrawMan(u, now) {
+    const ger = u.team === 'en'; ctx.save(); ctx.translate(u.x, u.y);
+    if (u.dead) { ctx.rotate(u.ang + 1.6); ctx.fillStyle = 'rgba(80,10,6,.55)'; ctx.beginPath(); ctx.ellipse(4, 0, 16, 10, 0, 0, 7); ctx.fill(); ctx.fillStyle = ger ? (u.kind === 'eng' ? '#4a4a40' : '#555a50') : '#4a5236'; ctx.fillRect(-12, -6, 22, 12); ctx.fillStyle = ger ? '#3a3e36' : '#2e4a24'; ctx.beginPath(); ctx.arc(12, 0, 6, 0, 7); ctx.fill(); ctx.restore(); return; }
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(3, 4, 11, 9, 0, 0, 7); ctx.fill();
+    ctx.rotate(u.ang);
+    const body = ger ? (u.kind === 'eng' ? '#4e4c42' : '#5c6156') : '#55603c', dark = ger ? '#2c2f2a' : '#2e3420';
+    const step = u.moving ? Math.sin(now / 110 + u.x * .1) * 3 : 0;
+    ctx.fillStyle = dark; ctx.fillRect(-4 + step, -8, 7, 5); ctx.fillRect(-4 - step, 3, 7, 5);
+    ctx.fillStyle = body; ctx.beginPath(); ctx.ellipse(0, 0, 7, 10, 0, 0, 7); ctx.fill();
+    if (!ger) { ctx.fillStyle = 'rgba(40,52,24,.8)'; ctx.beginPath(); ctx.ellipse(-2, -4, 3, 3, 0, 0, 7); ctx.ellipse(1, 5, 3, 2, 0, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#121210';
+    if (u.kind === 'leader') { const g = m8Gun(); if (g.melee) { ctx.fillStyle = '#c8ccd0'; ctx.fillRect(8, 2, 11, 2); ctx.fillStyle = '#2a2016'; ctx.fillRect(4, 1.5, 5, 3); } else ctx.fillRect(4, 1, g.short === 'BREN' ? 24 : g.short === 'WELROD' || g.short === 'WEBLEY' ? 11 : 19, 3); }
+    else if (u.kind === 'eng') { ctx.fillStyle = '#6a5e40'; ctx.fillRect(5, 1, 8, 4); }
+    else ctx.fillRect(4, 2, 16, 2.6);
+    if (ger && u.kind !== 'eng') { ctx.fillStyle = '#3a3e36'; ctx.beginPath(); ctx.arc(0, 0, 6.6, 0, 7); ctx.fill(); ctx.strokeStyle = '#2a2d27'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(0, 0, 7.6, Math.PI * .6, Math.PI * 1.4); ctx.stroke(); }
+    else if (ger) { ctx.fillStyle = '#3c3a32'; ctx.beginPath(); ctx.arc(0, 0, 5.6, 0, 7); ctx.fill(); ctx.fillRect(3, -3, 4, 6); }
+    else { ctx.fillStyle = u.kind === 'leader' ? '#3f7a30' : '#2f6a28'; ctx.beginPath(); ctx.ellipse(-1, -1, 6.4, 6, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#b8a040'; ctx.fillRect(-2, -5, 2, 2); }
+    ctx.restore();
+    if (u.kind === 'leader') { ctx.strokeStyle = 'rgba(255,220,120,.55)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(u.x, u.y, 15, 0, 7); ctx.stroke(); }
+    if (u.team === 'sq' && u.hp < u.maxHp) { ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(u.x - 10, u.y - 19, 20, 3); ctx.fillStyle = '#7fc06a'; ctx.fillRect(u.x - 10, u.y - 19, 20 * u.hp / u.maxHp, 3); }
+    if (ger) { const s = u.state === 'alert' || u.state === 'alerting' || u.state === 'flee' ? '!' : u.sus > .3 || u.state === 'investigate' ? '?' : ''; if (s) { ctx.font = 'bold 16px "Stardos Stencil", Impact, sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.strokeText(s, u.x, u.y - 18); ctx.fillStyle = s === '!' ? '#ff4030' : '#ffd24a'; ctx.fillText(s, u.x, u.y - 18); }
+        if (u.state === 'alerting') { const k = 1 - Math.max(0, u.alertAt - now) / 1300; ctx.strokeStyle = '#ff4030'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(u.x, u.y - 24, 7, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke(); }
+        else if (u.sus > .05 && u.state !== 'alert') { ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(u.x - 10, u.y - 32, 20, 3); ctx.fillStyle = '#ffd24a'; ctx.fillRect(u.x - 10, u.y - 32, 20 * u.sus, 3); } }
+}
+function m8DrawCone(e) {
+    if (e.dead || e.state === 'cower') return; const a = e.kind === 'tower' ? e.la : e.ang, r = (e.state === 'alert' ? 1.25 : 1) * e.view, f = e.fov / 2;
+    const col = e.state === 'alert' || e.state === 'alerting' ? '255,60,40' : e.sus > .2 || e.state === 'investigate' ? '255,200,60' : '255,255,230';
+    const g = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, r); g.addColorStop(0, 'rgba(' + col + ',.22)'); g.addColorStop(1, 'rgba(' + col + ',0.02)'); ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(e.x, e.y); const n = 14; for (let i = 0; i <= n; i++) { const aa = a - f + (i / n) * f * 2; let d = r; for (let s = 20; s < r; s += 20) { if (!m8LOS(e.x, e.y, e.x + Math.cos(aa) * s, e.y + Math.sin(aa) * s)) { d = s; break; } } ctx.lineTo(e.x + Math.cos(aa) * d, e.y + Math.sin(aa) * d); } ctx.closePath(); ctx.fill();
+}
+function m8BuildArt() {
+    const c = document.createElement('canvas'); c.width = M8W; c.height = M8H; const g = c.getContext('2d');
+    const gr = g.createLinearGradient(0, 0, 0, M8H); gr.addColorStop(0, '#3e3e30'); gr.addColorStop(.5, '#46503a'); gr.addColorStop(1, '#344030'); g.fillStyle = gr; g.fillRect(0, 0, M8W, M8H);
+    for (let i = 0; i < 2600; i++) { const x = m8R(i + 7) * M8W, y = m8R(i + 9907) * M8H, r = 4 + m8R(i + 1907) * 26, k = m8R(i + 2907); g.fillStyle = k < .3 ? 'rgba(70,90,50,.25)' : k < .6 ? 'rgba(104,96,70,.18)' : 'rgba(30,30,20,.2)'; g.beginPath(); g.ellipse(x, y, r, r * .6, k * 3, 0, 7); g.fill(); }
+    g.fillStyle = 'rgba(96,88,72,.7)'; g.fillRect(560, 230, 1280, 840);
+    for (let i = 0; i < 900; i++) { g.fillStyle = m8R(i + 77) > .5 ? 'rgba(60,54,44,.4)' : 'rgba(130,120,100,.25)'; g.fillRect(560 + m8R(i) * 1280, 230 + m8R(i + 3) * 840, 3, 2); }
+    g.strokeStyle = 'rgba(110,96,70,.75)'; g.lineWidth = 64; g.beginPath(); g.moveTo(1200, 1520); g.lineTo(1200, 900); g.stroke();
+    g.strokeStyle = 'rgba(60,50,36,.5)'; g.lineWidth = 4; [-18, 18].forEach(function (o) { g.beginPath(); g.moveTo(1200 + o, 1520); g.lineTo(1200 + o, 1090); g.stroke(); });
+    [1150, 1250].forEach(function (x) { g.fillStyle = '#3a3026'; for (let y = 160; y < 1000; y += 13) g.fillRect(x - 36, y, 72, 6); g.fillStyle = '#8a8a82'; g.fillRect(x - 24, 160, 4, 840); g.fillRect(x + 20, 160, 4, 840); });
+    const rg = g.createLinearGradient(0, 0, 0, 200); rg.addColorStop(0, '#22221b'); rg.addColorStop(1, '#4a473b'); g.fillStyle = rg; g.beginPath(); g.moveTo(0, 0); g.lineTo(M8W, 0); g.lineTo(M8W, 186); for (let x = M8W; x >= 0; x -= 24) g.lineTo(x, 176 + Math.sin(x * .03) * 8 + m8R(x) * 10); g.closePath(); g.fill();
+    for (let i = 0; i < 260; i++) { const x = m8R(i + 50) * M8W, y = m8R(i + 150) * 165; g.fillStyle = m8R(i + 250) > .5 ? 'rgba(0,0,0,.25)' : 'rgba(200,200,180,.08)'; g.beginPath(); g.ellipse(x, y, 10 + m8R(i) * 34, 6 + m8R(i + 9) * 12, m8R(i + 4), 0, 7); g.fill(); }
+    g.fillStyle = '#6a675c'; g.fillRect(1060, 100, 280, 90); g.strokeStyle = '#3a382e'; g.lineWidth = 3; for (let x = 1060; x < 1340; x += 28) { g.beginPath(); g.moveTo(x, 100); g.lineTo(x, 190); g.stroke(); }
+    g.fillStyle = '#060608'; g.beginPath(); g.moveTo(1084, 192); g.lineTo(1084, 150); g.quadraticCurveTo(1200, 92, 1316, 150); g.lineTo(1316, 192); g.fill();
+    // scorch / craters
+    for (let i = 0; i < 18; i++) { const x = 300 + m8R(i + 600) * 1800, y = 220 + m8R(i + 700) * 1200, r = 20 + m8R(i + 800) * 30; const cg = g.createRadialGradient(x, y, 0, x, y, r); cg.addColorStop(0, 'rgba(20,18,14,.55)'); cg.addColorStop(1, 'rgba(20,18,14,0)'); g.fillStyle = cg; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }
     return c;
 }
-function m8DrawCar(c, i, now) {
-    const p = m8CarPos(i), dead = !c.armoured && c.hp <= 0; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.ang);
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-58, -20, 120, 46);
-    const body = c.k === 'loco' ? '#2c2e2a' : c.k === 'flak' ? '#55573c' : '#45473a';
-    ctx.fillStyle = body; ctx.beginPath(); ctx.roundRect(-58, -22, 116, 44, 5); ctx.fill(); ctx.strokeStyle = '#151612'; ctx.lineWidth = 2; ctx.stroke(); ctx.fillStyle = 'rgba(255,255,230,.08)'; ctx.fillRect(-56, -20, 112, 6);
-    if (c.k === 'loco') { ctx.fillStyle = '#1a1b18'; ctx.fillRect(-20, -16, 64, 32); ctx.fillStyle = '#3a3c34'; ctx.beginPath(); ctx.arc(34, 0, 9, 0, 7); ctx.fill(); ctx.fillStyle = '#9b2a1f'; ctx.fillRect(54, -22, 5, 44); ctx.fillStyle = '#4a4c40'; for (let k = 0; k < 4; k++) ctx.fillRect(-50 + k * 8, -18, 5, 36); }
-    else if (c.k === 'flak') { ctx.fillStyle = '#3e4030'; ctx.beginPath(); ctx.arc(0, 0, 18, 0, 7); ctx.fill(); for (let k = 0; k < 10; k++) { ctx.fillStyle = k % 2 ? '#7a6c4a' : '#8a7a54'; const a = k / 10 * 6.283; ctx.beginPath(); ctx.ellipse(Math.cos(a) * 24, Math.sin(a) * 15, 8, 5, a, 0, 7); ctx.fill(); }
-        ctx.save(); ctx.rotate((c.ang || 0) - p.ang); ctx.fillStyle = '#1a1b16'; ctx.fillRect(0, -8, 36, 4); ctx.fillRect(0, 4, 36, 4); ctx.fillStyle = '#6a6c50'; ctx.fillRect(-9, -11, 16, 22); ctx.restore();
-        if (!dead) { ctx.rotate(-p.ang); const w = 70, f = c.hp / c.maxHp; ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(-w / 2, -48, w, 7); ctx.fillStyle = '#e04a32'; ctx.fillRect(-w / 2 + 1, -47, (w - 2) * f, 5); const pl = .5 + .5 * Math.sin(now / 140); ctx.strokeStyle = 'rgba(255,80,50,' + (.4 + pl * .5) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 40 + pl * 4, 0, 7); ctx.stroke(); } }
-    else { ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = 2; for (let k = -40; k <= 40; k += 16) { ctx.beginPath(); ctx.moveTo(k, -22); ctx.lineTo(k, 22); ctx.stroke(); } ctx.fillStyle = 'rgba(236,232,220,.85)'; ctx.fillRect(-7, -7, 14, 14); ctx.fillStyle = '#16140e'; ctx.fillRect(-5, -5, 10, 10); }
-    ctx.restore();
-    if (dead) { ddpSmoke(p.x, p.y, .3, now / 1000, i * 3, 60, 260, .7); ctx.fillStyle = 'rgba(255,' + (120 + Math.random() * 80) + ',40,.7)'; ctx.beginPath(); ctx.arc(p.x + (Math.random() - .5) * 14, p.y + (Math.random() - .5) * 10, 7 + Math.random() * 7, 0, 7); ctx.fill(); }
+function m8DrawOutsideWorld(now) {
+    if (!M8.art) M8.art = m8BuildArt();
+    ctx.drawImage(M8.art, 0, 0);
+    M8.obs.forEach(function (o) {
+        if (o.kind === 'fence') { ctx.strokeStyle = 'rgba(170,170,160,.7)'; ctx.lineWidth = 1.2; const hor = o.w > o.h, len = hor ? o.w : o.h; ctx.beginPath(); for (let k = 0; k < len; k += 8) { if (hor) { ctx.moveTo(o.x + k, o.y + 2); ctx.lineTo(o.x + k + 8, o.y + o.h - 2); ctx.moveTo(o.x + k + 8, o.y + 2); ctx.lineTo(o.x + k, o.y + o.h - 2); } else { ctx.moveTo(o.x + 2, o.y + k); ctx.lineTo(o.x + o.w - 2, o.y + k + 8); ctx.moveTo(o.x + o.w - 2, o.y + k); ctx.lineTo(o.x + 2, o.y + k + 8); } } ctx.stroke(); ctx.fillStyle = '#3a3026'; for (let k = 0; k < len; k += 60) ctx.fillRect(hor ? o.x + k - 2 : o.x + 2, hor ? o.y + 1 : o.y + k - 2, 5, 5); return; }
+        if (o.kind === 'tree') { ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.arc(o.x + o.w / 2 + 6, o.y + o.h / 2 + 8, o.w * .6, 0, 7); ctx.fill(); ctx.fillStyle = '#1e3018'; ctx.beginPath(); ctx.arc(o.x + o.w / 2, o.y + o.h / 2, o.w * .64, 0, 7); ctx.fill(); ctx.fillStyle = '#2a4220'; ctx.beginPath(); ctx.arc(o.x + o.w * .42, o.y + o.h * .42, o.w * .4, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(80,110,60,.35)'; ctx.beginPath(); ctx.arc(o.x + o.w * .36, o.y + o.h * .36, o.w * .18, 0, 7); ctx.fill(); return; }
+        if (o.kind === 'hut' || o.kind === 'hut2') { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(o.x + 8, o.y + 10, o.w, o.h); ctx.fillStyle = '#4a4436'; ctx.fillRect(o.x, o.y, o.w, o.h); ctx.fillStyle = '#5a5240'; ctx.fillRect(o.x, o.y, o.w, o.h / 2); ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1; for (let k = o.x; k < o.x + o.w; k += 14) { ctx.beginPath(); ctx.moveTo(k, o.y); ctx.lineTo(k, o.y + o.h); ctx.stroke(); } ctx.fillStyle = 'rgba(255,200,120,.7)'; ctx.fillRect(o.x + o.w * .3, o.y + o.h - 4, 14, 4); ctx.fillRect(o.x + o.w * .65, o.y + o.h - 4, 14, 4); return; }
+        if (o.kind === 'truck') { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(o.x + 6, o.y + 8, o.w, o.h); ctx.fillStyle = '#3e4232'; ctx.fillRect(o.x, o.y, o.w, o.h); ctx.fillStyle = '#56583e'; if (o.w > o.h) ctx.fillRect(o.x, o.y, o.w * .7, o.h); else ctx.fillRect(o.x, o.y + o.h * .3, o.w, o.h * .7); ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.strokeRect(o.x, o.y, o.w, o.h); return; }
+        if (o.kind === 'crates') { for (let k = 0; k < 6; k++) { const cx = o.x + (k % 3) * o.w / 3, cy = o.y + Math.floor(k / 3) * o.h / 2; ctx.fillStyle = k % 2 ? '#5a4a30' : '#4a3c26'; ctx.fillRect(cx + 2, cy + 2, o.w / 3 - 4, o.h / 2 - 4); ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.strokeRect(cx + 2, cy + 2, o.w / 3 - 4, o.h / 2 - 4); } return; }
+        if (o.kind === 'sand') { const hor = o.w > o.h; for (let k = 0; k < (hor ? o.w : o.h); k += 18) { ctx.fillStyle = (k / 18) % 2 ? '#7a6c4a' : '#8a7a54'; ctx.beginPath(); ctx.ellipse(hor ? o.x + k + 9 : o.x + 11, hor ? o.y + 11 : o.y + k + 9, 11, 9, 0, 0, 7); ctx.fill(); } return; }
+    });
+    m8DrawGustavTop(now);
+    if (M8.exfil && !M8.done) { const p = .5 + .5 * Math.sin(now / 200); ctx.strokeStyle = 'rgba(120,230,100,' + (.4 + p * .5) + ')'; ctx.lineWidth = 3; ctx.setLineDash([10, 8]); ctx.strokeRect(900, 1320, 600, 170); ctx.setLineDash([]); ctx.font = 'bold 14px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#9fe08a'; ctx.fillText('EXFIL — GET CLEAR HERE', 1200, 1345); }
 }
-function m8DrawTower(t, now) {
-    ctx.save(); ctx.translate(t.x, t.y);
-    if (t.destroyed) { ctx.fillStyle = '#2a2018'; ctx.beginPath(); ctx.ellipse(10, 10, 46, 26, .5, 0, 7); ctx.fill(); ctx.strokeStyle = '#4a3a24'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-30, -20); ctx.lineTo(40, 30); ctx.moveTo(-10, 30); ctx.lineTo(30, -24); ctx.stroke(); ctx.fillStyle = 'rgba(255,140,40,' + (.5 + Math.random() * .3) + ')'; ctx.beginPath(); ctx.arc(6, 4, 10 + Math.random() * 6, 0, 7); ctx.fill(); ctx.restore(); return; }
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-20, -6, 80, 60);
-    ctx.strokeStyle = '#4a3a24'; ctx.lineWidth = 5; [[-28, -28], [28, -28], [-28, 28], [28, 28]].forEach(function (q) { ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(q[0] * .6, q[1] * .6); ctx.stroke(); });
-    ctx.fillStyle = '#6e5a3a'; ctx.fillRect(-26, -26, 52, 52); ctx.strokeStyle = '#3a2c18'; ctx.lineWidth = 2; for (let k = -22; k <= 22; k += 8) { ctx.beginPath(); ctx.moveTo(-26, k); ctx.lineTo(26, k); ctx.stroke(); }
-    ctx.fillStyle = '#4a4436'; ctx.fillRect(-17, -17, 34, 34); ctx.fillStyle = 'rgba(255,255,220,.15)'; ctx.fillRect(-17, -17, 34, 5);
-    ctx.strokeStyle = '#1a1a16'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(10, -10); ctx.lineTo(10, -58); ctx.stroke(); const bl = Math.floor(now / 400) % 2; ctx.fillStyle = bl ? '#ff4030' : '#601810'; ctx.beginPath(); ctx.arc(10, -60, 4, 0, 7); ctx.fill();
-    ctx.fillStyle = '#1a1a16'; ctx.beginPath(); ctx.arc(-6, -4, 5, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(180,220,255,.9)'; ctx.fillRect(-4, -12, 8, 4);
-    const f = t.hp / t.maxHp, pl = .5 + .5 * Math.sin(now / 160); if (M8.phase === 2) { ctx.strokeStyle = 'rgba(255,80,50,' + (.4 + pl * .5) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 46 + pl * 5, 0, 7); ctx.stroke(); }
-    ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(-36, -80, 72, 7); ctx.fillStyle = '#e04a32'; ctx.fillRect(-35, -79, 70 * f, 5); ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffe2b0'; ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.strokeText('SPOTTER', 0, -86); ctx.fillText('SPOTTER', 0, -86);
-    ctx.restore();
+function m8DrawGustavTop(now) {
+    const G = M8_GUS, cx = G.x + G.w / 2;
+    ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(G.x - 10, G.y + 10, G.w + 26, G.h + 10);
+    [-62, 62].forEach(function (ox) { ctx.fillStyle = '#222420'; ctx.fillRect(cx + ox - 34, G.y, 68, G.h); ctx.fillStyle = '#0e0f0c'; for (let k = 0; k < 40; k++) { ctx.fillRect(cx + ox - 40, G.y + 6 + k * 15.3, 8, 10); ctx.fillRect(cx + ox + 32, G.y + 6 + k * 15.3, 8, 10); } });
+    const cg = ctx.createLinearGradient(G.x, 0, G.x + G.w, 0); cg.addColorStop(0, '#3e4030'); cg.addColorStop(.5, '#5c5e46'); cg.addColorStop(1, '#34362a'); ctx.fillStyle = cg; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(G.x + 6, G.y + 20, G.w - 12, G.h - 30, 14); else ctx.rect(G.x + 6, G.y + 20, G.w - 12, G.h - 30); ctx.fill(); ctx.strokeStyle = '#16170f'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = 'rgba(128,118,82,.45)'; ctx.beginPath(); ctx.ellipse(cx - 40, G.y + 160, 50, 18, .3, 0, 7); ctx.ellipse(cx + 30, G.y + 470, 46, 16, -.2, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 2; for (let k = 50; k < G.h - 20; k += 32) { ctx.beginPath(); ctx.moveTo(G.x + 10, G.y + k); ctx.lineTo(G.x + G.w - 10, G.y + k); ctx.stroke(); }
+    ctx.fillStyle = '#4c4e3a'; ctx.fillRect(cx - 60, G.y + 220, 120, 230); ctx.fillStyle = '#2e3024'; ctx.fillRect(cx - 40, G.y + 230, 80, 60);
+    const bg = ctx.createLinearGradient(cx - 26, 0, cx + 26, 0); bg.addColorStop(0, '#30321f'); bg.addColorStop(.45, '#62664a'); bg.addColorStop(1, '#262818'); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(cx - 4, G.y + 360, 40, 560);
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(cx - 26, G.y + 300); ctx.lineTo(cx - 17, G.y + 880); ctx.lineTo(cx + 17, G.y + 880); ctx.lineTo(cx + 26, G.y + 300); ctx.fill(); ctx.fillStyle = '#1a1b12'; ctx.fillRect(cx - 20, G.y + 872, 40, 14); ctx.fillStyle = '#050505'; ctx.beginPath(); ctx.ellipse(cx, G.y + 886, 11, 6, 0, 0, 7); ctx.fill();
+    M8_DOORS.forEach(function (d) { const R = M8.rooms[d.id], near = M8.nearDoor === d, hx = d.x - (d.side < 0 ? 0 : 20); ctx.fillStyle = R && R.planted ? '#2a4a20' : '#1a1a14'; ctx.fillRect(hx, d.y - 16, 20, 32); ctx.strokeStyle = near ? '#ffd24a' : '#8a8a70'; ctx.lineWidth = 2; ctx.strokeRect(hx, d.y - 16, 20, 32);
+        ctx.font = 'bold 11px monospace'; ctx.textAlign = d.side < 0 ? 'right' : 'left'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; const lbl = (R && R.planted ? '✓ ' : '') + d.name; ctx.strokeText(lbl, d.x + d.side * 28, d.y + 4); ctx.fillStyle = R && R.planted ? '#9fe08a' : near ? '#ffd24a' : '#e0d8b8'; ctx.fillText(lbl, d.x + d.side * 28, d.y + 4);
+        if (near && !(R && R.planted)) { ctx.textAlign = 'center'; ctx.strokeText('[F] ENTER', d.x + d.side * 50, d.y + 24); ctx.fillStyle = '#ffd24a'; ctx.fillText('[F] ENTER', d.x + d.side * 50, d.y + 24); } });
+    if (M8.done && M8.detonated) { const k = (now - M8.detonated) / 1000; for (let i = 0; i < 14; i++) { const t = k - i * .28; if (t < 0 || t > 2.6) continue; const x = G.x + m8R(i) * G.w, y = G.y + m8R(i + 4) * G.h, r = 40 + t * 130; const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,240,180,' + Math.max(0, 1 - t / 2.6) + ')'); g.addColorStop(.4, 'rgba(255,130,40,' + Math.max(0, .8 - t / 3) + ')'); g.addColorStop(1, 'rgba(60,30,10,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
+        for (let i = 0; i < 20; i++) { const t = k - 1 - i * .1; if (t < 0) continue; const x = G.x + m8R(i + 30) * G.w, y = G.y + m8R(i + 40) * G.h - t * 30; ctx.fillStyle = 'rgba(30,26,22,' + Math.min(.6, t * .3) + ')'; ctx.beginPath(); ctx.arc(x, y, 30 + t * 30, 0, 7); ctx.fill(); } }
 }
-function m8DrawGustav(now) { // top-down; the barrel points SOUTH over the yard, the hoist is at the rear by the tunnel
-    const G = M8.gus; if (M8.phase < 3) return; const y = G.y, cx = 1200;
-    ctx.save(); ctx.beginPath(); ctx.rect(0, 238, M8W, M8H); ctx.clip();
-    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(cx - 96, y - 206, 206, 420);
-    [-56, 56].forEach(function (ox) { ctx.fillStyle = '#2a2c26'; ctx.fillRect(cx + ox - 32, y - 200, 64, 400); ctx.fillStyle = '#121310'; for (let k = 0; k < 26; k++) { ctx.fillRect(cx + ox - 38, y - 196 + k * 15.2, 8, 10); ctx.fillRect(cx + ox + 30, y - 196 + k * 15.2, 8, 10); } });
-    const cg = ctx.createLinearGradient(cx - 84, 0, cx + 84, 0); cg.addColorStop(0, '#4a4c3a'); cg.addColorStop(.5, '#6c6e52'); cg.addColorStop(1, '#3e4030'); ctx.fillStyle = cg; ctx.beginPath(); ctx.roundRect(cx - 84, y - 186, 168, 360, 12); ctx.fill(); ctx.strokeStyle = '#1a1b16'; ctx.lineWidth = 3; ctx.stroke();
-    ctx.fillStyle = 'rgba(128,118,82,.6)'; ctx.beginPath(); ctx.ellipse(cx - 30, y - 90, 40, 16, .3, 0, 7); ctx.ellipse(cx + 34, y + 110, 36, 14, -.2, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(84,66,48,.55)'; ctx.beginPath(); ctx.ellipse(cx + 20, y - 20, 44, 10, -.15, 0, 7); ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = 2; for (let k = -170; k < 170; k += 26) { ctx.beginPath(); ctx.moveTo(cx - 82, y + k); ctx.lineTo(cx + 82, y + k); ctx.stroke(); }
-    // rear: shell hoist ramp with the shell riding up (target while reloading)
-    ctx.fillStyle = '#3a3c2e'; ctx.fillRect(cx - 26, y - 206, 52, 80); ctx.strokeStyle = '#1a1b16'; ctx.lineWidth = 1.4; for (let k = 0; k < 9; k++) { ctx.beginPath(); ctx.moveTo(cx - 24, y - 204 + k * 9); ctx.lineTo(cx + 24, y - 204 + k * 9); ctx.stroke(); }
-    if (G.state === 'reload' && G.shellLive && !M8.won) { const h = m8HoistPos(); ctx.save(); ctx.translate(h.x, h.y); ctx.fillStyle = '#7d8268'; ctx.beginPath(); ctx.roundRect(-12, -26, 24, 52, 10); ctx.fill(); ctx.fillStyle = '#b06a34'; ctx.fillRect(-12, 10, 24, 5); ctx.fillStyle = '#d8c24a'; ctx.fillRect(-12, -2, 24, 3); const pl = .5 + .5 * Math.sin(now / 110); ctx.strokeStyle = 'rgba(255,200,60,' + (.6 + pl * .4) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 32 + pl * 5, 0, 7); ctx.stroke(); ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; ctx.strokeText('SHELL', 0, -42); ctx.fillStyle = '#ffd24a'; ctx.fillText('SHELL', 0, -42); ctx.restore(); }
-    ctx.fillStyle = '#585a44'; ctx.fillRect(cx - 50, y - 120, 100, 150); ctx.fillStyle = '#3a3c2e'; ctx.fillRect(cx - 36, y - 120, 72, 40);                     // breech house
-    // the barrel (foreshortens as it elevates), droops when it dies
-    const elv = G.el, bl = (380 - elv * 170) * (1 - G.droop * .15); ctx.save(); ctx.translate(cx, y + 30); ctx.rotate(G.droop * .05);
-    ctx.fillStyle = 'rgba(0,0,0,' + (.25 + elv * .2) + ')'; ctx.fillRect(-18 + elv * 40, 10 + elv * 30, 36, 380);
-    const bgr = ctx.createLinearGradient(-22, 0, 22, 0); bgr.addColorStop(0, '#3a3c2e'); bgr.addColorStop(.4, '#6e7254'); bgr.addColorStop(1, '#2e3024'); ctx.fillStyle = bgr; ctx.beginPath(); ctx.moveTo(-24, 0); ctx.lineTo(-15, bl); ctx.lineTo(15, bl); ctx.lineTo(24, 0); ctx.fill();
-    ctx.fillStyle = '#2a2b22'; ctx.fillRect(-19, bl - 4, 38, 12); ctx.fillStyle = '#060606'; ctx.beginPath(); ctx.ellipse(0, bl + 4, 10, 4 + elv * 6, 0, 0, 7); ctx.fill();
-    if (now - G.fireAt < 700) { const k = 1 - (now - G.fireAt) / 700; ctx.fillStyle = 'rgba(255,230,160,' + k + ')'; ctx.beginPath(); ctx.arc(0, bl + 40, 120 * k + 40, 0, 7); ctx.fill(); }
-    ctx.restore();
-    // elevation gears on both sides of the trunnion
-    M8.gears.forEach(function (g) { const p = m8GearPos(g); ctx.save(); ctx.translate(p.x, p.y);
-        if (g.destroyed) { ctx.fillStyle = '#1a1814'; ctx.beginPath(); ctx.arc(0, 0, 26, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(255,' + (110 + Math.random() * 80) + ',40,.75)'; ctx.beginPath(); ctx.arc((Math.random() - .5) * 8, (Math.random() - .5) * 8, 10 + Math.random() * 6, 0, 7); ctx.fill(); ctx.restore(); return; }
-        const open = G.state === 'elevate' ? Math.min(1, (now - G.stateAt) / 600) : 0;
-        ctx.fillStyle = '#3a3c30'; ctx.beginPath(); ctx.roundRect(-28, -32, 56, 64, 6); ctx.fill();
-        ctx.save(); ctx.rotate(now / (open ? 300 : 2000)); ctx.fillStyle = open ? '#b0985a' : '#6a5e40'; for (let k = 0; k < 12; k++) { ctx.rotate(Math.PI / 6); ctx.fillRect(-3, -24, 6, 8); } ctx.beginPath(); ctx.arc(0, 0, 17, 0, 7); ctx.fill(); ctx.fillStyle = '#2a2a22'; ctx.beginPath(); ctx.arc(0, 0, 6, 0, 7); ctx.fill(); ctx.restore();
-        ctx.fillStyle = '#4a4c3a'; ctx.fillRect(-30, -34, 60, 34 * (1 - open)); ctx.fillRect(-30, 34 - 34 * (1 - open), 60, 34 * (1 - open));                  // armoured covers slide open
-        if (open > 0) { const pl = .5 + .5 * Math.sin(now / 120); ctx.strokeStyle = 'rgba(255,80,50,' + (.5 + pl * .5) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, 42 + pl * 5, 0, 7); ctx.stroke(); }
-        ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(g.dx < 0 ? -96 : 36, -4, 60, 7); ctx.fillStyle = '#e04a32'; ctx.fillRect(g.dx < 0 ? -95 : 37, -3, 58 * g.hp / g.maxHp, 5);
-        ctx.restore(); });
+function m8DrawTower(e) {
+    ctx.save(); ctx.translate(e.x, e.y); ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(-14, -8, 40, 40); ctx.strokeStyle = '#3a2c18'; ctx.lineWidth = 4; [[-22, -22], [22, -22], [-22, 22], [22, 22]].forEach(function (q) { ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(q[0] * .5, q[1] * .5); ctx.stroke(); });
+    ctx.fillStyle = e.dead ? '#2a2018' : '#5e4a2e'; ctx.fillRect(-16, -16, 32, 32); ctx.fillStyle = '#3a2e1c'; ctx.fillRect(-12, -12, 24, 24);
+    if (!e.dead) { ctx.rotate(e.la); ctx.fillStyle = '#c8c8b8'; ctx.beginPath(); ctx.arc(8, 0, 6, 0, 7); ctx.fill(); ctx.fillStyle = '#555a50'; ctx.beginPath(); ctx.arc(-4, 0, 5, 0, 7); ctx.fill(); }
+    else { ctx.strokeStyle = '#1a140c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-10, -10); ctx.lineTo(10, 10); ctx.moveTo(10, -10); ctx.lineTo(-10, 10); ctx.stroke(); }
     ctx.restore();
 }
-function drawGustavMap() {
-    const W = canvas.width, H = canvas.height, key = W + 'x' + H + ':' + obstacles.length;
-    if (!M8.art || M8.artKey !== key) { M8.art = buildM8Art(W, H); M8.artKey = key; }
-    ctx.drawImage(M8.art, 0, 0); if (!M8.active) return;
-    const now = Date.now();
-    M8.craters.forEach(function (c) { ctx.fillStyle = 'rgba(30,24,16,.75)'; ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(140,120,80,.5)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(c.x, c.y, c.r + 4, 0, 7); ctx.stroke(); if (now - c.t < 6000) { ctx.fillStyle = 'rgba(255,120,40,' + (.4 * (1 - (now - c.t) / 6000)) + ')'; ctx.beginPath(); ctx.arc(c.x, c.y, c.r * .6, 0, 7); ctx.fill(); } });
-    if (M8.train) { for (let i = M8.train.cars.length - 1; i >= 0; i--) m8DrawCar(M8.train.cars[i], i, now); const p = m8CarPos(0); ddpSmoke(p.x, p.y, .32, now / 1000, 2, 80, 240, M8.train.stopped ? .35 : .8); }
-    M8.towers.forEach(function (t) { m8DrawTower(t, now); });
-    m8DrawGustav(now);
+function m8DrawRoom(R, now) {
+    const fl = ctx.createLinearGradient(0, 0, 0, 700); fl.addColorStop(0, '#2c2c26'); fl.addColorStop(1, '#22221d'); ctx.fillStyle = fl; ctx.fillRect(0, 0, 1100, 700);
+    ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 1; for (let x = 40; x < 1060; x += 40) { ctx.beginPath(); ctx.moveTo(x, 40); ctx.lineTo(x, 660); ctx.stroke(); } for (let y = 40; y < 660; y += 40) { ctx.beginPath(); ctx.moveTo(40, y); ctx.lineTo(1060, y); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(160,150,120,.12)'; for (let i = 0; i < 120; i++) ctx.fillRect(40 + m8R(i) * 1020, 40 + m8R(i + 3) * 620, 2, 2);
+    ctx.fillStyle = 'rgba(200,170,60,.25)'; for (let x = 40; x < 1060; x += 40) { ctx.fillRect(x, 640, 20, 6); }
+    R.obs.forEach(function (o) {
+        if (o.kind === 'wall') { ctx.fillStyle = '#4a4c3c'; ctx.fillRect(o.x, o.y, o.w, o.h); ctx.fillStyle = 'rgba(0,0,0,.35)'; for (let k = 0; k < Math.max(o.w, o.h); k += 26) { if (o.w > o.h) ctx.fillRect(o.x + k, o.y, 2, o.h); else ctx.fillRect(o.x, o.y + k, o.w, 2); } ctx.fillStyle = '#8a8c70'; for (let k = 13; k < Math.max(o.w, o.h); k += 26) { if (o.w > o.h) ctx.fillRect(o.x + k, o.y + o.h / 2 - 1, 2, 2); else ctx.fillRect(o.x + o.w / 2 - 1, o.y + k, 2, 2); } return; }
+        ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(o.x + 8, o.y + 10, o.w, o.h);
+        if (o.kind === 'diesel') { ctx.fillStyle = '#4e5240'; ctx.fillRect(o.x, o.y, o.w, o.h); for (let k = 0; k < 6; k++) { ctx.fillStyle = '#383a2c'; ctx.beginPath(); ctx.arc(o.x + 30 + k * 40, o.y + o.h / 2, 14, 0, 7); ctx.fill(); ctx.fillStyle = '#6a6c56'; ctx.beginPath(); ctx.arc(o.x + 30 + k * 40, o.y + o.h / 2, 6 + Math.sin(now / 60 + k) * 1.5, 0, 7); ctx.fill(); } ctx.fillStyle = 'rgba(255,255,230,.1)'; ctx.fillRect(o.x, o.y, o.w, 6); }
+        else if (o.kind === 'gen') { ctx.fillStyle = '#5a4e30'; ctx.fillRect(o.x, o.y, o.w, o.h); ctx.fillStyle = '#2a2618'; ctx.beginPath(); ctx.arc(o.x + o.w / 2, o.y + o.h / 2, 40, 0, 7); ctx.fill(); ctx.save(); ctx.translate(o.x + o.w / 2, o.y + o.h / 2); ctx.rotate(now / 80); ctx.fillStyle = '#8a7a50'; for (let k = 0; k < 6; k++) { ctx.rotate(Math.PI / 3); ctx.fillRect(-3, -36, 6, 18); } ctx.restore(); }
+        else if (o.kind === 'pipes') { for (let k = 0; k < 4; k++) { ctx.fillStyle = k % 2 ? '#5a5e4a' : '#4a4e3a'; ctx.fillRect(o.x + k * 20, o.y, 16, o.h); } }
+        else if (o.kind === 'shellrack') { ctx.fillStyle = '#3a3626'; ctx.fillRect(o.x, o.y, o.w, o.h); for (let k = 0; k < 2; k++) { ctx.fillStyle = '#7d8268'; ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, o.y + 20 + k * 30, o.w / 2 - 8, 12, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#b06a34'; ctx.fillRect(o.x + 30, o.y + 8 + k * 30, 6, 24); } }
+        else if (o.kind === 'charges') { for (let k = 0; k < 6; k++) { ctx.fillStyle = k % 2 ? '#8a7a40' : '#7a6a34'; ctx.beginPath(); ctx.arc(o.x + 24 + (k % 3) * 46, o.y + 30 + Math.floor(k / 3) * 50, 20, 0, 7); ctx.fill(); ctx.strokeStyle = '#3a3018'; ctx.stroke(); } }
+        else if (o.kind === 'breech') { ctx.fillStyle = '#4a4e3a'; ctx.fillRect(o.x, o.y, o.w, o.h); ctx.fillStyle = '#2a2c20'; ctx.beginPath(); ctx.arc(o.x + o.w / 2, o.y + o.h / 2, 90, 0, 7); ctx.fill(); ctx.fillStyle = '#5c604a'; ctx.beginPath(); ctx.arc(o.x + o.w / 2, o.y + o.h / 2, 70, 0, 7); ctx.fill(); ctx.fillStyle = '#121210'; ctx.beginPath(); ctx.arc(o.x + o.w / 2, o.y + o.h / 2, 40, 0, 7); ctx.fill(); }
+        else if (o.kind === 'tray') { ctx.fillStyle = '#3a3828'; ctx.fillRect(o.x, o.y, o.w, o.h); ctx.fillStyle = '#7d8268'; ctx.beginPath(); ctx.ellipse(o.x + 190, o.y + 20, 130, 14, 0, 0, 7); ctx.fill(); }
+        else if (o.kind === 'panel') { ctx.fillStyle = '#3a3c30'; ctx.fillRect(o.x, o.y, o.w, o.h); for (let k = 0; k < 6; k++) { ctx.fillStyle = (Math.floor(now / 400) + k) % 3 ? '#4a8a40' : '#c04030'; ctx.beginPath(); ctx.arc(o.x + 20, o.y + 20 + k * 30, 5, 0, 7); ctx.fill(); } }
+        else if (o.kind === 'gear') { ctx.save(); ctx.translate(o.x + o.w / 2, o.y + o.h / 2); ctx.rotate(now / 1600 * (o.x < 500 ? 1 : -1)); ctx.fillStyle = '#6a5e40'; for (let k = 0; k < 18; k++) { ctx.rotate(Math.PI / 9); ctx.fillRect(-8, -112, 16, 22); } ctx.beginPath(); ctx.arc(0, 0, 94, 0, 7); ctx.fill(); ctx.fillStyle = '#3a3426'; ctx.beginPath(); ctx.arc(0, 0, 30, 0, 7); ctx.fill(); ctx.restore(); }
+        else if (o.kind === 'gearbox') { ctx.fillStyle = '#4e5240'; ctx.fillRect(o.x, o.y, o.w, o.h); ctx.fillStyle = '#2a2c20'; ctx.fillRect(o.x + 20, o.y + 20, o.w - 40, o.h - 40); }
+    });
+    const ex = R.exit; ctx.fillStyle = '#0c0c0a'; ctx.fillRect(ex.x, 660, ex.w, 40); ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#e0d8b8'; ctx.fillText('▼ HATCH OUT', ex.x + ex.w / 2, 690);
+    if (R.bell) { ctx.fillStyle = '#c03020'; ctx.beginPath(); ctx.arc(R.bell.x, R.bell.y, 10, 0, 7); ctx.fill(); ctx.fillStyle = '#ffd24a'; ctx.beginPath(); ctx.arc(R.bell.x, R.bell.y, 4, 0, 7); ctx.fill(); ctx.font = 'bold 10px monospace'; ctx.fillStyle = '#ff8070'; ctx.fillText('ALARM', R.bell.x + (R.bell.x > 550 ? -34 : 34), R.bell.y + 4); }
+    const T = R.target, pl = .5 + .5 * Math.sin(now / 150); ctx.strokeStyle = R.planted ? 'rgba(120,230,100,.9)' : 'rgba(255,80,50,' + (.5 + pl * .5) + ')'; ctx.lineWidth = 3; ctx.setLineDash([8, 6]); ctx.beginPath(); ctx.arc(T.x, T.y, 34 + pl * 4, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font = 'bold 12px monospace'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; const lbl = R.planted ? '✓ CHARGE SET' : T.name + (R.cleared ? ' — HOLD [F]' : ''); ctx.strokeText(lbl, T.x, T.y - 46); ctx.fillStyle = R.planted ? '#9fe08a' : '#ffb070'; ctx.fillText(lbl, T.x, T.y - 46);
+    if (R.planted) { ctx.fillStyle = '#5a4a2a'; ctx.fillRect(T.x - 12, T.y - 8, 24, 16); ctx.fillStyle = Math.floor(now / 300) % 2 ? '#ff3020' : '#501008'; ctx.beginPath(); ctx.arc(T.x, T.y, 3, 0, 7); ctx.fill(); }
+    if (M8.plantT > 0) { ctx.strokeStyle = '#ffd24a'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(T.x, T.y, 50, -Math.PI / 2, -Math.PI / 2 + Math.min(1, M8.plantT / 2.2) * Math.PI * 2); ctx.stroke(); }
 }
-function m8Arrow(x, y, label, col, now) { // off-screen pointer at the edge of the view
-    const vx = cameraX, vy = cameraY, vw = SKIRMISH_VIEW_WIDTH, vh = SKIRMISH_VIEW_HEIGHT; if (x > vx + 30 && x < vx + vw - 30 && y > vy + 30 && y < vy + vh - 30) return;
-    const cx = vx + vw / 2, cy = vy + vh / 2, a = Math.atan2(y - cy, x - cx), k = Math.min((vw / 2 - 40) / Math.abs(Math.cos(a) || 1e-6), (vh / 2 - 40) / Math.abs(Math.sin(a) || 1e-6)), px = cx + Math.cos(a) * k, py = cy + Math.sin(a) * k, pl = .6 + .4 * Math.sin(now / 160);
-    ctx.save(); ctx.translate(px, py); ctx.rotate(a); ctx.fillStyle = col; ctx.globalAlpha = pl; ctx.beginPath(); ctx.moveTo(18, 0); ctx.lineTo(-10, -12); ctx.lineTo(-4, 0); ctx.lineTo(-10, 12); ctx.closePath(); ctx.fill(); ctx.restore();
-    ctx.save(); ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#000'; const tx = px - Math.cos(a) * 34, ty = py - Math.sin(a) * 24 + 4; ctx.strokeText(label, tx, ty); ctx.fillStyle = col; ctx.fillText(label, tx, ty); ctx.restore();
-}
-function m8DrawOverlay() {
-    if (!M8.active) return; const now = Date.now(), G = M8.gus; ctx.save();
-    M8.shots.forEach(function (s) { if (s.done) return;
-        const k = cs2C((now - s.t0) / M8_SHADOW, 0, 1), r = s.r * (.25 + .75 * k);
-        ctx.fillStyle = 'rgba(0,0,0,' + (.15 + .45 * k) + ')'; ctx.beginPath(); ctx.ellipse(s.x, s.y, r, r * .8, 0, 0, 7); ctx.fill();
-        const pl = .5 + .5 * Math.sin(now / (60 + 200 * (1 - k))); ctx.strokeStyle = 'rgba(255,60,40,' + (.5 + pl * .5) + ')'; ctx.lineWidth = 4; ctx.setLineDash([14, 10]); ctx.beginPath(); ctx.ellipse(s.x, s.y, s.r, s.r * .8, 0, 0, 7); ctx.stroke(); ctx.setLineDash([]);
-        ctx.font = 'bold 22px "Stardos Stencil", Impact, sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeStyle = '#000'; const txt = ((s.at - now) / 1000).toFixed(1); ctx.strokeText(txt, s.x, s.y + 8); ctx.fillStyle = '#ff7050'; ctx.fillText(txt, s.x, s.y + 8);
-        if (!M8.msgs['w' + s.t0]) { M8.msgs['w' + s.t0] = 1; try { playTone(1500, 260, (s.at - now) / 1000, .04, 'sine'); } catch (e) {} } });
-    if (M8.phase === 3 && now - G.fireAt < 1400) { const k = (now - G.fireAt) / 1400; ctx.strokeStyle = 'rgba(255,230,190,' + (.7 * (1 - k)) + ')'; ctx.lineWidth = 10 * (1 - k) + 2; ctx.beginPath(); ctx.arc(1200, G.y, 60 + k * 520, 0, 7); ctx.stroke(); if (k < .3) { ctx.fillStyle = 'rgba(255,240,210,' + (.35 * (1 - k / .3)) + ')'; ctx.fillRect(0, 0, canvas.width, canvas.height); } }
-    // objective pointers
-    if (!M8.won) {
-        if (M8.phase === 1 && M8.train) M8.train.cars.forEach(function (c, i) { if (c.k === 'flak' && c.hp > 0) { const p = m8CarPos(i); m8Arrow(p.x, p.y, 'FLAK', '#ff7050', now); } });
-        if (M8.phase === 2) M8.towers.forEach(function (t) { if (!t.destroyed) m8Arrow(t.x, t.y, 'SPOTTER', '#ff7050', now); });
-        if (M8.phase === 3 && G.out >= 1) { if (G.state === 'reload' && G.shellLive) { const h = m8HoistPos(); m8Arrow(h.x, h.y, 'HOIST', '#ffd24a', now); } else m8Arrow(1200, G.y, 'GUSTAV', '#ff7050', now); }
-    }
+function m8Draw(now) {
+    const units = m8Units(), out = M8.scene === 'out';
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.scale(canvas.width / 1100, canvas.height / 700);
+    ctx.save(); if (out) ctx.translate(-Math.round(M8.cam.x), -Math.round(M8.cam.y));
+    if (out) m8DrawOutsideWorld(now); else m8DrawRoom(M8.rooms[M8.scene], now);
+    M8.bodies.forEach(function (b) { if (b.scene !== M8.scene) return; ctx.fillStyle = 'rgba(80,10,6,.4)'; ctx.beginPath(); ctx.ellipse(b.x, b.y, 18, 12, 0, 0, 7); ctx.fill(); });
+    units.forEach(function (e) { if (e.team === 'en' && !e.dead) m8DrawCone(e); });
+    units.forEach(function (u) { if (u.dead && u.kind !== 'tower') m8DrawMan(u, now); });
+    units.forEach(function (u) { if (!u.dead && u.kind !== 'tower') m8DrawMan(u, now); });
+    units.forEach(function (u) { if (u.kind === 'tower') m8DrawTower(u); });
+    M8.bullets.forEach(function (b) { ctx.strokeStyle = b.team === 'sq' ? 'rgba(255,240,180,.85)' : 'rgba(255,170,120,.85)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx * .6, b.y - b.vy * .6); ctx.stroke(); });
+    M8.fx.forEach(function (f) { const k = (now - f.t) / 900; if (f.k === 'flash' && k < .1) { ctx.fillStyle = 'rgba(255,230,150,' + (1 - k * 10) + ')'; ctx.beginPath(); ctx.arc(f.x, f.y, f.big ? 10 : 4, 0, 7); ctx.fill(); }
+        if (f.k === 'spark' && k < .3) { ctx.fillStyle = 'rgba(255,220,140,' + (1 - k / .3) + ')'; ctx.fillRect(f.x - 1, f.y - 1, 3, 3); }
+        if (f.k === 'blood' && k < .5) { ctx.fillStyle = 'rgba(140,20,10,' + (1 - k * 2) + ')'; for (let i = 0; i < 4; i++) ctx.fillRect(f.x + Math.cos(f.a + i * .3 - .45) * (6 + k * 30), f.y + Math.sin(f.a + i * .3 - .45) * (6 + k * 30), 3, 3); }
+        if (f.k === 'slash' && k < .2) { ctx.strokeStyle = 'rgba(230,240,255,' + (1 - k * 5) + ')'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(f.x, f.y, 14, f.a - .9, f.a + .9); ctx.stroke(); } });
+    ctx.restore();
+    m8DrawDark(now, out);
+    if (M8.hurtAt && now - M8.hurtAt < 300) { ctx.fillStyle = 'rgba(160,20,10,' + (.3 * (1 - (now - M8.hurtAt) / 300)) + ')'; ctx.fillRect(0, 0, 1100, 700); }
+    m8DrawHud(now, units);
+    if (M8.fade > 0) { ctx.fillStyle = 'rgba(0,0,0,' + M8.fade + ')'; ctx.fillRect(0, 0, 1100, 700); }
+    if (M8.done && M8.detonated) { const k = (now - M8.detonated) / 1000; if (k < .5) { ctx.fillStyle = 'rgba(255,240,200,' + (.7 * (1 - k / .5)) + ')'; ctx.fillRect(0, 0, 1100, 700); } if (k > 1.2) m8Banner('GUSTAV IS DESTROYED', '#ffd24a'); }
+    if (M8.failed) m8Banner(M8.failWhy === 'leader' ? 'YOU ARE DOWN — RAID FAILED' : 'MISSION FAILED', '#ff5040');
     ctx.restore();
 }
-function m8EnsureHud() {
-    m4EnsureHud(); if (!document.getElementById('m8Style')) { const src = document.getElementById('m4Style'); const s = document.createElement('style'); s.id = 'm8Style'; s.textContent = (src ? src.textContent : '').split('#m4Hud').join('#m8Hud').split('#m4Bar').join('#m8Bar').split('#m4Stat').join('#m8Stat'); document.head.appendChild(s); }
-    let h = document.getElementById('m8Hud'); if (!h) { h = document.createElement('div'); h.id = 'm8Hud'; h.hidden = true; h.innerHTML = '<div class="l" id="m8Lbl">SCHWERER GUSTAV · 80 cm K(E)</div><div class="b"><i id="m8Bar"></i></div><div class="s" id="m8Stat"></div>'; document.body.appendChild(h); }
-    return h;
+function m8Banner(t, col) { ctx.save(); ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, 290, 1100, 90); ctx.textAlign = 'center'; ctx.font = '700 46px "Stardos Stencil", Impact, sans-serif'; ctx.fillStyle = col; ctx.fillText(t, 550, 352); ctx.restore(); }
+function m8DrawDark(now, out) {
+    if (!M8.darkC) { M8.darkC = document.createElement('canvas'); M8.darkC.width = 1100; M8.darkC.height = 700; }
+    const d = M8.darkC.getContext('2d'), ox = out ? Math.round(M8.cam.x) : 0, oy = out ? Math.round(M8.cam.y) : 0;
+    d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, 1100, 700); d.fillStyle = out ? 'rgba(4,6,16,.68)' : 'rgba(6,6,8,.38)'; d.fillRect(0, 0, 1100, 700);
+    d.globalCompositeOperation = 'destination-out';
+    const hole = function (x, y, r, a) { const g = d.createRadialGradient(x - ox, y - oy, 0, x - ox, y - oy, r); g.addColorStop(0, 'rgba(0,0,0,' + a + ')'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.beginPath(); d.arc(x - ox, y - oy, r, 0, 7); d.fill(); };
+    const L = m8Leader(); hole(L.x, L.y, 180, .65);
+    if (out) { M8.lamps.forEach(function (l) { hole(l.x, l.y, l.r, .85); });
+        M8.units.forEach(function (u) { if (u.kind !== 'tower' || u.dead) return; hole(u.x + Math.cos(u.la) * 230, u.y + Math.sin(u.la) * 230, 110, 1); d.save(); d.translate(u.x - ox, u.y - oy); d.rotate(u.la); const g = d.createLinearGradient(0, 0, 330, 0); g.addColorStop(0, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,.1)'); d.fillStyle = g; d.beginPath(); d.moveTo(0, 0); d.lineTo(330, -78); d.lineTo(330, 78); d.closePath(); d.fill(); d.restore(); });
+        if (M8.done && M8.detonated) hole(1200, 550, 900, Math.max(0, 1 - (now - M8.detonated) / 6000)); }
+    M8.fx.forEach(function (f) { if (f.k === 'flash' && now - f.t < 90) hole(f.x, f.y, f.big ? 160 : 60, .9); });
+    ctx.drawImage(M8.darkC, 0, 0);
+    if (out) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; M8.units.forEach(function (u) { if (u.kind !== 'tower' || u.dead) return; const lx = u.x + Math.cos(u.la) * 230 - ox, ly = u.y + Math.sin(u.la) * 230 - oy; const g = ctx.createRadialGradient(lx, ly, 0, lx, ly, 100); g.addColorStop(0, 'rgba(230,236,255,.2)'); g.addColorStop(1, 'rgba(230,236,255,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(lx, ly, 100, 0, 7); ctx.fill(); }); ctx.restore(); }
 }
-function m8ShowHud(on) { m8EnsureHud().hidden = !on; }
-function m8UpdateHud(now) {
-    const h = document.getElementById('m8Hud'); if (!h || h.hidden) return; const G = M8.gus; let f = 1, st = '';
-    if (M8.phase === 1) { const n = M8.train.cars.filter(function (c) { return c.k === 'flak'; }), hp = n.reduce(function (a, c) { return a + c.hp; }, 0); f = hp / 760; st = 'PHASE 1 · ESCORT TRAIN — HIT THE FLAK WAGONS'; }
-    else if (M8.phase === 2) { f = M8.towers.reduce(function (a, t) { return a + t.hp; }, 0) / 720; st = 'PHASE 2 · TWO SPOTTERS — DODGE THE SHELL SHADOWS'; }
-    else { f = G.hp / 100; const left = G.state === 'reload' ? M8_CYCLE.reload - (now - G.stateAt) : G.state === 'elevate' ? M8_CYCLE.elevate - (now - G.stateAt) : 0; st = M8.won ? 'GUSTAV SILENCED' : G.state === 'emerge' ? 'PHASE 3 · IT IS COMING OUT OF THE TUNNEL' : (G.state === 'reload' ? 'RELOADING — HIT THE SHELL ON THE HOIST' : G.state === 'elevate' ? 'ELEVATING — HIT THE GEARS' : 'FIRED!') + (left > 0 ? ' · ' + (left / 1000).toFixed(1) + 's' : '') + ' · BEACH HITS ' + G.beach + '/' + M8_BEACH_MAX; }
-    document.getElementById('m8Bar').style.width = Math.max(0, f * 100) + '%'; document.getElementById('m8Stat').textContent = st;
+function m8DrawHud(now, units) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(14,16,10,.82)'; ctx.fillRect(12, 12, 212, 108); ctx.strokeStyle = '#6d714f'; ctx.lineWidth = 2; ctx.strokeRect(12, 12, 212, 108);
+    ctx.font = 'bold 11px monospace'; ctx.textAlign = 'left'; ctx.fillStyle = '#d9c88c'; ctx.fillText('No. 2 COMMANDO · SECTION', 22, 28);
+    M8.units.slice(0, 5).forEach(function (u, i) { const y = 44 + i * 15; ctx.fillStyle = u.dead ? '#a04a3a' : i === 0 ? '#ffe2a0' : '#e8e0c0'; ctx.fillText((u.dead ? '✕ ' : '') + u.name, 22, y); ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(152, y - 8, 62, 6); ctx.fillStyle = u.dead ? '#5a2a20' : '#7fc06a'; ctx.fillRect(152, y - 8, 62 * Math.max(0, u.hp) / u.maxHp, 6); });
+    const obj = M8.exfil ? 'ALL CHARGES SET — GET CLEAR TO THE SOUTH TREELINE' : M8.scene === 'out' ? 'REACH GUSTAV · ENTER ITS HATCHES · CHARGES ' + M8.planted + '/4' : (M8.rooms[M8.scene].planted ? 'CHARGE SET — LEAVE BY THE HATCH (BOTTOM)' : M8.rooms[M8.scene].cleared ? 'ROOM CLEAR — HOLD [F] ON THE ' + M8.rooms[M8.scene].target.name : 'KILL THE CREW AND ENGINEERS — ' + M8.rooms[M8.scene].units.filter(function (u) { return !u.dead; }).length + ' LEFT');
+    M8.obj = obj; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(14,16,10,.82)'; ctx.fillRect(290, 10, 520, 30); ctx.strokeStyle = M8.alarm ? '#c03020' : '#6d714f'; ctx.strokeRect(290, 10, 520, 30); ctx.fillStyle = '#efe6c6'; ctx.font = 'bold 12px monospace'; ctx.fillText(obj, 550, 30);
+    ctx.font = '700 15px "Stardos Stencil", Impact, sans-serif';
+    if (M8.alarm) { ctx.fillStyle = Math.floor(now / 300) % 2 ? '#ff4030' : '#a02018'; ctx.fillText('● ALARM RAISED', 550, 60); }
+    else { const anyAlert = units.some(function (u) { return u.team === 'en' && !u.dead && (u.state === 'alerting' || u.state === 'flee' || u.sus > .4); }); ctx.fillStyle = anyAlert ? '#ffd24a' : '#7fc06a'; ctx.fillText(anyAlert ? '● SUSPICIOUS' : '● UNDETECTED', 550, 60); }
+    const P = M8_PRIMARY[M8.loadout.p], S = M8_SECONDARY[M8.loadout.s];
+    [P, S].forEach(function (w, i) { const act = M8.wi === i, y = 596 + i * 44; ctx.fillStyle = act ? 'rgba(40,46,24,.92)' : 'rgba(14,16,10,.72)'; ctx.fillRect(840, y, 248, 38); ctx.strokeStyle = act ? '#e2c460' : '#4a4e38'; ctx.lineWidth = 2; ctx.strokeRect(840, y, 248, 38);
+        ctx.textAlign = 'left'; ctx.font = 'bold 12px monospace'; ctx.fillStyle = act ? '#ffe2a0' : '#a8a080'; ctx.fillText((i + 1) + '  ' + w.short, 850, y + 16); ctx.font = '10px monospace'; ctx.fillStyle = w.noise <= 120 ? '#8fd07a' : '#ff8a70'; ctx.fillText(w.noise <= 120 ? 'QUIET' : 'LOUD', 850, y + 30);
+        ctx.textAlign = 'right'; ctx.font = 'bold 13px monospace'; ctx.fillStyle = act ? '#ffe2a0' : '#a8a080'; ctx.fillText(w.melee ? '∞' : (M8.reloadUntil[i] ? 'RELOADING' : M8.ammo[i] + ' / ' + w.mag), 1080, y + 24); });
+    ctx.textAlign = 'left'; ctx.font = '11px monospace'; ctx.fillStyle = 'rgba(239,230,198,.6)'; if (M8.scene === 'out') ctx.fillText('WASD move · SHIFT sneak · mouse aim · click fire · 1/2 swap · R reload · F interact', 236, 690);
+    if (M8.msg && now - M8.msgAt < M8.msgDur) { ctx.textAlign = 'center'; ctx.font = 'bold 14px "Special Elite", "Courier New", monospace'; const w = Math.min(1060, ctx.measureText(M8.msg).width + 40); ctx.fillStyle = 'rgba(8,10,6,.86)'; ctx.fillRect(550 - w / 2, 92, w, 30); ctx.fillStyle = '#e7edc9'; ctx.fillText(M8.msg, 550, 112); }
+    if (M8.scene === 'out') { const mw = 200, mh = 125, mx = 12, my = 548, sx = mw / M8W, sy = mh / M8H; ctx.fillStyle = 'rgba(10,12,8,.85)'; ctx.fillRect(mx, my, mw, mh); ctx.strokeStyle = '#6d714f'; ctx.strokeRect(mx, my, mw, mh);
+        ctx.fillStyle = '#3a3a30'; ctx.fillRect(mx, my, mw, 180 * sy); ctx.fillStyle = '#6a6c50'; ctx.fillRect(mx + M8_GUS.x * sx, my + M8_GUS.y * sy, M8_GUS.w * sx, M8_GUS.h * sy); ctx.strokeStyle = 'rgba(180,180,170,.5)'; ctx.strokeRect(mx + M8_FENCE.x0 * sx, my + M8_FENCE.y0 * sy, (M8_FENCE.x1 - M8_FENCE.x0) * sx, (M8_FENCE.y1 - M8_FENCE.y0) * sy);
+        M8_DOORS.forEach(function (d) { ctx.fillStyle = M8.rooms[d.id].planted ? '#7fc06a' : '#ffd24a'; ctx.fillRect(mx + d.x * sx - 2, my + d.y * sy - 2, 4, 4); });
+        const L = m8Leader(); M8.units.forEach(function (u) { if (u.dead) return; if (u.team === 'en') { if (u.kind === 'tower') { ctx.fillStyle = '#e0e0d0'; ctx.fillRect(mx + u.x * sx - 2, my + u.y * sy - 2, 4, 4); } else if (u.state === 'alert' || (u.seen && now - u.seen < 3000) || Math.hypot(u.x - L.x, u.y - L.y) < 450) { ctx.fillStyle = u.state === 'alert' ? '#ff4030' : '#d08060'; ctx.fillRect(mx + u.x * sx - 1, my + u.y * sy - 1, 3, 3); } } else { ctx.fillStyle = u.kind === 'leader' ? '#ffe2a0' : '#7fc06a'; ctx.fillRect(mx + u.x * sx - 1.5, my + u.y * sy - 1.5, 3, 3); } });
+        if (M8.exfil) { ctx.strokeStyle = '#7fc06a'; ctx.strokeRect(mx + 900 * sx, my + 1320 * sy, 600 * sx, 170 * sy); }
+        ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.strokeRect(mx + M8.cam.x * sx, my + M8.cam.y * sy, 1100 * sx, 700 * sy); }
+    ctx.strokeStyle = 'rgba(255,240,200,.85)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(M8.mx, M8.my, 8, 0, 7); ctx.moveTo(M8.mx - 13, M8.my); ctx.lineTo(M8.mx - 4, M8.my); ctx.moveTo(M8.mx + 4, M8.my); ctx.lineTo(M8.mx + 13, M8.my); ctx.moveTo(M8.mx, M8.my - 13); ctx.lineTo(M8.mx, M8.my - 4); ctx.moveTo(M8.mx, M8.my + 4); ctx.lineTo(M8.mx, M8.my + 13); ctx.stroke();
+    ctx.restore();
 }
-function m8Cleanup() { M8.active = false; const h = document.getElementById('m8Hud'); if (h) h.hidden = true; }
-function m8ShowBrief(go) {
+
+/* ---------- briefing + loadout ---------- */
+function m8ShowBrief() {
     m2InjectStyle();
+    if (!document.getElementById('m8LoadStyle')) { const s = document.createElement('style'); s.id = 'm8LoadStyle'; s.textContent = '.m8Load{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.m8Col h4{margin:0 0 6px;font:700 13px var(--type,monospace);letter-spacing:2px;color:#7a2a1f}.m8W{display:block;width:100%;text-align:left;margin:0 0 6px;padding:7px 10px;background:#e6dcb8;border:2px solid #6a6650;cursor:pointer;font:12px var(--type,monospace);color:#2a2a1e;box-shadow:2px 2px 0 rgba(0,0,0,.35)}.m8W b{display:block;font:700 13px var(--stencil,Impact,sans-serif);letter-spacing:1px}.m8W i{font-style:normal;font-size:10px;letter-spacing:1px;padding:0 5px;margin-left:6px;border:1px solid}.m8W .q{color:#2f5a22}.m8W .l{color:#9b2a1f}.m8W.on{background:#2e3420;color:#efe6c6;border-color:#e2c460}.m8W.on b{color:#ffe2a0}.m8W.on .q{color:#9fe08a}.m8W.on .l{color:#ff9a80}@media(max-width:760px){.m8Load{grid-template-columns:1fr}}'; document.head.appendChild(s); }
     let b = document.getElementById('m2Brief'); if (!b) { b = document.createElement('div'); b.id = 'm2Brief'; document.body.appendChild(b); }
-    b.innerHTML = '<div class="bSheet"><div class="bTape"><span>OPERATION OVERLORD</span><span>MISSION 08</span></div><div class="bBody">' +
+    const sel = Object.assign({ p: 'delisle', s: 'welrod' }, progression.m8Loadout || {});
+    const card = function (k, w, slot) { return '<button class="m8W' + (sel[slot] === k ? ' on' : '') + '" data-slot="' + slot + '" data-k="' + k + '"><b>' + w.name + (w.melee ? '<i class="q">SILENT</i>' : w.noise <= 120 ? '<i class="q">QUIET</i>' : '<i class="l">LOUD</i>') + '</b>' + w.desc + '</button>'; };
+    b.innerHTML = '<div class="bSheet"><div class="bTape"><span>OPERATION DEADFALL</span><span>MISSION 08</span></div><div class="bBody">' +
         '<h2>SCHWERER GUSTAV</h2><p class="bText" id="m8Typed"></p>' +
-        '<ul><li><b>Phase 1:</b> an armoured train circles the gun yard. Only its two <b>flak wagons</b> can be hurt. Stay off the rails.</li><li><b>Phase 2:</b> the gun shells you from the tunnel. When a <b>shadow</b> grows under you, <b>get out</b>. Destroy <b>both spotter towers</b> on the hills.</li><li><b>Phase 3:</b> Gustav rolls out. While it <b>reloads</b>, shoot the <b>shell on the hoist</b> at its rear (big damage, cancels the shot). When it <b>elevates</b>, its <b>gear covers open</b>: wreck the gears. If it fires <b>3 times</b>, the beachhead is lost.</li></ul>' +
-        '<div class="bNew">★ FIELD NOTES ★</div><div class="bCards">' +
-        '<div class="bCard" id="m8C1"><h3>THE BIG MAP</h3>The yard is huge. Red arrows at the edge of the screen point to your targets. The minimap shows the whole field.</div>' +
-        '<div class="bCard" id="m8C2"><h3>THE SHOCKWAVE</h3>When Gustav fires, everything near it gets flattened and thrown back. Do not be beside it when the countdown ends.</div>' +
-        '<div class="bCard" id="m8C3"><h3>AIRSTRIKE RUN</h3><kbd>E</kbd> then click. Bombs set off the hoist shell and hurt the flak wagons, spotters and gears. 30 s recharge.</div>' +
-        '<div class="bCard" id="m8C4"><h3>FIELD REPAIR</h3><kbd>R</kbd> works anywhere. Never repair inside a shadow.</div></div>' +
-        '<div class="bNote">W A S D move · mouse aim · click / space fire.</div>' +
-        '<button class="bGo" id="m8Go">SILENCE THE GUN</button></div></div>';
-    b.hidden = false;
-    const txt = 'D+7. For three days a shell the size of a car has been falling on the beachhead. The train you stopped was feeding it. It lives in a railway tunnel in the hills: Schwerer Gustav, the largest gun ever built. Break the escort, blind the spotters, then take the monster apart before it fires again.';
+        '<ul><li>You lead a five-man <b>No. 2 Commando</b> section. Your men hold a square around you and match your pace.</li><li>Get into the gun yard unseen past the <b>searchlight towers</b>, <b>sentries</b> and <b>patrols</b>. Stay out of their vision cones and the light, and hold <b>SHIFT</b> to creep.</li><li>Gustav has four hatches: <b>engine, ammunition, breech, elevation</b>. In each one, kill the crew and engineers before they reach the alarm bell, then hold <b>F</b> on the marked part to set a charge.</li><li>With all four charges set, get back to the southern treeline and blow it.</li></ul>' +
+        '<div class="bNew">★ LOADOUT ★</div><div class="m8Load"><div class="m8Col"><h4>PRIMARY</h4>' + Object.keys(M8_PRIMARY).map(function (k) { return card(k, M8_PRIMARY[k], 'p'); }).join('') + '</div><div class="m8Col"><h4>SECONDARY</h4>' + Object.keys(M8_SECONDARY).map(function (k) { return card(k, M8_SECONDARY[k], 's'); }).join('') + '<div class="bNote" style="margin-top:8px;text-align:left">LOUD weapons bring the whole yard down on you. Bodies left in sight get found. Engineers run for the alarm bell.</div></div></div>' +
+        '<button class="bGo" id="m8Go">GO IN QUIET</button></div></div>';
+    b.hidden = false; b.style.display = '';
+    b.querySelectorAll('.m8W').forEach(function (el) { el.onclick = function () { const s = el.getAttribute('data-slot'); sel[s] = el.getAttribute('data-k'); progression.m8Loadout = { p: sel.p, s: sel.s }; try { saveProgression(); } catch (e) {} b.querySelectorAll('.m8W[data-slot="' + s + '"]').forEach(function (x) { x.classList.toggle('on', x === el); }); try { playTone(640, 860, .08, .05, 'triangle'); } catch (e) {} }; });
+    const txt = '13 June 1944, 02:00. Gustav is out of its tunnel, crewed and guarded. No tank can get near it without being heard. Five men can. Get in, get aboard, set charges in every compartment, get out.';
     const el = document.getElementById('m8Typed'); let i = 0; const iv = setInterval(function () { i += 2; el.textContent = txt.slice(0, i); if (i >= txt.length) clearInterval(iv); }, 22);
-    [1200, 1700, 2200, 2700].forEach(function (ms, k) { setTimeout(function () { const c = document.getElementById('m8C' + (k + 1)); if (c) c.classList.add('show'); try { playTone(640 + k * 60, 860 + k * 60, .18, .06, 'triangle'); } catch (e) {} }, ms); });
-    document.getElementById('m8Go').onclick = function () { clearInterval(iv); b.hidden = true; M8.cut = false; go(); };
+    document.getElementById('m8Go').onclick = function () { clearInterval(iv); b.hidden = true; progression.m8Loadout = { p: sel.p, s: sel.s }; m8Begin(); };
 }
 function startMission8(skipIntro) {
-    const f = campaignRun.faction || campaignFaction, c = campaignRun.cls || campaignTankClass; if (!f || !c) return;
-    returnToMenu(); campaignRun = { faction: f, cls: c }; campaignFaction = f; campaignTankClass = c;
-    selectedFaction = f; selectedTankClass = c; selectedGameMode = 'campaign'; selectedMap = 'campaignGustav'; campaignMission = 8;
-    document.getElementById('menu').style.display = 'none'; document.getElementById('campaignScreen').style.display = 'none'; document.getElementById('gameArea').style.display = 'block';
-    ['controls', 'battleMainMenuButton', 'gameInfo', 'pointScoreBar', 'battleMessage', 'killFeed', 'radioText'].forEach(function (id) { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
-    M8.cut = !skipIntro; applyPointControlCanvasSize(); canvas.style.transform = 'translate3d(0px,0px,0px)';
-    if (skipIntro) { m8ShowBrief(function () { startCampaignMission(); }); return; }
+    returnToMenu(); campaignMission = 8; selectedGameMode = 'campaign'; selectedMap = 'campaignGustav';
+    document.getElementById('menu').style.display = 'none'; const cs = document.getElementById('campaignScreen'); if (cs) cs.style.display = 'none'; document.getElementById('gameArea').style.display = 'block';
+    ['controls', 'battleMainMenuButton', 'gameInfo', 'pointScoreBar', 'battleMessage', 'killFeed', 'radioText', 'campaignObjectiveBox'].forEach(function (id) { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+    M8.cut = true; applyPointControlCanvasSize(); canvas.style.transform = 'translate3d(0px,0px,0px)'; if (typeof minimapPanel !== 'undefined' && minimapPanel) minimapPanel.style.display = 'none';
+    if (skipIntro) { m8ShowBrief(); return; }
     campaignCutsceneRunning = true; campaignCutsceneStart = performance.now(); if (campaignCutsceneFrame) cancelAnimationFrame(campaignCutsceneFrame); campaignCutsceneFrame = requestAnimationFrame(drawM8Cutscene);
 }
 /* ---------- camera + helpers ---------- */
@@ -6946,7 +7041,7 @@ function drawDDayCutscene(now) {
     let flash = 0, useGL = false;
     if (ddgInit(w, h)) { try { const S3 = ddglRender(Math.min(t, DD.dur), w, h); ctx.drawImage(DDGL.cv, 0, 0, w, h); useGL = true; flash = S3.flash || 0; } catch (e) { DDGL.why = 'render: ' + String(e && e.message).slice(0, 200); if (++DDGL.runErr > 3) DDGL.ok = false; } }
     if (!useGL) {
-    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } }
+    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } }
     }
     DD.cuts.forEach(function(c) { const d = t - c; if (d >= 0 && d < .16) flash = Math.max(flash, .5 * (1 - d / .16)); });
     if (!useGL && !DDP.ok) {
@@ -7364,7 +7459,7 @@ function finishCampaignCutscene(){
     if(campaignMission===5){ m5ShowBrief(function() { startCampaignMission(); }); return; }
     if(campaignMission===6){ m6ShowBrief(function() { startCampaignMission(); }); return; }
     if(campaignMission===7){ m7ShowBrief(function() { startCampaignMission(); }); return; }
-    if(campaignMission===8){ m8ShowBrief(function() { startCampaignMission(); }); return; }
+    if(campaignMission===8){ m8ShowBrief(); return; }
     if(campaignMission===4){ m4ShowBrief(function() { startCampaignMission(); }); return; }
     if(campaignMission===3){ m3ShowBrief(function() { startCampaignMission(); }); return; }
     if(campaignMission===2){ m2ShowBrief(function() { startCampaignMission(); }); return; }
@@ -18313,8 +18408,8 @@ function checkCampaignBunkerHit(shell){
 }
 function showCampaignResult(success){
     if(campaignMission===8){
-        if(success) scheduleDebrief({ win:true, stamp:'MISSION COMPLETE', title:'MISSION 8 \u00b7 GUSTAV SILENCED', sub:'Both elevation gears are wrecked and the great barrel lies in the dirt. The beachhead will not hear it again.', delay:900 });
-        else scheduleDebrief({ win:false, stamp:'MISSION FAILED', title:'MISSION 8 \u00b7 GUSTAV FIRED', sub: M8.failWhy==='final' ? 'Gustav got its final shot away. The beachhead took a seven-tonne shell.' : 'Your tank was destroyed in the gun yard.', delay:900 });
+        if(success) scheduleDebrief({ win:true, stamp:'MISSION COMPLETE', title:'MISSION 8 \u00b7 OPERATION DEADFALL', sub:'Four charges, four compartments, one almighty bang. The section slipped back into the trees as the great barrel came down. The beachhead will not hear it again.', delay:900 });
+        else scheduleDebrief({ win:false, stamp:'MISSION FAILED', title:'MISSION 8 \u00b7 RAID FAILED', sub:'You went down in the gun yard. Without its leader the section pulled back into the dark, and Gustav fires again at dawn.', delay:900 });
         return;
     }
     if(campaignMission===5){
@@ -19805,6 +19900,12 @@ function m2csShot4(t0, w, h) {
     if (!ok4) {
     let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
     if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
     m2csSky(t0, w, h, yH, pan, .5);
     m2csRidge(t0, w, h, yH, pan, true);
     m2csFarGuns(t0, w, yH, pan, true);
@@ -19816,6 +19917,9 @@ function m2csShot4(t0, w, h) {
     // column in the distance starting to move out
     const road = h * .6; ctx.fillStyle = '#6e5e40'; ctx.fillRect(-w, road, w * 3, 30); 
     [[w * .70, 0], [w * .56, 1], [w * .42, 2], [w * .30, 3]].forEach(function(c, i) { const go = cs2C((u - 1.8) / 2.2, 0, 1), x = c[0] + go * go * 200 + i * 0; for (let k = 6; k >= 0; k--) { ctx.fillStyle = 'rgba(176,152,106,' + (.3 * (1 - k / 7) * (u > 2 ? 1 : .2)) + ')'; ctx.beginPath(); ctx.arc(x - 70 * .5 - k * 18, road + 18 - k * 2, 8 + k * 3.4, 0, 7); ctx.fill(); } m2csAllied(x, road + 2, .46, t0 + i * .3, i + 5, false); });
+    }
+    }
+    }
     }
     }
     }
@@ -21255,7 +21359,7 @@ CMAP_M.push({ n: 6, x: 706, y: 536, name: 'CONVOY ESCORT', date: '11 JUNE 1944 \
 CMAP_M.push({ n: 7, x: 540, y: 470, name: 'THE IRON ROAD', date: '12 JUNE 1944 \u00b7 D+6', place: 'NORMANDY RAILWAY', tag: 'INTERCEPT',
   desc: 'An armoured supply train is feeding the Panzer divisions and cannot be bombed or blocked. One British jeep can catch it. Race alongside, take the rock outcrop over the river, ride the train and pull the brake.',
   obj: ['Race alongside the train in your jeep', 'Turn left onto the rock outcrop to jump aboard', 'Shoot the gunners and pull the brake at the tender'], extra: 'SOLO MISSION: BRITISH JEEP' });
-CMAP_M.push({ n: 8, x: 300, y: 478, name: 'SCHWERER GUSTAV', date: '13 JUNE 1944 \u00b7 D+7', place: 'THE HILLS SOUTH OF BAYEUX', tag: 'BOSS', desc: 'The largest gun ever built is shelling the beachhead from a railway tunnel in the hills. Break its armoured escort train, blind its spotter, then wreck the monster itself before it fires again.', obj: ['Destroy both flak wagons on the escort train', 'Destroy the spotter tower, dodge the shell shadows', 'Smash both elevation gears before the final shot'], extra: 'BOSS \u00b7 SUPPORT: AIRSTRIKE RUN' });
+CMAP_M.push({ n: 8, x: 300, y: 478, name: 'SCHWERER GUSTAV', date: '13 JUNE 1944 \u00b7 D+7', place: 'THE HILLS SOUTH OF BAYEUX', tag: 'RAID', desc: 'The largest gun ever built is shelling the beachhead from a railway tunnel in the hills. No tank can get close. A five-man commando section can. Slip past the towers and patrols, board the gun and blow it from the inside.', obj: ['Avoid the searchlights, sentries and patrols', 'Clear Gustav\'s four compartments: engine, ammunition, breech, elevation', 'Plant a charge in each, get clear and detonate'], extra: 'STEALTH \u00b7 COMMANDO RAID \u00b7 CHOOSE PRIMARY + SECONDARY' });
 const CMAP_FUTURE = [{ x: 150, y: 420 }];
 function cmapM(n) { return CMAP_M.filter(function(m) { return m.n === n; })[0]; }
 const CMAP = { sel: 1, built: false };
@@ -21389,7 +21493,7 @@ function cmapRender() {
         g.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cmapSelect(n); } });
     });
     const m = cmapM(CMAP.sel), unl = cmapUnlocked(m.n), done = cmapDone(m.n), st = cmapStars(m.n);
-    const ready = !!(campaignFaction && campaignTankClass) || m.n === 7;
+    const ready = !!(campaignFaction && campaignTankClass) || m.n === 7 || m.n === 8;
     panel.innerHTML = '<div><div class="cpK">MISSION ' + String(m.n).padStart(2, '0') + ' · ' + m.tag + '</div><h3>' + m.name + '</h3><div class="cpD">' + m.date + ' · ' + m.place + '</div>' +
         (unl ? '<p>' + m.desc + '</p><ul>' + m.obj.map(function(x) { return '<li>' + x + '</li>'; }).join('') + '</ul><span class="cpTag">' + m.extra + '</span>' : (m.ph ? '<p>CLASSIFIED. These orders have not been issued yet. Intel is still coming in.</p>' : '<p>CLASSIFIED. Complete the previous mission to receive these orders.</p>')) + '</div>' +
         '<div class="cpSide"><div class="cpStamp ' + (done ? 'done' : (unl ? 'open' : 'lock')) + '">' + (done ? 'COMPLETE' : (unl ? 'READY' : (m.ph ? '???' : 'LOCKED'))) + '</div>' +
@@ -21402,6 +21506,7 @@ function cmapDeploy(n) {
     if (!cmapUnlocked(n)) return;
     if (n === 7) { startMission7(); return; }
     if (n === 5) { startMission5(); return; }
+    if (n === 8) { startMission8(); return; }
     if (!campaignFaction || !campaignTankClass) {
         const sec = document.querySelector('#campaignScreen .section'); const h = document.getElementById('cmapHint'); if (h) h.textContent = '▼ CHOOSE YOUR FACTION AND TANK FIRST';
         if (sec) { sec.scrollIntoView({ behavior: 'smooth', block: 'center' }); sec.classList.remove('cmFlash'); void sec.offsetWidth; sec.classList.add('cmFlash'); }
@@ -23953,6 +24058,7 @@ function dbCommon(win) {
     const hpRatio = player ? Math.max(0, player.health) / Math.max(1, player.maxHealth) : 0;
     const secs = (Date.now() - battleStats.start) / 1000;
     let stars = 0;
+    if (win && selectedGameMode === 'campaign' && campaignMission === 8 && typeof m8Stars === 'function') { const r8 = [['SECTION', 'No. 2 COMMANDO \u00b7 ' + M8.units.slice(0, 5).filter(function (u) { return !u.dead; }).length + '/5 HOME'], ['ALARM', M8.alarm ? 'RAISED' : 'NEVER RAISED'], ['ENEMY KILLED', String(M8.kills)], ['TIME IN ACTION', dbTime(Date.now() - battleStats.start)]]; return { diff: '\u2014', stars: m8Stars(), rows: r8, hp: 1 }; }
     if (win) { stars = 1; if (hpRatio > .5) stars++; if ((campaignMission === 3 ? M3.breakthrough === 0 : secs < (campaignMission === 8 ? 330 : campaignMission === 7 ? 100 : campaignMission === 6 ? 130 : campaignMission === 5 ? 420 : campaignMission === 4 ? 300 : ((selectedGameMode === 'pointControl' || campaignMission === 2) ? 420 : 240))) || (AIDIFF[selectedDifficulty] || {}).smart >= 2) stars++; }
     const rows = [
         ['COMMANDER\'S TANK', (player ? String(player.name).toUpperCase() : '—') + ' · ' + (FACTION_LABELS[selectedFaction] || '')],

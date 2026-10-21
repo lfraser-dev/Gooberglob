@@ -4812,7 +4812,7 @@ function ddpM2Scene4(t0, w, h, u) {
 }
 /* ================= MISSION 2 : flak battery + gun line (painted) ================= */
 function ddpFlak88(x, y, s, flip, aim, rec, t, o) { // 88mm FlaK 36 on its cruciform mount; flip = +1 faces right
-    o = o || {}; const haze = o.haze || 0, sand = ddpMix([128, 112, 66], [160, 150, 126], haze), dk = ddpMix([46, 46, 32], [120, 120, 108], haze), lt = ddpMix([220, 190, 120], [230, 210, 170], .2);
+    o = o || {}; const haze = o.haze || 0, sand = ddpMix([84, 76, 46], [140, 130, 110], haze), dk = ddpMix([30, 30, 22], [110, 110, 100], haze), lt = ddpMix([220, 190, 120], [230, 210, 170], .2);
     ctx.save(); ctx.translate(x, y); ctx.scale(s * flip, s);
     ctx.fillStyle = 'rgba(14,8,18,.38)'; ctx.beginPath(); ctx.ellipse(-24, 3, 190, 10, 0, 0, 7); ctx.fill();
     // cruciform legs
@@ -4840,7 +4840,7 @@ function ddpFlak88(x, y, s, flip, aim, rec, t, o) { // 88mm FlaK 36 on its cruci
     ctx.restore();
 }
 function ddpPanzer(x, y, s, flip, t, o) { // Panzer IV, dunkelgelb with camo, side view, flip = +1 faces right
-    o = o || {}; const haze = o.haze || 0, sand = ddpMix([138, 120, 70], [168, 156, 132], haze), grn = ddpMix([64, 70, 40], [130, 134, 110], haze), dk = ddpMix([36, 34, 24], [110, 110, 100], haze);
+    o = o || {}; const haze = o.haze || 0, sand = ddpMix([104, 90, 52], [168, 156, 132], haze), grn = ddpMix([48, 54, 32], [130, 134, 110], haze), dk = ddpMix([30, 28, 20], [110, 110, 100], haze);
     ctx.save(); ctx.translate(x, y); ctx.scale(s * flip, s);
     ctx.fillStyle = 'rgba(14,8,18,.36)'; ctx.beginPath(); ctx.ellipse(-30, 3, 124, 8, 0, 0, 7); ctx.fill();
     ctx.fillStyle = ddpRGB(dk); ctx.beginPath(); ctx.moveTo(-100, -22); ctx.quadraticCurveTo(-112, -12, -102, -2); ctx.lineTo(96, -2); ctx.quadraticCurveTo(110, -10, 98, -28); ctx.closePath(); ctx.fill();
@@ -4864,8 +4864,7 @@ function ddpM2Flak(t, u, w, h, S) {
     const U = w / 1600, hv = h / U, P = ddpEnsure(), yH = S.yH / U, shots = S.shots; let flash = 0;
     ctx.save(); ctx.scale(U, U);
     ddpM2Env(hv, t, 0, { hz: yH / hv, sx: 1180, hedgeY: -4, fieldY: 54, noTrack: true });
-    // foreground ploughed earth
-    const gyv = yH + 128;
+    const gyv = yH + 128; { const gg = ctx.createLinearGradient(0, yH + 20, 0, hv); gg.addColorStop(0, 'rgba(60,44,30,.3)'); gg.addColorStop(.4, 'rgba(36,28,18,.8)'); gg.addColorStop(1, 'rgb(14,12,8)'); ctx.fillStyle = gg; ctx.fillRect(-700, yH + 20, 3000, hv); }
     // bombers with contrails
     const alive = [];
     for (let i = 0; i < 5; i++) { if (i === 2 && t >= S.hitT) continue; const p = m2csPlane(i, t, w, h); if (p.x > -150 && p.x < w + 150) { const px = p.x / U, py = p.y / U; ctx.fillStyle = 'rgba(255,220,180,.2)'; for (let k = 1; k < 18; k++) { ctx.beginPath(); ctx.arc(px - 40 - k * 16, py + 2, 2.6 + k * .55, 0, 7); ctx.fill(); } ddpPlane(px, py, 1.7, 0, true); ctx.fillStyle = 'rgba(255,170,90,.6)'; ctx.beginPath(); ctx.arc(px + 22, py + 6, 3, 0, 7); ctx.fill(); alive.push({ x: p.x, y: p.y }); } }
@@ -4929,6 +4928,7 @@ function ddpM2Shot3(u, w, h) {
     const hz = hv * .5;
     ddpSky(hz, 10 + u, 0, 1130, 1.2, 0, DDP_M2PAL);
     ddpM2Env(hv, 10 + u, 0, { hz: .5, sx: 1130, hedgeY: -2, fieldY: 40, noTrack: true, skyDone: true });
+    { const gg = ctx.createLinearGradient(0, hv * .52, 0, hv); gg.addColorStop(0, 'rgba(50,38,28,.35)'); gg.addColorStop(.3, 'rgb(40,32,22)'); gg.addColorStop(1, 'rgb(14,12,8)'); ctx.fillStyle = gg; ctx.fillRect(-700, hv * .52, 3000, hv); }
     // flak puffs in the sky + friendly bombers
     for (let i = 0; i < 6; i++) { const px = ((10 + u) * 60 + i * 260) % 2000 - 200, py = hz - 330 + (i % 3) * 40; ddpPlane(px, py, 1.1, -.03, true); }
     for (let i = 0; i < 7; i++) { const k = ((u * .6 + i * .31) % 1.4), bx = 200 + ddpR(i * 7) * 1250, by = hz - 330 + ddpR(i * 3) * 100; ctx.globalAlpha = Math.max(0, .85 - k * .6); const R = 18 + k * 30; ctx.drawImage(P.dark, bx - R, by - R, R * 2, R * 2); ctx.globalAlpha = 1; }
@@ -5282,7 +5282,7 @@ function drawDDayCutscene(now) {
     let flash = 0, useGL = false;
     if (ddgInit(w, h)) { try { const S3 = ddglRender(Math.min(t, DD.dur), w, h); ctx.drawImage(DDGL.cv, 0, 0, w, h); useGL = true; flash = S3.flash || 0; } catch (e) { DDGL.why = 'render: ' + String(e && e.message).slice(0, 200); if (++DDGL.runErr > 3) DDGL.ok = false; } }
     if (!useGL) {
-    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } } } }
+    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } } } } } }
     }
     DD.cuts.forEach(function(c) { const d = t - c; if (d >= 0 && d < .16) flash = Math.max(flash, .5 * (1 - d / .16)); });
     if (!useGL && !DDP.ok) {
@@ -17747,6 +17747,9 @@ function m2csShot2(t0, w, h) {
     ctx.save();
     const iris = cs2E(u / 1.3);
     ctx.translate(w / 2, h / 2); ctx.scale(zm, zm); ctx.translate(-cx + sx, -cy + sy);
+    let GUNS, gy, ok2 = false;
+    try { ctx.save(); const r2 = ddpM2Flak(t, u, w, h, { yH: yH, shots: shots, hitT: M2CS.hitT, planeHit: planeHit, crashDt: crashDt, P0: P0, crashT: crashT, crashX: crashX, groundY: groundY }); GUNS = r2.GUNS; gy = r2.gy; flash = Math.max(flash, r2.flash); ctx.restore(); ok2 = true; } catch (e) { ctx.restore(); DDP.err = e; }
+    if (!ok2) {
     // far layers
     ctx.save(); par(.12); m2csSky(t, w, h, yH, 0, .74); ctx.restore();
     // god rays
@@ -17781,8 +17784,8 @@ function m2csShot2(t0, w, h) {
         [0, 1, 2].forEach(function(i) { const pt = planeHit - .5 - i * .35; if (pt > 0) { const px = P0.x + 70 * (planeHit - .5 - i * .35) + 30 * pt, py = P0.y + 24 * Math.pow(planeHit - .5 - i * .35, 2) + 55 * pt * Math.min(1, pt * .6); if (py < groundY - 12) m2csParachute(px, py, .8, t, i); }; });
     }
     // ---- AA positions (full detail, scale 2) ----
-    const GUNS = [{ x: w * .14, flip: 1, seed: 1 }, { x: w * .86, flip: -1, seed: 2 }];
-    const gy = yH + 52, rec = [0, 0];
+    GUNS = [{ x: w * .14, flip: 1, seed: 1 }, { x: w * .86, flip: -1, seed: 2 }];
+    gy = yH + 52; const rec = [0, 0];
     shots.forEach(function(s) { const d = t - s.t; if (d >= 0 && d < .35) rec[s.gun] = Math.max(rec[s.gun], 14 * (1 - d / .35)); });
     GUNS.forEach(function(g, gi) {
         let best = null, bd = 1e9; alive.concat(planeHit >= 0 && planeHit < crashDt ? [{ x: P0.x + 70 * planeHit, y: P0.y + 24 * planeHit * planeHit }] : []).forEach(function(p) { const d = Math.abs(p.x - g.x); if (d < bd) { bd = d; best = p; } });
@@ -17831,6 +17834,7 @@ function m2csShot2(t0, w, h) {
     for (let i = 0; i < 100; i++) { const x = cs2R(i * 9) * w * 2 - w * .5, yy = yH + 100 + cs2R(i * 4) * (h - yH), sw = Math.sin(t * 2.2 + i) * 3;
         ctx.strokeStyle = 'rgba(' + (60 + (i % 4) * 20) + ',' + (60 + (i % 3) * 10) + ',30,.4)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x, yy + 14); ctx.quadraticCurveTo(x + sw, yy, x + sw * 2, yy - 18 - (yy - yH) * .06); ctx.stroke(); }
     ctx.restore();
+    }
     // lock-on
     if (t >= 11.2) {
         const lk = cs2E((t - 11.2) / .7), blink = Math.floor(t * 4) % 2;
@@ -17986,7 +17990,8 @@ function m2csShot3(t0, w, h) {
     let age = 99; fires.forEach(function(f, i) { if (u >= f) age = u - f; cs2Once('g3f' + i, u > f, function() { playExplosionSound(1.1); playTone(300, 50, .3, .1, 'sawtooth'); playDistantArtillery(); }); });
     const kk = age < .5 ? Math.pow(1 - age / .5, 2) : 0, z = 1.0 + u * .018 + kk * .05;
     ctx.save(); ctx.translate(w / 2, h / 2); ctx.scale(z, z); ctx.translate(-w / 2 + (Math.sin(u * 61) + Math.sin(u * 37)) * kk * 9, -h / 2 + (Math.sin(u * 53) + Math.cos(u * 29)) * kk * 8);
-    m2csGunLow(u, w, h, { age: age });
+    let ok3 = false; try { ctx.save(); ddpM2Shot3(u, w, h); ctx.restore(); ok3 = true; } catch (e) { ctx.restore(); DDP.err = e; }
+    if (!ok3) m2csGunLow(u, w, h, { age: age });
     ctx.restore();
     return age < .08 ? (1 - age / .08) * .5 : 0;
 }
@@ -18046,6 +18051,10 @@ function m2csShot4(t0, w, h) {
     if (!ok4) {
     let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
     if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
     m2csSky(t0, w, h, yH, pan, .5);
     m2csRidge(t0, w, h, yH, pan, true);
     m2csFarGuns(t0, w, yH, pan, true);
@@ -18057,6 +18066,8 @@ function m2csShot4(t0, w, h) {
     // column in the distance starting to move out
     const road = h * .6; ctx.fillStyle = '#6e5e40'; ctx.fillRect(-w, road, w * 3, 30); 
     [[w * .70, 0], [w * .56, 1], [w * .42, 2], [w * .30, 3]].forEach(function(c, i) { const go = cs2C((u - 1.8) / 2.2, 0, 1), x = c[0] + go * go * 200 + i * 0; for (let k = 6; k >= 0; k--) { ctx.fillStyle = 'rgba(176,152,106,' + (.3 * (1 - k / 7) * (u > 2 ? 1 : .2)) + ')'; ctx.beginPath(); ctx.arc(x - 70 * .5 - k * 18, road + 18 - k * 2, 8 + k * 3.4, 0, 7); ctx.fill(); } m2csAllied(x, road + 2, .46, t0 + i * .3, i + 5, false); });
+    }
+    }
     }
     }
     }

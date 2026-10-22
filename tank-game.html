@@ -6485,6 +6485,105 @@ function m9ShowBrief() {
     document.getElementById('m9ToQM').onclick = function () { clearInterval(iv); b.hidden = true; try { playTone(520, 760, .1, .05, 'triangle'); } catch (e) {} m8ShowArmoury(); };
 }
 /* =====================================================
+   MISSION 10 CUTSCENE — the canoe, the dive, the pens
+===================================================== */
+const M10CS = { dur: 25, cuts: [6.4, 12.8, 19.0] };
+function ddpNightSea(hz, bot, t, pan) {
+    const g = ctx.createLinearGradient(0, hz, 0, bot); g.addColorStop(0, '#2a3446'); g.addColorStop(.1, '#16222c'); g.addColorStop(1, '#060c10'); ctx.fillStyle = g; ctx.fillRect(-600, hz, 2800, bot - hz + 4);
+    for (let i = 0; i < 200; i++) { const y = hz + Math.pow(ddpR(i * 3), 1.6) * (bot - hz), sc = .2 + (y - hz) / (bot - hz), x = ((ddpR(i * 7) * 2600 + t * 20 * sc - pan * sc) % 2600 + 2600) % 2600 - 500, w = 20 + sc * 90; ctx.strokeStyle = 'rgba(150,170,200,' + (.05 + sc * .1) * (.6 + .4 * Math.sin(t * 2 + i)) + ')'; ctx.lineWidth = 1 + sc * 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + w / 2, y - 3 * sc, x + w, y); ctx.stroke(); }
+}
+function ddpCanoeSide(x, y, s, t, paddle) { ctx.save(); ctx.translate(x, y + Math.sin(t * 1.6) * 3 * s); ctx.rotate(Math.sin(t * 1.3) * .02); ctx.scale(s, s);
+    ctx.fillStyle = '#0c1014'; ctx.beginPath(); ctx.moveTo(-160, -6); ctx.quadraticCurveTo(0, 14, 160, -10); ctx.lineTo(150, 6); ctx.quadraticCurveTo(0, 22, -150, 6); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#1e2620'; ctx.beginPath(); ctx.moveTo(-160, -6); ctx.quadraticCurveTo(0, 6, 160, -10); ctx.lineTo(160, -6); ctx.quadraticCurveTo(0, 12, -160, -2); ctx.fill();
+    [[-50, 0], [50, 1]].forEach(function (m) { const px = m[0], ph = t * 2.2 + m[1] * 1.2, a = Math.sin(ph); ctx.fillStyle = '#121618'; ctx.beginPath(); ctx.ellipse(px, -26, 16, 22, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(px + 2, -56, 11, 0, 7); ctx.fill(); ctx.fillStyle = '#0a0c0e'; ctx.beginPath(); ctx.ellipse(px + 2, -62, 13, 6, 0, Math.PI, 0); ctx.fill(); if (paddle) { ctx.strokeStyle = '#1a1e1c'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(px - 40 * Math.cos(a * .6), -44 + a * 26); ctx.lineTo(px + 40 * Math.cos(a * .6), -10 - a * 26); ctx.stroke(); ctx.fillStyle = '#1a1e1c'; ctx.beginPath(); ctx.ellipse(px + 44 * Math.cos(a * .6), -6 - a * 28, 5, 12, a, 0, 7); ctx.fill(); } });
+    ctx.restore(); }
+function ddpPenFacade(x, y, s, t) { // side view of the bunker front, bays open at water level
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    const wg = ctx.createLinearGradient(0, -340, 0, 0); wg.addColorStop(0, '#4a4c50'); wg.addColorStop(1, '#2a2c30'); ctx.fillStyle = wg; ctx.fillRect(-620, -340, 1240, 340);
+    ctx.fillStyle = '#5a5c60'; ctx.fillRect(-640, -360, 1280, 34); ctx.fillStyle = 'rgba(0,0,0,.25)'; for (let i = 0; i < 30; i++) ctx.fillRect(-620 + i * 42, -326, 2, 326);
+    for (let b = 0; b < 4; b++) { const bx = -540 + b * 290, bw = 220; ctx.fillStyle = '#06080a'; ctx.fillRect(bx, -230, bw, 230); const lg = ctx.createRadialGradient(bx + bw / 2, -180, 4, bx + bw / 2, -120, 200); lg.addColorStop(0, 'rgba(255,200,120,.55)'); lg.addColorStop(1, 'rgba(255,200,120,0)'); ctx.fillStyle = lg; ctx.fillRect(bx, -230, bw, 230); ctx.fillStyle = '#fff4d0'; ctx.fillRect(bx + bw / 2 - 6, -224, 12, 5);
+        if (b !== 2) { ctx.fillStyle = '#1a1e22'; ctx.beginPath(); ctx.moveTo(bx + 20, -20); ctx.quadraticCurveTo(bx + bw / 2, -40, bx + bw - 20, -20); ctx.lineTo(bx + bw - 20, 0); ctx.lineTo(bx + 20, 0); ctx.fill(); ctx.fillStyle = '#2a3036'; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(bx + bw / 2 - 26, -96, 52, 70, 12); else ctx.rect(bx + bw / 2 - 26, -96, 52, 70); ctx.fill(); ctx.fillStyle = '#121418'; ctx.fillRect(bx + bw / 2 - 4, -128, 3, 34); ctx.fillRect(bx + bw / 2 + 8, -118, 3, 24); ctx.fillStyle = 'rgba(255,220,160,.25)'; ctx.fillRect(bx + bw / 2 - 26, -96, 6, 70); } }
+    ctx.fillStyle = 'rgba(220,210,180,.25)'; ctx.font = '700 40px "Stardos Stencil", Impact'; ctx.textAlign = 'center'; ctx.fillText('KEROMAN III', 0, -280);
+    ctx.restore(); }
+function ddpM10ShotA(t, hv) { // canoe on a black sea, harbour lights ahead
+    const hz = hv * .5; const g = ctx.createLinearGradient(0, 0, 0, hz); g.addColorStop(0, '#04060c'); g.addColorStop(1, '#141c2a'); ctx.fillStyle = g; ctx.fillRect(-100, -100, 1800, hz + 100); ctx.fillStyle = '#dfe4ff'; for (let i = 0; i < 120; i++) { ctx.globalAlpha = .2 + .5 * ddpR(i); ctx.fillRect(ddpR(i * 3) * 1600, ddpR(i * 7) * hz * .9, 1.5, 1.5); } ctx.globalAlpha = 1;
+    ctx.fillStyle = '#0a0e14'; ctx.beginPath(); ctx.moveTo(-100, hz); for (let x = -100; x <= 1700; x += 40) ctx.lineTo(x, hz - 10 - (x > 500 && x < 1300 ? 30 + Math.sin(x * .03) * 6 : 6)); ctx.lineTo(1700, hz + 2); ctx.fill();
+    for (let i = 0; i < 18; i++) { ctx.fillStyle = 'rgba(255,200,120,.8)'; ctx.fillRect(560 + i * 40 + ddpR(i) * 10, hz - 24 - ddpR(i + 4) * 14, 3, 3); }
+    ddpSearch(720, hz - 30, -Math.PI / 2 - .5 + Math.sin(t * .5) * .5, 700, .16, 30); ddpSearch(1180, hz - 34, -Math.PI / 2 + .4 + Math.sin(t * .4 + 2) * .5, 700, .14, 30);
+    ddpNightSea(hz, hv + 10, t, t * 10);
+    ddpCanoeSide(700 + t * 14, hv * .78, 1.25, t, true);
+    ctx.fillStyle = '#05080a'; ctx.beginPath(); ctx.moveTo(1500, hv * .6); ctx.lineTo(1800, hv * .6 - 10); ctx.lineTo(1800, hv * .66); ctx.lineTo(1480, hv * .64); ctx.fill(); ctx.fillRect(1610, hv * .6 - 50, 60, 42); ctx.fillStyle = '#6080ff'; if (Math.floor(t * 2) % 2) ctx.fillRect(1640, hv * .6 - 56, 4, 4);
+}
+function ddpM10ShotB(u, hv) { // underwater: the dive, light shafts, the net ahead
+    const g = ctx.createLinearGradient(0, 0, 0, hv); g.addColorStop(0, '#1a3a44'); g.addColorStop(.3, '#0e2830'); g.addColorStop(1, '#040c10'); ctx.fillStyle = g; ctx.fillRect(-100, -100, 1800, hv + 200);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (let i = 0; i < 7; i++) { const x = 200 + i * 220 + Math.sin(u * .6 + i) * 30; const sg = ctx.createLinearGradient(0, 0, 0, hv * .8); sg.addColorStop(0, 'rgba(120,170,190,.18)'); sg.addColorStop(1, 'rgba(120,170,190,0)'); ctx.fillStyle = sg; ctx.beginPath(); ctx.moveTo(x - 20, 0); ctx.lineTo(x + 20, 0); ctx.lineTo(x + 120, hv * .8); ctx.lineTo(x + 40, hv * .8); ctx.fill(); } ctx.restore();
+    ctx.strokeStyle = 'rgba(120,130,120,.5)'; ctx.lineWidth = 2; const nx = 1000 - u * 40; for (let i = -20; i < 30; i++) { ctx.beginPath(); ctx.moveTo(nx + i * 26, -20); ctx.lineTo(nx + i * 26 + 300, hv + 20); ctx.moveTo(nx + i * 26 + 300, -20); ctx.lineTo(nx + i * 26, hv + 20); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(nx - 600, 0, 600, hv);
+    const fx = 300 + u * 70, fy = hv * .3 + u * 40; ctx.save(); ctx.translate(fx, fy); ctx.rotate(.25); const kick = Math.sin(u * 6) * 10; ctx.fillStyle = '#0a1014'; ctx.beginPath(); ctx.ellipse(0, 0, 90, 24, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(96, -6, 20, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(160,200,210,.7)'; ctx.fillRect(108, -14, 6, 14); [[-1, kick], [1, -kick]].forEach(function (s) { ctx.beginPath(); ctx.moveTo(-80, s[0] * 8); ctx.lineTo(-150, s[0] * 10 + s[1]); ctx.lineTo(-190, s[0] * 26 + s[1]); ctx.lineTo(-180, s[0] * 2 + s[1]); ctx.fill(); }); ctx.fillStyle = '#2a2a1e'; ctx.beginPath(); ctx.ellipse(10, 22, 24, 12, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#4a4a30'; ctx.fillRect(-4, 16, 28, 4); ctx.restore();
+    ctx.strokeStyle = 'rgba(200,230,240,.5)'; ctx.lineWidth = 1.4; for (let i = 0; i < 30; i++) { const k = (u * .3 + ddpR(i)) % 1; ctx.beginPath(); ctx.arc(fx + 80 + ddpR(i * 3) * 60 - 30, fy - k * 300, 2 + ddpR(i * 5) * 5, 0, 7); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(140,180,170,.15)'; for (let i = 0; i < 80; i++) { ctx.fillRect((ddpR(i) * 1600 + u * 8) % 1600, ddpR(i * 9) * hv, 2, 2); }
+}
+function ddpM10ShotC(u, hv) { // the pens from the water
+    const hz = hv * .62; const g = ctx.createLinearGradient(0, 0, 0, hz); g.addColorStop(0, '#05070c'); g.addColorStop(1, '#141a26'); ctx.fillStyle = g; ctx.fillRect(-100, -100, 1800, hz + 100);
+    ctx.save(); ctx.translate(800, hz); const z = 1 + u * .03; ctx.scale(z, z); ctx.translate(-800, -hz); ddpPenFacade(800, hz, .95, u); ctx.restore();
+    ddpSearch(260, hz - 330, Math.PI * .2 + Math.sin(u * .6) * .4, 900, .18, 50); ddpSearch(1340, hz - 330, Math.PI * .8 + Math.sin(u * .5 + 1) * .4, 900, .18, 50);
+    const sg = ctx.createLinearGradient(0, hz, 0, hv); sg.addColorStop(0, '#2a2418'); sg.addColorStop(.2, '#101a20'); sg.addColorStop(1, '#04080a'); ctx.fillStyle = sg; ctx.fillRect(-100, hz, 1800, hv);
+    for (let i = 0; i < 40; i++) { const y = hz + 10 + ddpR(i) * (hv - hz), x = ddpR(i * 5) * 1600; ctx.fillStyle = 'rgba(255,200,120,' + (.08 + .1 * Math.sin(u * 3 + i)) + ')'; ctx.fillRect(x, y, 30 + ddpR(i) * 60, 2); }
+    [[320, 1], [1260, -1]].forEach(function (q, i) { ddpMan(q[0] + Math.sin(u * .4 + i) * 30, hz - 238, .9, u, { ger: true, run: .3, spd: 5, dir: q[1], haze: .3 }); });
+    ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.beginPath(); ctx.arc(820 + Math.sin(u) * 6, hv * .9, 22, Math.PI, 0); ctx.fill(); ctx.fillStyle = 'rgba(160,200,210,.5)'; ctx.fillRect(828, hv * .9 - 14, 6, 8);
+}
+function ddpM10Frame(t, w, h) { const U = w / 1600, hv = h / U, c = M10CS.cuts; DDP.ok = true; ctx.save(); ctx.scale(U, U); if (t < c[0]) ddpM10ShotA(t, hv); else if (t < c[1]) ddpM10ShotB(t - c[0], hv); else ddpM10ShotC(t - c[1], hv); ctx.restore(); ddpBloom(w, h); }
+function drawM10Cutscene(now) {
+    if (!campaignCutsceneRunning) return;
+    const t = (now - campaignCutsceneStart) / 1000, w = canvas.width, h = canvas.height;
+    if (!CS2.grain) CS2.grain = cs2Grain();
+    ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+    try { ddpM10Frame(t, w, h); } catch (e) { DDP.err = e; ctx.setTransform(1, 0, 0, 1, 0, 0); }
+    let flash = 0; M10CS.cuts.forEach(function (c) { const d = t - c; if (d >= 0 && d < .16) flash = Math.max(flash, .3 * (1 - d / .16)); });
+    if (t > M10CS.cuts[0] && t < M10CS.cuts[1] && Math.floor(t * 3) !== M10CS.bub) { M10CS.bub = Math.floor(t * 3); try { playTone(200 + Math.random() * 200, 100, .08, .02, 'sine'); } catch (e) {} }
+    ctx.save(); ctx.globalAlpha = .09; ctx.globalCompositeOperation = 'overlay'; ctx.drawImage(CS2.grain, -Math.random() * 220, -Math.random() * 220, w + 220, h + 220); ctx.restore();
+    const vg = ctx.createRadialGradient(w / 2, h * .52, w * .24, w / 2, h * .52, w * .74); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.6)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
+    if (flash > 0) { ctx.fillStyle = 'rgba(220,235,255,' + flash + ')'; ctx.fillRect(0, 0, w, h); }
+    const bar = Math.round(h * .062 * cs2E(Math.min(1, t / .9))); ctx.fillStyle = '#050605'; ctx.fillRect(0, 0, w, bar); ctx.fillRect(0, h - bar - 26, w, bar + 26);
+    const ta = cs2C(Math.min((t - .6) / .8, (4.8 - t) / .8), 0, 1);
+    if (ta > 0) { ctx.save(); ctx.globalAlpha = ta; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0, h * .14, w, 112); ctx.fillStyle = '#d9c88c'; ctx.font = '700 15px "Special Elite", "Courier New", monospace'; ctx.fillText('— OPERATION OVERLORD · ACT III —', w / 2, h * .14 + 28); ctx.fillStyle = '#f4ecd0'; ctx.font = '700 48px "Stardos Stencil", Impact, sans-serif'; ctx.fillText('THE U-BOAT PENS', w / 2, h * .14 + 76); ctx.font = '15px "Special Elite", "Courier New", monospace'; ctx.fillStyle = '#d9c88c'; ctx.fillText('21 JUNE 1944   ·   D+15   ·   01:30   ·   LORIENT, BRITTANY', w / 2, h * .14 + 102); ctx.restore(); }
+    const caps = [[5.0, 'THE KEY SHEETS TOLD BLETCHLEY WHERE THE U-BOATS ARE HIDING.'], [7.2, 'LORIENT. TWENTY FEET OF CONCRETE. BOMBS BOUNCE OFF IT.'], [10.0, 'SO THE NAVY IS SENDING ONE MAN UNDER THE WATER.'], [13.2, 'THREE U-BOATS ARE BACK FROM PATROL TONIGHT.'], [15.8, 'A LIMPET ON EACH. A TIME PENCIL IN EACH LIMPET.'], [18.2, 'THEN SWIM FOR THE GUNBOAT AND DON\'T LOOK BACK.']];
+    let ci = -1; caps.forEach(function (c, i) { if (t >= c[0]) ci = i; }); const sd = t - 20.6;
+    if (ci >= 0 && sd < 0) { const c = caps[ci], n = Math.min(c[1].length, Math.floor((t - c[0]) * 34)); ctx.textAlign = 'center'; ctx.fillStyle = '#efe6c6'; ctx.font = '700 16px "Special Elite", "Courier New", monospace'; ctx.fillText(c[1].slice(0, n), w / 2, h - bar - 34); }
+    cs2Once('m10stamp', sd > 0, function () { try { playExplosionSound(1.0); playTone(180, 50, .4, .1, 'square'); } catch (e) {} });
+    if (sd > 0) { const k = cs2C(sd / .22, 0, 1), sc = cs2L(3.2, 1, cs2E(k)), fade = cs2C((M10CS.dur - 1 - t) / .6, 0, 1); ctx.save(); ctx.translate(w / 2, h * .46); ctx.rotate(-.045); ctx.scale(sc, sc); ctx.globalAlpha = k * fade; ctx.fillStyle = 'rgba(8,8,5,.86)'; ctx.fillRect(-w, -88, w * 2, 176);
+        [-88, 73].forEach(function (y) { ctx.save(); ctx.beginPath(); ctx.rect(-w, y, w * 2, 15); ctx.clip(); ctx.fillStyle = '#d6a91c'; ctx.fillRect(-w, y, w * 2, 15); ctx.fillStyle = '#16140f'; for (let x = -w - 40; x < w + 40; x += 40) { ctx.beginPath(); ctx.moveTo(x, y + 15); ctx.lineTo(x + 20, y); ctx.lineTo(x + 34, y); ctx.lineTo(x + 14, y + 15); ctx.fill(); } ctx.restore(); });
+        ctx.textAlign = 'center'; ctx.fillStyle = '#d9c88c'; ctx.font = '700 15px "Special Elite", "Courier New", monospace'; ctx.fillText('— ACT III · FROGMAN RAID · MISSION 10 —', 0, -48); ctx.fillStyle = '#f4ecd0'; ctx.strokeStyle = '#000'; ctx.lineWidth = 7; ctx.font = '700 70px "Stardos Stencil", Impact, sans-serif'; ctx.strokeText('THE U-BOAT PENS', 0, 22); ctx.fillText('THE U-BOAT PENS', 0, 22); ctx.fillStyle = '#e8c968'; ctx.font = '700 17px "Special Elite", "Courier New", monospace'; ctx.fillText('OPERATION DEEP WATER.', 0, 54); ctx.restore(); }
+    ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(239,230,198,.35)'; ctx.font = '11px monospace'; ctx.fillText('SPACE — SKIP', w - 18, h - 8);
+    const fa = Math.max(cs2C(1 - t / 1.0, 0, 1), cs2C((t - (M10CS.dur - 1)) / 1, 0, 1)); if (fa > 0) { ctx.fillStyle = 'rgba(0,0,0,' + fa + ')'; ctx.fillRect(0, 0, w, h); }
+    if (t < M10CS.dur) campaignCutsceneFrame = requestAnimationFrame(drawM10Cutscene); else finishCampaignCutscene();
+}
+function startMission10(skipIntro) {
+    returnToMenu(); campaignMission = 10; selectedGameMode = 'campaign'; selectedMap = 'campaignGustav'; M10.failWhy = ''; M10.result = null;
+    document.getElementById('menu').style.display = 'none'; const cs = document.getElementById('campaignScreen'); if (cs) cs.style.display = 'none'; document.getElementById('gameArea').style.display = 'block';
+    ['controls', 'battleMainMenuButton', 'gameInfo', 'pointScoreBar', 'battleMessage', 'killFeed', 'radioText', 'campaignObjectiveBox'].forEach(function (id) { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+    M8.cut = true; applyPointControlCanvasSize(); canvas.style.transform = 'translate3d(0px,0px,0px)'; if (typeof minimapPanel !== 'undefined' && minimapPanel) minimapPanel.style.display = 'none';
+    if (skipIntro) { m10ShowBrief(); return; }
+    if (typeof CS2 !== 'undefined') CS2.fired = {};
+    campaignCutsceneRunning = true; campaignCutsceneStart = performance.now(); if (campaignCutsceneFrame) cancelAnimationFrame(campaignCutsceneFrame); campaignCutsceneFrame = requestAnimationFrame(drawM10Cutscene);
+}
+function m10ShowBrief() {
+    m2InjectStyle();
+    let b = document.getElementById('m2Brief'); if (!b) { b = document.createElement('div'); b.id = 'm2Brief'; document.body.appendChild(b); }
+    b.innerHTML = '<div class="bSheet"><div class="bTape"><span>OPERATION DEEP WATER</span><span>MISSION 10</span></div><div class="bBody">' +
+        '<h2>THE U-BOAT PENS</h2><p class="bText" id="m10Typed"></p>' +
+        '<ul><li>You are <b>Lt. Hayes, RNVR</b>, a frogman on an oxygen rebreather. <b>SPACE</b> dives and surfaces. <b>Underwater nobody can see you</b>, but your oxygen runs down.</li>' +
+        '<li>On the surface you are visible to <b>searchlights</b>, <b>sentries\' torches</b> and <b>patrol launches</b>. A searchlight on you means instant alarm. Keep clear of the launches\' propellers.</li>' +
+        '<li>The harbour mouth is closed by an <b>anti-submarine net</b>. Dive and <b>hold F</b> to cut through it.</li>' +
+        '<li>Three U-boats sit in the pens. Dive beside each hull and <b>hold F</b> to fix a limpet mine. The <b>tanker</b> on the west quay is an optional fourth target.</li>' +
+        '<li>Once all three are mined the time pencils give you <b>three minutes</b>. Swim out to the gunboat <b>MGB 314</b>, east of the harbour mouth.</li>' +
+        '<li>Your <b>Welrod</b> (8 rounds, surface only) can shoot out searchlights and lamps, or a sentry. If the alarm goes up, the launches drop <b>depth charges</b>, which hurt most when you are underwater.</li></ul>' +
+        '<button class="bGo" id="m10Go">INTO THE WATER ▶</button></div></div>';
+    b.hidden = false; b.style.display = '';
+    const txt = '21 June 1944, 01:30. The canoe will drop you a mile off the harbour mouth. The rest is up to you.';
+    const el = document.getElementById('m10Typed'); let i = 0; const iv = setInterval(function () { i += 2; el.textContent = txt.slice(0, i); if (i >= txt.length) clearInterval(iv); }, 22);
+    document.getElementById('m10Go').onclick = function () { clearInterval(iv); b.hidden = true; try { playTone(400, 900, .2, .06, 'triangle'); } catch (e) {} m10Begin(); };
+}
+/* =====================================================
    MISSION 8 - THE ARMOURY: weapon data + side-view weapon painter (used for UI icons and in-hand sprites)
 ===================================================== */
 // type: gun | melee | throw | launcher | bow | flame | flare
@@ -7266,7 +7365,7 @@ function m8Begin(lvl) {
     cancelAnimationFrame(M8.raf); M8.raf = requestAnimationFrame(m8Loop);
 }
 function m8Stop() { M8.running = false; cancelAnimationFrame(M8.raf); canvas.style.cursor = ''; const mb = document.getElementById('battleMainMenuButton'); if (mb) mb.textContent = '↩️ RETURN TO MAIN MENU'; }
-function m8Cleanup() { if (typeof m9Cleanup === "function") m9Cleanup(); if (M8.running) m8Stop(); M8.active = false; M8.cut = false; const h = document.getElementById('m8Hud'); if (h) h.hidden = true; const a = document.getElementById('m8Arm'); if (a) a.hidden = true; }
+function m8Cleanup() { if (typeof m9Cleanup === "function") m9Cleanup(); if (typeof m10Cleanup === "function") m10Cleanup(); if (M8.running) m8Stop(); M8.active = false; M8.cut = false; const h = document.getElementById('m8Hud'); if (h) h.hidden = true; const a = document.getElementById('m8Arm'); if (a) a.hidden = true; }
 function m8Say(t, ms) { M8.msg = t; M8.msgAt = performance.now(); M8.msgDur = ms || 4200; }
 function m8Leader() { return M8.units[0]; }
 function m8Units() { return M8.scene === 'out' ? M8.units : M8.units.slice(0, 5).concat(M8.rooms[M8.scene].units); }
@@ -8770,7 +8869,7 @@ function chSpawn(kind) {
     C.foes.push({ k: kind, d: d, x: chRoadX(d) + side * 40, v: C.v + 1.5, hp: T.hp, maxHp: T.hp, max: T.max, r: T.r, lastShot: performance.now() + 1500, side: side, ang: 0, offset: (Math.random() - .5) * 120 });
     try { playTone(160, 220, .5, .03, 'sawtooth'); } catch (e) {}
 }
-function chLoop(now) { if (!CH.running) return; const dt = Math.min(50, now - CH.last) / 16.67; CH.last = now; try { chUpdate(dt, now); chDraw(now); } catch (e) { console.error(e); DDP.err = e; } if (CH.endAt && now > CH.endAt) { chEnd(); return; } CH.raf = requestAnimationFrame(chLoop); }
+function chLoop(now) { if (!CH.running) return; if (typeof minimapPanel !== 'undefined' && minimapPanel && minimapPanel.style.display !== 'none') minimapPanel.style.display = 'none'; const dt = Math.min(50, now - CH.last) / 16.67; CH.last = now; try { chUpdate(dt, now); chDraw(now); } catch (e) { console.error(e); DDP.err = e; } if (CH.endAt && now > CH.endAt) { chEnd(); return; } CH.raf = requestAnimationFrame(chLoop); }
 function chHurt(d) { const C = CH; if (C.won || C.lost) return; C.hp -= d; C.hurtAt = performance.now(); C.shake = Math.max(C.shake, Math.min(8, d * .6)); if (C.hp <= 0) { C.hp = 0; C.lost = true; C.endAt = performance.now() + 2800; chBoom(C.x, C.d, 1.6); chSay('WE\'RE HIT — SHE\'S GOING OVER!', 3000); } }
 function chBoom(x, d, s) { const C = CH, now = performance.now(); C.parts.push({ k: 'boom', x: x, d: d, t: now, s: s || 1 }); for (let i = 0; i < 18; i++) { const a = Math.random() * 7; C.parts.push({ k: 'spark', x: x, d: d, vx: Math.cos(a) * 5, vd: Math.sin(a) * 5, life: 1, decay: .03 }); } for (let i = 0; i < 8; i++) C.parts.push({ k: 'smoke', x: x + (Math.random() - .5) * 30, d: d + (Math.random() - .5) * 30, vx: (Math.random() - .5) * .6, vd: (Math.random() - .5) * .6, life: 1, decay: .01, r: 20 + Math.random() * 20 }); C.decals.push({ x: x, d: d, r: 40 * s }); C.shake = Math.max(C.shake, 10 * s); try { playExplosionSound(Math.min(2, s)); } catch (e) {} }
 function chUpdate(dt, now) {
@@ -9153,6 +9252,346 @@ function chEvLighter(now) { // warm/white additive glows, world space
     C.flares.forEach(function (f) { const k = Math.max(0, 1 - (now - f.t) / 11000); glow(f.x, chSY(f.d), 300 + 120 * k, 'rgba(220,230,255,' + (.16 + .1 * k) * (.85 + Math.random() * .3) + ')'); });
     const by = chSY(CH_BARN_D); if (by > -400 && by < 1100) glow(chEdge(CH_BARN_D, 1, 92), by, 280, 'rgba(255,140,50,' + (.24 + Math.random() * .06) + ')');
 }
+/* =====================================================
+   MISSION 10 — THE U-BOAT PENS (frogman raid, Lorient, night)
+   WASD swim · SPACE dive / surface · F plant limpet / cut net · mouse + click: Welrod (surfaced only)
+===================================================== */
+const M10W = 2400, M10H = 1700;
+const M10 = { running: false, failWhy: '', result: null };
+const M10_LAND = [[0, 0, 2400, 140], [760, 140, 900, 60], [0, 140, 520, 910], [1880, 140, 520, 910], [0, 1180, 1050, 60], [1350, 1180, 1050, 60]];
+const M10_PIERS = [760, 970, 1180, 1390, 1600]; // each 60 wide, y 200..560
+const M10_BAYS = [820, 1030, 1240, 1450];        // each 150 wide
+const M10_PEN = { x0: 760, x1: 1660, y0: 140, y1: 560 };
+const M10_NET = { x0: 1050, x1: 1350, y: 1210 };
+const M10_PICK = { x: 2180, y: 1560 }, M10_START = { x: 300, y: 1560 };
+function m10Land() { const L = M10_LAND.slice(); M10_PIERS.forEach(function (x) { L.push([x, 200, 60, 360]); }); return L; }
+function m10Caps(ax, ay, bx, by, r, extra) { return Object.assign({ ax: ax, ay: ay, bx: bx, by: by, r: r }, extra || {}); }
+function m10CapDist(c, x, y) { const dx = c.bx - c.ax, dy = c.by - c.ay, L2 = dx * dx + dy * dy || 1; let t = ((x - c.ax) * dx + (y - c.ay) * dy) / L2; t = Math.max(0, Math.min(1, t)); return Math.hypot(x - (c.ax + dx * t), y - (c.ay + dy * t)) - c.r; }
+function m10Blocked(x, y, r) {
+    const M = M10; if (x < r || y < r || x > M10W - r || y > M10H - r) return true;
+    for (let i = 0; i < M.land.length; i++) { const R = M.land[i]; const cx = Math.max(R[0], Math.min(x, R[0] + R[2])), cy = Math.max(R[1], Math.min(y, R[1] + R[3])); if (Math.hypot(x - cx, y - cy) < r) return true; }
+    for (let i = 0; i < M.hulls.length; i++) if (m10CapDist(M.hulls[i], x, y) < r) return true;
+    return false;
+}
+function m10NetBlocks(y0, y1, x) { const N = M10_NET; if (x < N.x0 || x > N.x1) return false; if ((y0 - N.y) * (y1 - N.y) > 0 && Math.abs(y1 - N.y) > 0) return false; return !M10.netGaps.some(function (g) { return Math.abs(g - x) < 30; }); }
+/* ---------- setup ---------- */
+function m10Begin() {
+    const M = M10, now = performance.now();
+    Object.assign(M, { running: true, t0: now, last: now, k: {}, mx: 550, my: 350, mdown: false, failWhy: '', result: null, won: false, lost: false, endAt: 0, msg: '', msgAt: 0, msgDur: 0, alarm: false, alarmUntil: 0, sus: 0, lastSeen: null, kills: 0, shots: 0, seenEver: false,
+        p: { x: M10_START.x + 40, y: M10_START.y - 10, vx: 0, vy: 0, ang: -.4, sub: false, o2: 100, hp: 100, kick: 0, diveAt: 0, hurtAt: 0, plantT: 0 }, ammo: 8, limpets: 4, netGaps: [], cutT: 0, timer: 0, blown: false, blowAt: 0, fx: [], parts: [], charges: [], bullets: [], cam: { x: 0, y: 950 }, cine: null, sirenAt: 0 });
+    M.land = m10Land();
+    M.subs = [0, 1, 3].map(function (b, i) { const cx = M10_BAYS[b] + 75; return m10Caps(cx, 250, cx, 520, 23, { kind: 'sub', name: 'U-' + [255, 618, 981][i], mined: false, bay: b }); });
+    M.tanker = m10Caps(566, 560, 566, 1000, 36, { kind: 'tanker', name: 'TANKER "ROSENHEIM"', mined: false });
+    M.moored = [m10Caps(1850, 300, 1850, 380, 14, { kind: 'boat' }), m10Caps(1850, 760, 1850, 830, 14, { kind: 'boat' }), m10Caps(1700, 1150, 1780, 1150, 12, { kind: 'boat' })];
+    M.hulls = M.subs.concat([M.tanker]).concat(M.moored);
+    M.lights = [{ x: 1035, y: 1205, base: Math.PI / 2 + .35, amp: 1.0, spd: .00042, ph: 0 }, { x: 1365, y: 1205, base: -Math.PI / 2, amp: 1.05, spd: .00036, ph: 2 }, { x: 1210, y: 570, base: Math.PI / 2, amp: 1.0, spd: .0004, ph: 4 }, { x: 515, y: 1020, base: -.25, amp: .8, spd: .0005, ph: 1 }, { x: 1885, y: 620, base: Math.PI + .2, amp: .85, spd: .00045, ph: 3 }].map(function (L) { return Object.assign(L, { ang: L.base, len: 640, half: .11, dead: false }); });
+    M.lamps = M10_BAYS.map(function (x) { return { x: x + 75, y: 330, r: 150, dead: false, pen: 1 }; }).concat([{ x: 470, y: 400, r: 120 }, { x: 1930, y: 1000, r: 120 }, { x: 260, y: 1190, r: 90 }, { x: 2140, y: 1190, r: 90 }]);
+    M.launches = [{ path: [[700, 700], [1700, 700], [1700, 1100], [700, 1100]] }, { path: [[1200, 640], [1760, 900], [1200, 1120], [650, 900]] }, { path: [[400, 1330], [2000, 1330]] }].map(function (L, i) { return Object.assign(L, { x: L.path[0][0], y: L.path[0][1], ang: 0, wi: 1, spd: 1.35, dcAt: 0, i: i, dead: false, wake: [] }); });
+    const S = function (path, gun) { return { path: path, x: path[0][0], y: path[0][1], ang: 0, wi: 1, spd: .55, wait: 0, gun: gun || 'kar98', seed: Math.random() * 99 | 0, dead: false, lastShot: 0, hp: 1 }; };
+    M.sentries = [S([[120, 1208], [1000, 1208]]), S([[1400, 1208], [2300, 1208]], 'mp40'), S([[492, 220], [492, 1030]]), S([[1908, 220], [1908, 1030]], 'mp40'), S([[1000, 230], [1000, 540]], 'mp40'), S([[1210, 540], [1210, 230]]), S([[1420, 230], [1420, 540]], 'mp40'), S([[790, 540], [790, 230]]), S([[200, 1150], [480, 1150]]), S([[1920, 1150], [2300, 1150]], 'mp40')];
+    if (!M.base) M.base = m10BuildBase();
+    m10Say('SLIP OVER THE SIDE. THE HARBOUR MOUTH IS EAST, PAST THE SEARCHLIGHTS. SPACE TO DIVE.', 5200);
+    ['m2Brief', 'm8Arm', 'm9Safe'].forEach(function (id) { const e = document.getElementById(id); if (e) e.hidden = true; });
+    const mb = document.getElementById('battleMainMenuButton'); if (mb) { mb.style.display = 'block'; mb.textContent = '↩️ ABORT MISSION'; }
+    canvas.style.cursor = 'none';
+    if (!M.listeners) { M.listeners = true;
+        window.addEventListener('keydown', function (e) { if (!M10.running) return; M10.k[e.code] = true; if (e.code === 'Space') { e.preventDefault(); m10Dive(); } });
+        window.addEventListener('keyup', function (e) { M10.k[e.code] = false; });
+        canvas.addEventListener('mousedown', function (e) { if (M10.running && e.button === 0) M10.mdown = true; });
+        window.addEventListener('mouseup', function () { M10.mdown = false; });
+        canvas.addEventListener('mousemove', function (e) { const r = canvas.getBoundingClientRect(); M10.mx = (e.clientX - r.left) * 1100 / r.width; M10.my = (e.clientY - r.top) * 700 / r.height; });
+        window.addEventListener('blur', function () { M10.k = {}; M10.mdown = false; });
+    }
+    try { initAudio(); } catch (e) {}
+    cancelAnimationFrame(M.raf); M.raf = requestAnimationFrame(m10Loop);
+}
+function m10Cleanup() { M10.running = false; cancelAnimationFrame(M10.raf); }
+function m10Say(t, ms) { M10.msg = t; M10.msgAt = performance.now(); M10.msgDur = ms || 3000; }
+function m10Dive() { const P = M10.p, now = performance.now(); if (now - P.diveAt < 450 || M10.won || M10.lost) return; if (!P.sub && P.o2 <= 0) { m10Say('NO OXYGEN LEFT — YOU CAN ONLY SWIM ON THE SURFACE NOW.', 2200); return; } P.sub = !P.sub; P.diveAt = now; try { if (P.sub) playTone(300, 120, .3, .04, 'sine'); else playTone(160, 420, .25, .04, 'sine'); } catch (e) {} for (let i = 0; i < 10; i++) M10.parts.push({ k: 'bub', x: P.x + (Math.random() - .5) * 18, y: P.y + (Math.random() - .5) * 18, vx: 0, vy: 0, life: 1, decay: .03, r: 2 + Math.random() * 3 }); }
+/* ---------- loop ---------- */
+function m10Loop(now) { if (!M10.running) return; if (typeof minimapPanel !== 'undefined' && minimapPanel && minimapPanel.style.display !== 'none') minimapPanel.style.display = 'none'; const dt = Math.min(50, now - M10.last) / 16.67; M10.last = now; try { m10Update(dt, now); m10Draw(now); } catch (e) { console.error(e); DDP.err = e; } if (M10.endAt && now > M10.endAt) { m10End(); return; } M10.raf = requestAnimationFrame(m10Loop); }
+function m10Hurt(d, why) { const P = M10.p; if (M10.lost || M10.won) return; P.hp -= d; P.hurtAt = performance.now(); M10.shake = Math.max(M10.shake || 0, Math.min(10, d * .4)); try { playTone(180, 80, .15, .06, 'square'); } catch (e) {} if (P.hp <= 0) { P.hp = 0; M10.lost = true; M10.failWhy = why || 'killed'; M10.endAt = performance.now() + 2600; m10Say(why === 'drown' ? 'OUT OF OXYGEN...' : why === 'blast' ? 'CAUGHT IN THE BLAST.' : 'YOU\'VE BEEN HIT. THE RAID IS OVER.', 3000); } }
+function m10Seen(x, y, k, by) { const M = M10, now = performance.now(); M.sus = Math.min(1.2, M.sus + k); M.lastSeen = { x: x, y: y, t: now }; if (M.sus >= 1 && !M.alarm) { M.alarm = true; M.seenEver = true; m10Say(by === 'light' ? 'SEARCHLIGHT! THEY\'VE SPOTTED YOU — DIVE!' : 'ALARM! THEY\'VE SEEN YOU — GET UNDER!', 2600); } if (M.alarm) M.alarmUntil = now + 22000; }
+function m10Update(dt, now) {
+    const M = M10, P = M.p, k = M.k;
+    if (M.cine) { m10CineUpdate(dt, now); return; }
+    // swim
+    if (!M.lost && !M.won) {
+        const ix = ((k.KeyD || k.ArrowRight) ? 1 : 0) - ((k.KeyA || k.ArrowLeft) ? 1 : 0), iy = ((k.KeyS || k.ArrowDown) ? 1 : 0) - ((k.KeyW || k.ArrowUp) ? 1 : 0), il = Math.hypot(ix, iy) || 1, sp = P.sub ? 1.75 : 1.95;
+        P.vx += (ix / il * sp - P.vx) * .08 * dt; P.vy += (iy / il * sp - P.vy) * .08 * dt; if (ix || iy) { P.ang = m8Turn(P.ang, Math.atan2(iy, ix), .12); P.kick += .25 * dt; }
+        const nx = P.x + P.vx * dt, ny = P.y + P.vy * dt;
+        if (!m10Blocked(nx, P.y, 10)) P.x = nx; else P.vx *= -.2;
+        if (!m10Blocked(P.x, ny, 10) && !m10NetBlocks(P.y, ny, P.x)) P.y = ny; else { if (m10NetBlocks(P.y, ny, P.x) && (!M.netHint || now - M.netHint > 4000)) { M.netHint = now; m10Say('ANTI-SUBMARINE NET. DIVE AND HOLD F TO CUT THROUGH IT.', 2600); } P.vy *= -.2; }
+        // oxygen
+        if (P.sub) { P.o2 = Math.max(0, P.o2 - dt * .009); if (P.o2 <= 0) { P.sub = false; m10Say('REBREATHER\'S EMPTY — SURFACING!', 2400); } if (P.o2 < 20 && Math.floor(now / 900) !== M.o2beep) { M.o2beep = Math.floor(now / 900); try { playTone(880, 880, .05, .02, 'square'); } catch (e) {} } }
+        // interact: F
+        const F = k.KeyF || k.KeyE; let act = null;
+        if (P.sub) { M.subs.concat([M.tanker]).forEach(function (h) { if (!h.mined && m10CapDist(h, P.x, P.y) < 26 && M.limpets > 0) act = { k: 'limpet', h: h }; }); if (!act && Math.abs(P.y - M10_NET.y) < 46 && P.x > M10_NET.x0 && P.x < M10_NET.x1 && !M.netGaps.some(function (g) { return Math.abs(g - P.x) < 30; })) act = { k: 'net' }; }
+        M.act = act;
+        if (act && F) { P.plantT += dt / 60; const need = act.k === 'net' ? 2.2 : 2.4; if (Math.random() < .2) M.parts.push({ k: 'bub', x: P.x + (Math.random() - .5) * 10, y: P.y + (Math.random() - .5) * 10, vx: 0, vy: 0, life: 1, decay: .04, r: 1.5 }); if (P.plantT >= need) { P.plantT = 0; if (act.k === 'net') { M.netGaps.push(P.x); m10Say('THROUGH THE NET. INTO THE HARBOUR.', 2200); try { playTone(700, 300, .1, .03, 'square'); } catch (e) {} } else { act.h.mined = true; act.h.mineAt = { x: P.x, y: P.y }; M.limpets--; try { playTone(240, 240, .12, .05, 'triangle'); setTimeout(function () { try { playTone(240, 240, .12, .05, 'triangle'); } catch (e) {} }, 160); } catch (e) {} const left = M.subs.filter(function (s) { return !s.mined; }).length; if (act.h.kind === 'tanker') m10Say('LIMPET ON THE TANKER. A BONUS FOR THE NAVY.', 2400); else if (left > 0) m10Say('LIMPET ON ' + act.h.name + '. ' + left + ' MORE U-BOAT' + (left > 1 ? 'S' : '') + '.', 2600); else { M.timer = 180; m10Say('ALL THREE U-BOATS MINED. TIME PENCILS RUNNING — 3 MINUTES. GET TO THE GUNBOAT!', 4200); try { [600, 800, 1000].forEach(function (f, i) { setTimeout(function () { try { playTone(f, f, .12, .05, 'triangle'); } catch (e) {} }, i * 140); }); } catch (e) {} } } } }
+        else P.plantT = Math.max(0, P.plantT - dt / 30);
+        // Welrod
+        if (M.mdown && !P.sub && M.ammo > 0 && now - (M.lastShot || 0) > 900) { M.mdown = false; M.lastShot = now; M.ammo--; M.shots++; const wx = M.mx + M.cam.x, wy = M.my + M.cam.y, a = Math.atan2(wy - P.y, wx - P.x); M.bullets.push({ x: P.x, y: P.y, vx: Math.cos(a) * 26, vy: Math.sin(a) * 26, life: 22 }); try { playTone(180, 90, .06, .04, 'square'); } catch (e) {} M.fx.push({ k: 'flash', x: P.x + Math.cos(a) * 14, y: P.y + Math.sin(a) * 14, t: now }); m10Noise(P.x, P.y, 70); }
+        else if (M.mdown && P.sub) { M.mdown = false; m10Say('YOU CAN\'T FIRE UNDERWATER — SURFACE FIRST (SPACE).', 1600); }
+        // pickup
+        if (Math.hypot(P.x - M10_PICK.x, P.y - M10_PICK.y) < 80) { if (M.subs.every(function (s) { return s.mined; })) { M.won = true; m10Say('HAULED ABOARD THE GUNBOAT. FULL SPEED AHEAD!', 3000); m10CineStart(now); } else if (!M.pickHint || now - M.pickHint > 5000) { M.pickHint = now; m10Say('THE GUNBOAT WAITS — BUT NOT UNTIL ALL THREE U-BOATS ARE MINED.', 2600); } }
+        // in the pen when it goes up
+        if (M.timer > 0) { M.timer -= dt / 60; if (M.timer <= 0) { M.timer = 0; m10Blow(now); } }
+    }
+    // searchlights sweep / track
+    M.lights.forEach(function (L) { if (L.dead) return; if (M.alarm && M.lastSeen && Math.hypot(M.lastSeen.x - L.x, M.lastSeen.y - L.y) < L.len) L.ang = m8Turn(L.ang, Math.atan2(M.lastSeen.y - L.y, M.lastSeen.x - L.x), .03 * dt); else L.ang = m8Turn(L.ang, L.base + Math.sin(now * L.spd + L.ph) * L.amp, .05 * dt);
+        if (!P.sub && !M.lost) { const d = Math.hypot(P.x - L.x, P.y - L.y), a = Math.atan2(P.y - L.y, P.x - L.x); if (d < L.len && m8AngDiff(a, L.ang) < L.half + 12 / Math.max(40, d)) m10Seen(P.x, P.y, 2, 'light'); } });
+    // sentries
+    M.sentries.forEach(function (s) { if (s.dead) return;
+        if (M.alarm && M.lastSeen && !P.sub && Math.hypot(P.x - s.x, P.y - s.y) < 420) { s.ang = m8Turn(s.ang, Math.atan2(P.y - s.y, P.x - s.x), .15 * dt); if (now - s.lastShot > 1100 && m10SeesSurface(s.x, s.y, s.ang, 420, 1.4)) { s.lastShot = now; const d = Math.hypot(P.x - s.x, P.y - s.y); M.fx.push({ k: 'flash', x: s.x + Math.cos(s.ang) * 12, y: s.y + Math.sin(s.ang) * 12, t: now }); try { playTone(300, 120, .06, .04, 'sawtooth'); } catch (e) {} if (Math.random() < Math.max(.25, .85 - d / 600)) m10Hurt(9, 'shot'); else M.parts.push({ k: 'splash', x: P.x + (Math.random() - .5) * 40, y: P.y + (Math.random() - .5) * 40, life: 1, decay: .05, r: 4 }); } return; }
+        if (s.wait > 0) { s.wait -= dt; s.ang += Math.sin(now / 700 + s.seed) * .01 * dt; } else { const t = s.path[s.wi], d = Math.hypot(t[0] - s.x, t[1] - s.y); if (d < 2) { s.wi = (s.wi + 1) % s.path.length; s.wait = 120 + Math.random() * 120; } else { s.x += (t[0] - s.x) / d * s.spd * dt; s.y += (t[1] - s.y) / d * s.spd * dt; s.ang = m8Turn(s.ang, Math.atan2(t[1] - s.y, t[0] - s.x), .1 * dt); s.walk = (s.walk || 0) + s.spd * dt; } }
+        if (!P.sub && !M.lost) { const lit = m10LitAt(P.x, P.y), rng = 170 + lit * 160; if (m10SeesSurface(s.x, s.y, s.ang, rng, 1.1)) m10Seen(P.x, P.y, (.018 + lit * .03) * dt * (1 - Math.hypot(P.x - s.x, P.y - s.y) / rng * .6), 'man'); } });
+    // launches
+    M.launches.forEach(function (L) { if (L.dead) return; let tx, ty; const hunting = M.alarm && M.lastSeen && L.i < 2 + (M.timer > 0 ? 1 : 0);
+        if (hunting) { tx = M.lastSeen.x; ty = M.lastSeen.y; } else { const w = L.path[L.wi]; tx = w[0]; ty = w[1]; if (Math.hypot(tx - L.x, ty - L.y) < 30) L.wi = (L.wi + 1) % L.path.length; }
+        const a = Math.atan2(ty - L.y, tx - L.x); L.ang = m8Turn(L.ang, a, .025 * dt); const sp = (hunting ? 2.5 : L.spd) * (Math.hypot(tx - L.x, ty - L.y) < 60 && hunting ? .4 : 1); const nx = L.x + Math.cos(L.ang) * sp * dt, ny = L.y + Math.sin(L.ang) * sp * dt; if (!m10Blocked(nx, ny, 18)) { L.x = nx; L.y = ny; } else L.ang += .08 * dt;
+        if (Math.random() < .5) L.wake.push({ x: L.x - Math.cos(L.ang) * 34, y: L.y - Math.sin(L.ang) * 34, t: now, a: L.ang }); L.wake = L.wake.filter(function (w) { return now - w.t < 2400; });
+        // spotlight
+        if (!P.sub && !M.lost && m10SeesSurface(L.x, L.y, L.ang, 300, .5)) m10Seen(P.x, P.y, .05 * dt, 'light');
+        // propeller
+        if (Math.hypot(P.x - (L.x - Math.cos(L.ang) * 36), P.y - (L.y - Math.sin(L.ang) * 36)) < 24 && now - (P.propAt || 0) > 1200) { P.propAt = now; m10Hurt(16, 'prop'); m10Say('THE PROPELLER! GET CLEAR!', 1400); }
+        if (Math.hypot(P.x - L.x, P.y - L.y) < 26) { const a2 = Math.atan2(P.y - L.y, P.x - L.x); P.vx += Math.cos(a2) * 1.5; P.vy += Math.sin(a2) * 1.5; }
+        // depth charges
+        if (hunting && Math.hypot(M.lastSeen.x - L.x, M.lastSeen.y - L.y) < 170 && now - L.dcAt > 2400) { L.dcAt = now; const ox = (Math.random() - .5) * 120, oy = (Math.random() - .5) * 120; M.charges.push({ x: M.lastSeen.x + ox, y: M.lastSeen.y + oy, t: now, at: now + 1500 }); try { playTone(200, 120, .1, .04, 'triangle'); } catch (e) {} } });
+    M.charges = M.charges.filter(function (c) { if (now < c.at) return true; m10Splash(c.x, c.y, 1); const d = Math.hypot(P.x - c.x, P.y - c.y); if (d < 140 && !M.lost) m10Hurt((P.sub ? 42 : 24) * (1 - d / 140) + 6, 'charge'); return false; });
+    // alarm decay
+    if (!M.alarm) M.sus = Math.max(0, M.sus - .004 * dt); else if (now > M.alarmUntil) { M.alarm = false; M.sus = .4; m10Say('THE SEARCH IS DYING DOWN...', 2000); }
+    if (M.alarm && now - M.sirenAt > 1800) { M.sirenAt = now; try { playTone(420, 640, .8, .025, 'sawtooth'); setTimeout(function () { try { playTone(640, 420, .8, .025, 'sawtooth'); } catch (e) {} }, 850); } catch (e) {} }
+    // bullets (ours)
+    M.bullets.forEach(function (b) { for (let st = 0; st < 3 && b.life > 0; st++) { b.x += b.vx * dt / 3; b.y += b.vy * dt / 3;
+        M.lights.forEach(function (L) { if (!L.dead && Math.hypot(b.x - L.x, b.y - L.y) < 14) { L.dead = true; b.life = 0; m10Say('SEARCHLIGHT SHOT OUT.', 1400); try { playTone(1400, 300, .2, .04, 'square'); } catch (e) {} for (let i = 0; i < 10; i++) M.parts.push({ k: 'spark', x: L.x, y: L.y, vx: (Math.random() - .5) * 4, vy: (Math.random() - .5) * 4, life: 1, decay: .05 }); m10Noise(L.x, L.y, 260); } });
+        M.lamps.forEach(function (L) { if (!L.dead && Math.hypot(b.x - L.x, b.y - L.y) < 12) { L.dead = true; b.life = 0; try { playTone(1600, 400, .12, .03, 'square'); } catch (e) {} m10Noise(L.x, L.y, 180); } });
+        M.sentries.forEach(function (s) { if (!s.dead && Math.hypot(b.x - s.x, b.y - s.y) < 12) { s.dead = true; s.deathAng = Math.atan2(b.vy, b.vx); b.life = 0; M.kills++; m10Noise(s.x, s.y, 120); } });
+        } b.life -= dt; });
+    M.bullets = M.bullets.filter(function (b) { return b.life > 0; });
+    M.parts.forEach(function (p) { if (p.vx !== undefined) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .95; p.vy *= .95; } if (p.k === 'smoke') p.r += .3 * dt; p.life -= p.decay * dt; });
+    M.parts = M.parts.filter(function (p) { return p.life > 0; });
+    M.fx = M.fx.filter(function (f) { return now - f.t < (f.k === 'boom' ? 1800 : 400); });
+    if (P.sub && (Math.abs(P.vx) + Math.abs(P.vy)) > .4 && Math.random() < .08) M.parts.push({ k: 'bub', x: P.x - Math.cos(P.ang) * 10, y: P.y - Math.sin(P.ang) * 10, vx: 0, vy: 0, life: 1, decay: .03, r: 1.4 });
+    if (!P.sub && (Math.abs(P.vx) + Math.abs(P.vy)) > .5 && Math.random() < .15) M.parts.push({ k: 'ring', x: P.x, y: P.y, life: 1, decay: .025, r: 8 });
+    M.shake = Math.max(0, (M.shake || 0) - .5 * dt);
+    // camera
+    const tcx = Math.max(0, Math.min(M10W - 1100, P.x - 550)), tcy = Math.max(0, Math.min(M10H - 700, P.y - 350)); M.cam.x += (tcx - M.cam.x) * .1; M.cam.y += (tcy - M.cam.y) * .1;
+}
+function m10Noise(x, y, r) { const M = M10; M.sentries.forEach(function (s) { if (!s.dead && Math.hypot(s.x - x, s.y - y) < r) { s.ang = Math.atan2(y - s.y, x - s.x); s.wait = 180; } }); if (r > 200) { M.sus = Math.min(.95, M.sus + .35); } }
+function m10LitAt(x, y) { let L = 0; M10.lamps.forEach(function (l) { if (l.dead) return; const d = Math.hypot(x - l.x, y - l.y); if (d < l.r) L = Math.max(L, 1 - d / l.r); }); if (M10.blown) L = Math.max(L, (y < 700 && x > 700 && x < 1700) ? .8 : .3); return L; }
+function m10SeesSurface(x, y, ang, rng, fov) { const P = M10.p; if (P.sub) return false; const d = Math.hypot(P.x - x, P.y - y); if (d > rng) return false; return m8AngDiff(Math.atan2(P.y - y, P.x - x), ang) < fov / 2; }
+function m10Splash(x, y, s) { const now = performance.now(), M = M10; M.fx.push({ k: 'geyser', x: x, y: y, t: now, s: s }); for (let i = 0; i < 24; i++) { const a = Math.random() * 7, sp = 1 + Math.random() * 4 * s; M.parts.push({ k: 'drop', x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: .025 }); } M.shake = Math.max(M.shake || 0, 6 * s); try { playExplosionSound(.6 * s); } catch (e) {} }
+function m10Blow(now) { // the time pencils go off
+    const M = M10, P = M.p; M.blown = true; M.blowAt = now;
+    M.subs.concat([M.tanker]).forEach(function (h, i) { if (!h.mined) return; setTimeout(function () { const x = h.mineAt ? h.mineAt.x : (h.ax + h.bx) / 2, y = h.mineAt ? h.mineAt.y : (h.ay + h.by) / 2; M.fx.push({ k: 'boom', x: x, y: y, t: performance.now(), s: 1.6 }); m10Splash(x, y, 2); h.sunk = performance.now(); for (let k = 0; k < 18; k++) M.parts.push({ k: 'smoke', x: x + (Math.random() - .5) * 60, y: y + (Math.random() - .5) * 120, vx: (Math.random() - .5) * .4, vy: -.2, life: 1, decay: .004, r: 20 + Math.random() * 30 }); if (!M.won && !M.lost && Math.hypot(P.x - x, P.y - y) < 260) m10Hurt(200, 'blast'); }, i * 700); });
+    if (!M.won) { M.alarm = true; M.alarmUntil = now + 60000; m10Say('THE PENS ARE GOING UP! THE WHOLE HARBOUR IS AWAKE — GET TO THE GUNBOAT!', 3600); }
+}
+/* ---------- victory cinematic ---------- */
+function m10CineStart(now) { const M = M10; M.cine = { t0: now, fromX: M.cam.x, fromY: M.cam.y }; M.p.sub = false; if (!M.blown) setTimeout(function () { m10Blow(performance.now()); }, 2600); }
+function m10CineUpdate(dt, now) { const M = M10, C = M.cine; if (M.blown && now - M.blowAt > 2200 && Math.random() < .05 * dt) { const x = 780 + Math.random() * 860, y = 200 + Math.random() * 360; M.fx.push({ k: 'boom', x: x, y: y, t: now, s: .6 + Math.random() * .7 }); for (let i = 0; i < 10; i++) { const a = Math.random() * 7; M.parts.push({ k: 'chunk', x: x, y: y, vx: Math.cos(a) * (3 + Math.random() * 5), vy: Math.sin(a) * (3 + Math.random() * 5), life: 1, decay: .02, rot: Math.random() * 6, r: 3 + Math.random() * 6 }); } M.parts.push({ k: 'smoke', x: x, y: y, vx: .3, vy: -.3, life: 1, decay: .005, r: 40 }); M.shake = Math.max(M.shake || 0, 5); try { playExplosionSound(.5 + Math.random() * .5); } catch (e) {} }
+    const k = Math.min(1, (now - C.t0) / 2400), e = k * k * (3 - 2 * k); M.cam.x = C.fromX + (760 - C.fromX) * e; M.cam.y = C.fromY + (80 - C.fromY) * e; M.parts.forEach(function (p) { if (p.vx !== undefined) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .95; p.vy *= .95; } if (p.k === 'smoke') p.r += .3 * dt; p.life -= p.decay * dt; }); M.parts = M.parts.filter(function (p) { return p.life > 0; }); M.fx = M.fx.filter(function (f) { return now - f.t < (f.k === 'boom' ? 1800 : 600); }); M.shake = Math.max(0, (M.shake || 0) - .4 * dt); if (now - C.t0 > 8200 && !M.endAt) M.endAt = now + 600; }
+function m10End() {
+    const M = M10; M.running = false; cancelAnimationFrame(M.raf); canvas.style.cursor = ''; campaignMission = 10; selectedGameMode = 'campaign';
+    M.result = { alarm: M.seenEver, tanker: M.tanker.mined, kills: M.kills, hp: Math.round(M.p.hp), o2: Math.round(M.p.o2) };
+    if (M.won) { progression.campaignM10Done = true; try { addXP(1100, 'victory'); saveProgression(); } catch (e) {} showCampaignResult(true); } else showCampaignResult(false);
+}
+function m10Stars() { const r = M10.result || {}; return 1 + (r.alarm ? 0 : 1) + (r.tanker ? 1 : 0); }
+/* =====================================================
+   MISSION 10 — art: the harbour, the pens, boats, the frogman, HUD
+===================================================== */
+function m10H(a, b, c) { return m8R(a * 12.9898 + (b || 0) * 78.233 + (c || 0) * 37.719 + 9.7); }
+function m10IsWater(x, y) { return !m10Land().some(function (R) { return x > R[0] - 4 && x < R[0] + R[2] + 4 && y > R[1] - 4 && y < R[1] + R[3] + 4; }); }
+function m10Concrete(g, x, y, w, h, tone, slab) {
+    g.fillStyle = tone || '#6a6862'; g.fillRect(x, y, w, h); const S = slab || 40;
+    for (let yy = y; yy < y + h; yy += S) for (let xx = x; xx < x + w; xx += S) { const v = m10H(xx, yy) * 18 - 9; g.fillStyle = 'rgba(' + (v > 0 ? '255,255,255,' + v / 120 : '0,0,0,' + (-v) / 80) + ')'; g.fillRect(xx, yy, Math.min(S, x + w - xx), Math.min(S, y + h - yy)); }
+    g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = 1; for (let yy = y + S; yy < y + h; yy += S) { g.beginPath(); g.moveTo(x, yy); g.lineTo(x + w, yy); g.stroke(); } for (let xx = x + S; xx < x + w; xx += S) { g.beginPath(); g.moveTo(xx, y); g.lineTo(xx, y + h); g.stroke(); }
+    for (let i = 0; i < w * h / 900; i++) { g.fillStyle = m10H(i, x, y) > .5 ? 'rgba(0,0,0,.18)' : 'rgba(255,255,255,.06)'; g.fillRect(x + m10H(i, 1, x) * w, y + m10H(i, 2, y) * h, 2 + m10H(i, 3) * 3, 2); }
+}
+function m10QuayEdge(g, x0, y0, x1, y1, side) { // waterline: dark wall face, bollards, tyre fenders
+    const hor = y0 === y1; g.fillStyle = '#2a2a28'; if (hor) g.fillRect(x0, y0 - (side < 0 ? 8 : 0), x1 - x0, 8); else g.fillRect(x0 - (side < 0 ? 8 : 0), y0, 8, y1 - y0);
+    g.strokeStyle = 'rgba(220,200,80,.55)'; g.lineWidth = 2; g.setLineDash([14, 10]); g.beginPath(); if (hor) { g.moveTo(x0, y0 - side * 14); g.lineTo(x1, y0 - side * 14); } else { g.moveTo(x0 - side * 14, y0); g.lineTo(x0 - side * 14, y1); } g.stroke(); g.setLineDash([]);
+    const L = hor ? x1 - x0 : y1 - y0; for (let t = 30; t < L; t += 90) { const bx = hor ? x0 + t : x0 - side * 18, by = hor ? y0 - side * 18 : y0 + t; m8Disc(g, bx, by, 5, '#1a1a18', '#6a6a60'); const fx = hor ? x0 + t + 40 : x0 + side * 3, fy = hor ? y0 + side * 3 : y0 + t + 40; g.fillStyle = '#121212'; g.beginPath(); g.ellipse(fx, fy, hor ? 9 : 5, hor ? 5 : 9, 0, 0, 7); g.fill(); g.strokeStyle = '#3a3a38'; g.lineWidth = 1.5; g.stroke(); }
+}
+function m10Rails(g, x0, y0, x1, y1) { const hor = y0 === y1, L = hor ? x1 - x0 : y1 - y0; g.fillStyle = '#3a3026'; for (let t = 0; t < L; t += 12) { if (hor) g.fillRect(x0 + t, y0 - 10, 6, 20); else g.fillRect(x0 - 10, y0 + t, 20, 6); } g.fillStyle = '#8a8a84'; if (hor) { g.fillRect(x0, y0 - 6, L, 2); g.fillRect(x0, y0 + 5, L, 2); } else { g.fillRect(x0 - 6, y0, 2, L); g.fillRect(x0 + 5, y0, 2, L); } }
+function m10Crane(g, x, y, ang) { g.save(); g.translate(x, y); g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(-22 + 10, -22 + 12, 44, 44); g.strokeStyle = '#5a4a2a'; g.lineWidth = 5; g.strokeRect(-22, -22, 44, 44); g.beginPath(); g.moveTo(-22, -22); g.lineTo(22, 22); g.moveTo(22, -22); g.lineTo(-22, 22); g.stroke(); g.fillStyle = '#7a6a3a'; g.fillRect(-14, -14, 28, 28); g.fillStyle = '#3a3220'; g.fillRect(-8, -8, 16, 16); g.rotate(ang); g.strokeStyle = '#8a7840'; g.lineWidth = 6; g.beginPath(); g.moveTo(0, 0); g.lineTo(130, 0); g.stroke(); g.strokeStyle = '#4a3e20'; g.lineWidth = 1.5; for (let i = 10; i < 130; i += 10) { g.beginPath(); g.moveTo(i, -3); g.lineTo(i + 5, 3); g.stroke(); } g.strokeStyle = '#2a2a28'; g.lineWidth = 1; g.beginPath(); g.moveTo(126, 0); g.lineTo(126, 18); g.stroke(); g.fillStyle = '#2a2a28'; g.fillRect(122, 18, 8, 6); g.restore(); }
+function m10Crates(g, x, y, n, seed) { for (let i = 0; i < n; i++) { const cx = x + (i % 3) * 24, cy = y + Math.floor(i / 3) * 24; g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(cx + 5, cy + 6, 22, 22); g.fillStyle = m10H(i, seed) > .5 ? '#7a6038' : '#6a5230'; g.fillRect(cx, cy, 22, 22); g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = 1; g.strokeRect(cx + 2, cy + 2, 18, 18); g.beginPath(); g.moveTo(cx + 2, cy + 2); g.lineTo(cx + 20, cy + 20); g.stroke(); } }
+function m10Drums(g, x, y, n) { for (let i = 0; i < n; i++) m8Disc(g, x + (i % 4) * 15, y + Math.floor(i / 4) * 15, 7, '#2a3020', '#6a7a4a'); }
+function m10BuildBase() {
+    const c = document.createElement('canvas'); c.width = M10W; c.height = M10H; const g = c.getContext('2d');
+    // water
+    const wg = g.createLinearGradient(0, 0, 0, M10H); wg.addColorStop(0, '#1a2c32'); wg.addColorStop(.7, '#1c3038'); wg.addColorStop(1, '#203640'); g.fillStyle = wg; g.fillRect(0, 0, M10W, M10H);
+    for (let i = 0; i < 2600; i++) { const x = m10H(i, 1) * M10W, y = m10H(i, 2) * M10H; g.strokeStyle = m10H(i, 3) > .5 ? 'rgba(120,160,170,.08)' : 'rgba(0,0,0,.12)'; g.lineWidth = 1 + m10H(i, 4); g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + 10, y - 3, x + 20 + m10H(i, 5) * 20, y); g.stroke(); }
+    for (let i = 0; i < 40; i++) { g.fillStyle = 'rgba(10,20,26,.25)'; g.beginPath(); g.ellipse(m10H(i, 6) * M10W, 1300 + m10H(i, 7) * 400, 160, 30, 0, 0, 7); g.fill(); }
+    // land
+    const land = m10Land();
+    // north dockyard
+    m10Concrete(g, 0, 0, M10W, 140, '#5e5c56', 50); m10Rails(g, 0, 40, M10W, 40); m10Rails(g, 0, 90, 700, 90);
+    [[100, 20, 120, 40], [1720, 10, 160, 50], [2080, 30, 140, 60]].forEach(function (b, i) { m9Roof(g, b[0], b[1], b[2], b[3], true, i % 2 ? ['#5a5e68', '#3a3e48', '#22242c'] : ['#6a4a36', '#4a3020', '#2a1a10']); });
+    [[2300, 70], [2360, 70], [400, 70]].forEach(function (t) { m8Disc(g, t[0], t[1], 26, '#3a3c38', '#9a9c92'); g.strokeStyle = 'rgba(0,0,0,.4)'; g.beginPath(); g.arc(t[0], t[1], 18, 0, 7); g.stroke(); });
+    // west & east quays
+    [[0, 140, 520, 910, 1], [1880, 140, 520, 910, -1]].forEach(function (Q) { m10Concrete(g, Q[0], Q[1], Q[2], Q[3], '#625f58', 44); const edge = Q[4] > 0 ? Q[0] + Q[2] : Q[0]; m10QuayEdge(g, edge, Q[1] + 60, edge, Q[1] + Q[3], Q[4] > 0 ? -1 : 1); m10QuayEdge(g, Q[0], Q[1] + Q[3], Q[0] + Q[2], Q[1] + Q[3], 1);
+        const rx = Q[4] > 0 ? 410 : 1990; m10Rails(g, rx, 140, rx, 1050); m10Rails(g, rx + Q[4] * -70, 140, rx + Q[4] * -70, 1050);
+        const wx = Q[4] > 0 ? 40 : 2080; [[200, 220], [480, 200], [740, 240]].forEach(function (b, i) { m9Roof(g, wx, b[0], 260, b[1], false, i % 2 ? ['#5a5e68', '#3a3e48', '#22242c'] : ['#6e665a', '#4e463a', '#2e2820']); g.fillStyle = 'rgba(230,220,180,.4)'; g.font = '700 22px "Stardos Stencil", Impact'; g.textAlign = 'center'; });
+        m10Crates(g, Q[4] > 0 ? 320 : 2010, 980, 6, Q[0]); m10Drums(g, Q[4] > 0 ? 330 : 2020, 160, 12); });
+    m10Crane(g, 470, 330, 0); m10Crane(g, 470, 820, .2); m10Crane(g, 1930, 480, Math.PI); m10Crane(g, 1930, 900, Math.PI - .3);
+    // moles
+    [[0, 1180, 1050], [1350, 1180, 1050]].forEach(function (Mo) { for (let i = 0; i < Mo[2] / 9; i++) { const x = Mo[0] + i * 9 + m10H(i, Mo[0]) * 6; [1172 - m10H(i, 3) * 8, 1248 + m10H(i, 4) * 8].forEach(function (y, k) { g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(x + 3, y + 3, 9, 7, 0, 0, 7); g.fill(); g.fillStyle = ['#5a5852', '#6a6862', '#4a4842'][(i + k) % 3]; g.beginPath(); g.ellipse(x, y, 8 + m10H(i, k) * 4, 6 + m10H(k, i) * 3, m10H(i, k, 1), 0, 7); g.fill(); }); } m10Concrete(g, Mo[0], Mo[1], Mo[2], 60, '#6e6c66', 30); g.strokeStyle = 'rgba(220,200,80,.4)'; g.setLineDash([12, 12]); g.beginPath(); g.moveTo(Mo[0], 1210); g.lineTo(Mo[0] + Mo[2], 1210); g.stroke(); g.setLineDash([]); });
+    [[1035, 1205], [1365, 1205]].forEach(function (t) { m8Disc(g, t[0], t[1], 24, '#3a3a36', '#8a8a80'); m8Disc(g, t[0], t[1], 14, '#2a2a26', '#5a5a54'); });
+    m8Sandbags(g, 980, 1186, 40, 14); m8Sandbags(g, 1380, 1186, 40, 14);
+    // the pen: piers and bays (roof drawn separately)
+    m10Concrete(g, 760, 140, 900, 60, '#5a5852', 30);
+    M10_PIERS.forEach(function (x) { m10Concrete(g, x, 200, 60, 360, '#6a6862', 30); g.fillStyle = 'rgba(220,190,60,.6)'; g.fillRect(x + 2, 200, 3, 360); g.fillRect(x + 55, 200, 3, 360); for (let y = 220; y < 560; y += 60) m8Disc(g, x + 8, y, 3.4, '#1a1a18', '#6a6a60'); });
+    M10_BAYS.forEach(function (x) { const bg = g.createLinearGradient(0, 200, 0, 560); bg.addColorStop(0, '#0e1a1e'); bg.addColorStop(1, '#16262c'); g.fillStyle = bg; g.fillRect(x, 200, 150, 360); g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(x, 200, 150, 14); });
+    // channel buoys + entrance
+    g.fillStyle = 'rgba(255,255,255,.05)'; g.fillRect(1050, 1240, 300, 460);
+    // moon-grade
+    g.globalCompositeOperation = 'multiply'; g.fillStyle = 'rgb(150,160,192)'; g.fillRect(0, 0, M10W, M10H); g.globalCompositeOperation = 'source-over';
+    // pen roof as its own layer
+    const r = document.createElement('canvas'); r.width = 900; r.height = 420; const rg = r.getContext('2d');
+    m10Concrete(rg, 0, 0, 900, 420, '#7a7872', 60); rg.strokeStyle = 'rgba(0,0,0,.35)'; rg.lineWidth = 3; for (let x = 0; x <= 900; x += 150) { rg.beginPath(); rg.moveTo(x, 0); rg.lineTo(x, 420); rg.stroke(); }
+    [[180, 120, 34], [520, 260, 26], [700, 90, 40], [330, 330, 22]].forEach(function (cr) { const cg = rg.createRadialGradient(cr[0], cr[1], 2, cr[0], cr[1], cr[2]); cg.addColorStop(0, '#4a4842'); cg.addColorStop(.8, '#5e5c56'); cg.addColorStop(1, 'rgba(140,136,128,.9)'); rg.fillStyle = cg; rg.beginPath(); rg.arc(cr[0], cr[1], cr[2], 0, 7); rg.fill(); });
+    [[120, 60], [780, 60], [450, 200]].forEach(function (f) { m8Disc(rg, f[0], f[1], 26, '#3a3c34', '#7a7c70'); m8Sandbags(rg, f[0] - 34, f[1] - 34, 68, 12); rg.strokeStyle = '#1a1a18'; rg.lineWidth = 3; for (let i = 0; i < 4; i++) { rg.beginPath(); rg.moveTo(f[0] + (i % 2 ? 4 : -4), f[1] + (i > 1 ? 4 : -4)); rg.lineTo(f[0] + (i % 2 ? 4 : -4) + 26, f[1] + (i > 1 ? 4 : -4) - 14); rg.stroke(); } });
+    rg.fillStyle = 'rgba(230,220,180,.25)'; rg.font = '700 46px "Stardos Stencil", Impact'; rg.textAlign = 'center'; rg.fillText('KEROMAN III', 450, 380);
+    rg.fillStyle = 'rgba(0,0,0,.5)'; rg.fillRect(0, 400, 900, 20);
+    rg.globalCompositeOperation = 'multiply'; rg.fillStyle = 'rgb(150,160,192)'; rg.fillRect(0, 0, 900, 420);
+    M10.roof = r;
+    // ripple sample points on water
+    M10.ripples = []; for (let i = 0; i < 900; i++) { const x = m10H(i, 11) * M10W, y = m10H(i, 12) * M10H; if (m10IsWater(x, y)) M10.ripples.push([x, y, m10H(i, 13) * 6.28, 8 + m10H(i, 14) * 18]); }
+    return c;
+}
+/* ---------- vessels ---------- */
+function m10DrawSub(h, now) {
+    const cx = h.ax, y0 = h.ay - h.r, y1 = h.by + h.r, sunkK = h.sunk ? Math.min(1, (now - h.sunk) / 4000) : 0;
+    ctx.save(); ctx.globalAlpha = 1 - sunkK * .75;
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(cx + 6, (y0 + y1) / 2 + 8, h.r + 2, (y1 - y0) / 2, 0, 0, 7); ctx.fill();
+    const hg = ctx.createLinearGradient(cx - h.r, 0, cx + h.r, 0); hg.addColorStop(0, '#20262c'); hg.addColorStop(.45, '#5e6872'); hg.addColorStop(.55, '#4e5862'); hg.addColorStop(1, '#1a1e24'); ctx.fillStyle = hg;
+    ctx.beginPath(); ctx.moveTo(cx, y0); ctx.quadraticCurveTo(cx + h.r, y0 + 40, cx + h.r, y0 + 90); ctx.lineTo(cx + h.r, y1 - 70); ctx.quadraticCurveTo(cx + h.r * .8, y1 - 10, cx, y1); ctx.quadraticCurveTo(cx - h.r * .8, y1 - 10, cx - h.r, y1 - 70); ctx.lineTo(cx - h.r, y0 + 90); ctx.quadraticCurveTo(cx - h.r, y0 + 40, cx, y0); ctx.fill(); ctx.strokeStyle = '#0e1014'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#3a3228'; ctx.fillRect(cx - 7, y0 + 30, 14, y1 - y0 - 60); ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = .8; for (let y = y0 + 34; y < y1 - 30; y += 6) { ctx.beginPath(); ctx.moveTo(cx - 7, y); ctx.lineTo(cx + 7, y); ctx.stroke(); }
+    const ty = y0 + (y1 - y0) * .38; ctx.fillStyle = '#4a545e'; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(cx - 13, ty, 26, 62, 10); else ctx.rect(cx - 13, ty, 26, 62); ctx.fill(); ctx.strokeStyle = '#121418'; ctx.stroke(); m8Disc(ctx, cx, ty + 20, 6, '#16181c', '#5a646e'); ctx.fillStyle = '#121418'; ctx.fillRect(cx - 1.5, ty + 4, 3, 10); m8Disc(ctx, cx, ty + 50, 10, '#2a2e34', '#6a747e'); ctx.strokeStyle = '#121418'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, ty + 50); ctx.lineTo(cx, ty + 72); ctx.stroke();
+    m8Disc(ctx, cx, ty + 110, 6, '#20242a', '#5a646e'); ctx.strokeStyle = '#121418'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cx, ty + 110); ctx.lineTo(cx, ty + 140); ctx.stroke();
+    ctx.fillStyle = 'rgba(230,230,220,.6)'; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center'; ctx.fillText(h.name, cx, ty - 6);
+    ctx.fillStyle = 'rgba(160,200,220,.12)'; ctx.fillRect(cx - h.r * .3, y0 + 60, 3, y1 - y0 - 120);
+    ctx.restore();
+    if (h.mined && !h.sunk) { const m = h.mineAt; ctx.fillStyle = '#2a2a1e'; ctx.beginPath(); ctx.arc(m.x, m.y, 5, 0, 7); ctx.fill(); if (Math.floor(now / 500) % 2) { ctx.fillStyle = '#ff4020'; ctx.beginPath(); ctx.arc(m.x, m.y, 2, 0, 7); ctx.fill(); } }
+    if (h.sunk) { ctx.fillStyle = 'rgba(20,16,10,' + .5 * sunkK + ')'; ctx.beginPath(); ctx.ellipse(cx, (y0 + y1) / 2, h.r * 2.2, (y1 - y0) * .6, 0, 0, 7); ctx.fill(); [0, 1, 2].forEach(function (i) { ddpFire(cx + (i - 1) * 16, y0 + 60 + i * 80, .45 - sunkK * .2, now / 1000, i + h.ax); }); }
+}
+function m10DrawTanker(h, now) {
+    const cx = h.ax, y0 = h.ay - h.r, y1 = h.by + h.r, w = h.r, sunkK = h.sunk ? Math.min(1, (now - h.sunk) / 5000) : 0;
+    ctx.save(); ctx.translate(cx, (y0 + y1) / 2); ctx.rotate(sunkK * .08); ctx.translate(-cx, -(y0 + y1) / 2);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(cx - w + 8, y0 + 10, w * 2, y1 - y0);
+    ctx.fillStyle = '#1a1a1c'; ctx.beginPath(); ctx.moveTo(cx, y0); ctx.quadraticCurveTo(cx + w, y0 + 50, cx + w, y0 + 110); ctx.lineTo(cx + w, y1 - 30); ctx.quadraticCurveTo(cx + w, y1, cx, y1); ctx.quadraticCurveTo(cx - w, y1, cx - w, y1 - 30); ctx.lineTo(cx - w, y0 + 110); ctx.quadraticCurveTo(cx - w, y0 + 50, cx, y0); ctx.fill();
+    ctx.fillStyle = '#4a3a2a'; ctx.beginPath(); ctx.moveTo(cx, y0 + 10); ctx.quadraticCurveTo(cx + w - 6, y0 + 56, cx + w - 6, y0 + 112); ctx.lineTo(cx + w - 6, y1 - 34); ctx.quadraticCurveTo(cx + w - 6, y1 - 6, cx, y1 - 6); ctx.quadraticCurveTo(cx - w + 6, y1 - 6, cx - w + 6, y1 - 34); ctx.lineTo(cx - w + 6, y0 + 112); ctx.quadraticCurveTo(cx - w + 6, y0 + 56, cx, y0 + 10); ctx.fill();
+    ctx.fillStyle = '#2a2018'; for (let y = y0 + 90; y < y1 - 160; y += 50) { ctx.fillRect(cx - 18, y, 36, 26); } ctx.strokeStyle = '#7a6a50'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, y0 + 70); ctx.lineTo(cx, y1 - 140); ctx.stroke();
+    m9Roof(ctx, cx - w + 10, y1 - 140, (w - 10) * 2, 90, false, ['#d8d0c0', '#a8a090', '#6a6458']); m8Disc(ctx, cx, y1 - 40, 13, '#2a1a10', '#7a3a20'); ctx.fillStyle = '#1a1210'; ctx.beginPath(); ctx.arc(cx, y1 - 40, 7, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(230,220,200,.55)'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center'; ctx.fillText('ROSENHEIM', cx, y0 + 40); ctx.restore();
+    if (h.mined && !h.sunk) { const m = h.mineAt; ctx.fillStyle = '#2a2a1e'; ctx.beginPath(); ctx.arc(m.x, m.y, 5, 0, 7); ctx.fill(); if (Math.floor(now / 500) % 2) { ctx.fillStyle = '#ff4020'; ctx.beginPath(); ctx.arc(m.x, m.y, 2, 0, 7); ctx.fill(); } }
+    if (h.sunk) { ctx.fillStyle = 'rgba(10,8,6,.45)'; ctx.beginPath(); ctx.ellipse(cx + 40, (y0 + y1) / 2, 120, 300, 0, 0, 7); ctx.fill(); [0, 1, 2, 3].forEach(function (i) { ddpFire(cx + (i % 2 ? 12 : -12), y0 + 80 + i * 90, .6, now / 1000, i * 3 + 1); }); }
+}
+function m10DrawBoat(b) { const L = Math.hypot(b.bx - b.ax, b.by - b.ay), a = Math.atan2(b.by - b.ay, b.bx - b.ax); ctx.save(); ctx.translate(b.ax, b.ay); ctx.rotate(a); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(L / 2 + 5, 6, L / 2 + b.r, b.r, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#3a3e3a'; ctx.beginPath(); ctx.moveTo(-b.r, -b.r); ctx.lineTo(L, -b.r); ctx.quadraticCurveTo(L + b.r * 1.6, 0, L, b.r); ctx.lineTo(-b.r, b.r); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#5a5e56'; ctx.fillRect(L * .3, -b.r * .6, L * .3, b.r * 1.2); ctx.restore(); }
+function m10DrawLaunch(L, now) {
+    L.wake.forEach(function (w) { const k = (now - w.t) / 2400, a = w.a === undefined ? L.ang : w.a, px = -Math.sin(a), py = Math.cos(a), sp = 8 + k * 46; ctx.fillStyle = 'rgba(210,225,235,' + .22 * (1 - k) + ')'; [-1, 1].forEach(function (s2) { ctx.beginPath(); ctx.ellipse(w.x + px * sp * s2, w.y + py * sp * s2, 5 + k * 6, 2 + k * 2, a, 0, 7); ctx.fill(); }); if (k < .4) { ctx.fillStyle = 'rgba(230,240,245,' + .2 * (1 - k / .4) + ')'; ctx.beginPath(); ctx.ellipse(w.x, w.y, 7, 4, a, 0, 7); ctx.fill(); } });
+    ctx.save(); ctx.translate(L.x, L.y); ctx.rotate(L.ang);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(4, 8, 46, 16, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = m8Grad(ctx, 0, -15, 0, 15, [[0, '#6a6e68'], [.5, '#4a4e48'], [1, '#2a2e2a']]); ctx.beginPath(); ctx.moveTo(-38, -13); ctx.lineTo(18, -14); ctx.quadraticCurveTo(44, -8, 48, 0); ctx.quadraticCurveTo(44, 8, 18, 14); ctx.lineTo(-38, 13); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#121412'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.fillStyle = '#7a6a50'; ctx.fillRect(-30, -8, 46, 16); ctx.fillStyle = '#5a5e58'; ctx.fillRect(-14, -9, 22, 18); ctx.fillStyle = 'rgba(160,200,220,.5)'; ctx.fillRect(6, -7, 2, 14);
+    m8Disc(ctx, 30, 0, 5, '#1a1c1a', '#5a5e58'); ctx.strokeStyle = '#121212'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(30, 0); ctx.lineTo(44, 0); ctx.stroke();
+    ctx.fillStyle = '#2a2a24'; [[-34, -8], [-34, 0], [-34, 8]].forEach(function (p) { ctx.beginPath(); ctx.arc(p[0], p[1], 3.4, 0, 7); ctx.fill(); });
+    [[-4, -11], [-22, 9]].forEach(function (p) { m8Disc(ctx, p[0], p[1], 4, '#3a3e30', '#7a8060'); }); m8Disc(ctx, 0, 0, 4, '#1a1a18', '#d8d4c0');
+    ctx.restore();
+}
+function m10DrawFrogman(P, now) {
+    ctx.save(); ctx.translate(P.x, P.y); ctx.rotate(P.ang);
+    if (P.sub) { ctx.globalAlpha = .55; const kick = Math.sin(P.kick) * 5; ctx.fillStyle = '#0a1418'; [[-1, kick], [1, -kick]].forEach(function (s) { ctx.beginPath(); ctx.moveTo(-10, s[0] * 4); ctx.lineTo(-24, s[0] * 4 + s[1]); ctx.lineTo(-30, s[0] * 7 + s[1]); ctx.lineTo(-28, s[0] * 1 + s[1]); ctx.closePath(); ctx.fill(); }); ctx.fillStyle = '#121c22'; ctx.beginPath(); ctx.ellipse(0, 0, 13, 6.4, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#2a3a40'; ctx.beginPath(); ctx.ellipse(-2, 0, 6, 4, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#1a242a'; ctx.beginPath(); ctx.arc(13, 0, 4.6, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(160,200,210,.5)'; ctx.fillRect(14, -2.6, 2, 5.2); ctx.globalAlpha = 1; }
+    else { const st = Math.sin(P.kick * 1.3); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(-4, 0, 16, 8, 0, 0, 7); ctx.fill(); ctx.strokeStyle = '#141a1c'; ctx.lineWidth = 3.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(4, -6); ctx.lineTo(12 + st * 8, -12 - st * 2); ctx.moveTo(4, 6); ctx.lineTo(12 - st * 8, 12 + st * 2); ctx.stroke(); ctx.fillStyle = '#1a2226'; ctx.beginPath(); ctx.ellipse(0, 0, 9, 8, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#20282c'; ctx.beginPath(); ctx.arc(7, 0, 5.4, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(180,210,220,.75)'; ctx.fillRect(10.4, -3, 2.2, 6); ctx.strokeStyle = 'rgba(200,220,230,.35)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(0, 0, 14 + (now / 90) % 6, 0, 7); ctx.stroke(); }
+    ctx.restore();
+}
+function m10DrawCanoe(x, y, now) { ctx.save(); ctx.translate(x, y); ctx.rotate(-.3); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(4, 5, 50, 9, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#4a4a36'; ctx.beginPath(); ctx.moveTo(-50, 0); ctx.quadraticCurveTo(0, -11, 50, 0); ctx.quadraticCurveTo(0, 11, -50, 0); ctx.fill(); ctx.fillStyle = '#1a1a12'; ctx.beginPath(); ctx.ellipse(-12, 0, 9, 5, 0, 0, 7); ctx.fill(); m8Disc(ctx, 12, 0, 6, '#2a2a20', '#5a5a44'); ctx.strokeStyle = '#2a2018'; ctx.lineWidth = 2; const p = Math.sin(now / 900) * .4; ctx.beginPath(); ctx.moveTo(12 - 18 * Math.cos(p), -18 * Math.sin(p) - 10); ctx.lineTo(12 + 18 * Math.cos(p), 18 * Math.sin(p) + 10); ctx.stroke(); ctx.restore(); }
+function m10DrawMGB(x, y, now, ready) { ctx.save(); ctx.translate(x, y); ctx.rotate(Math.PI); ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(6, 10, 74, 22, 0, 0, 7); ctx.fill(); ctx.fillStyle = m8Grad(ctx, 0, -20, 0, 20, [[0, '#5a6a5a'], [.5, '#3a4a3a'], [1, '#1e2a1e']]); ctx.beginPath(); ctx.moveTo(-64, -18); ctx.lineTo(30, -19); ctx.quadraticCurveTo(70, -10, 78, 0); ctx.quadraticCurveTo(70, 10, 30, 19); ctx.lineTo(-64, 18); ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#0e140e'; ctx.lineWidth = 1.6; ctx.stroke(); ctx.fillStyle = '#6a7462'; ctx.fillRect(-20, -11, 34, 22); ctx.fillStyle = '#2a3a2a'; ctx.fillRect(-6, -9, 12, 18); m8Disc(ctx, 44, 0, 8, '#1a201a', '#6a7a6a'); ctx.strokeStyle = '#121812'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(44, 0); ctx.lineTo(66, 0); ctx.stroke(); m8Disc(ctx, -44, 0, 7, '#1a201a', '#6a7a6a'); ctx.fillStyle = '#e8e0d0'; ctx.font = 'bold 9px monospace'; ctx.save(); ctx.rotate(Math.PI); ctx.textAlign = 'center'; ctx.fillText('MGB 314', 0, 24); ctx.restore(); ctx.restore(); if (ready && Math.floor(now / 600) % 2) { ctx.fillStyle = '#80b0ff'; ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill(); } }
+/* ---------- frame ---------- */
+function m10Draw(now) {
+    const M = M10, P = M.p, W = canvas.width, H = canvas.height; ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#05080a'; ctx.fillRect(0, 0, W, H); ctx.scale(W / 1100, H / 700);
+    const sh = M.shake || 0; ctx.save(); ctx.translate(-Math.round(M.cam.x) + (Math.random() - .5) * sh, -Math.round(M.cam.y) + (Math.random() - .5) * sh);
+    ctx.drawImage(M.base, Math.round(M.cam.x) - 2, Math.round(M.cam.y) - 2, 1104, 704, Math.round(M.cam.x) - 2, Math.round(M.cam.y) - 2, 1104, 704);
+    // animated ripples
+    ctx.lineWidth = 1.2; M.ripples.forEach(function (r) { if (r[0] < M.cam.x - 40 || r[0] > M.cam.x + 1140 || r[1] < M.cam.y - 20 || r[1] > M.cam.y + 720) return; const a = .06 + .06 * Math.sin(now / 900 + r[2]); ctx.strokeStyle = 'rgba(170,200,210,' + a + ')'; const off = Math.sin(now / 1400 + r[2]) * 6; ctx.beginPath(); ctx.moveTo(r[0] + off, r[1]); ctx.quadraticCurveTo(r[0] + off + r[3] / 2, r[1] - 2, r[0] + off + r[3], r[1]); ctx.stroke(); });
+    // net
+    ctx.strokeStyle = 'rgba(160,160,150,.55)'; ctx.lineWidth = 1; for (let x = M10_NET.x0; x < M10_NET.x1; x += 8) { if (M.netGaps.some(function (gp) { return Math.abs(gp - x) < 30; })) continue; ctx.beginPath(); ctx.moveTo(x, M10_NET.y - 4); ctx.lineTo(x + 8, M10_NET.y + 4); ctx.moveTo(x, M10_NET.y + 4); ctx.lineTo(x + 8, M10_NET.y - 4); ctx.stroke(); } for (let x = M10_NET.x0 + 10; x < M10_NET.x1; x += 30) { m8Disc(ctx, x, M10_NET.y, 5, '#3a2a18', '#a06030'); }
+    M.netGaps.forEach(function (gp) { ctx.strokeStyle = 'rgba(160,160,150,.5)'; ctx.beginPath(); ctx.moveTo(gp - 30, M10_NET.y); ctx.quadraticCurveTo(gp - 20, M10_NET.y + 14, gp - 26, M10_NET.y + 22); ctx.moveTo(gp + 30, M10_NET.y); ctx.quadraticCurveTo(gp + 20, M10_NET.y - 14, gp + 26, M10_NET.y - 22); ctx.stroke(); });
+    // channel buoys
+    [[1060, 1300], [1340, 1300], [1060, 1460], [1340, 1460]].forEach(function (b, i) { m8Disc(ctx, b[0], b[1], 7, i % 2 ? '#3a1010' : '#103a10', i % 2 ? '#c03020' : '#30a040'); if (Math.floor(now / 1000 + i) % 3 === 0) { ctx.fillStyle = i % 2 ? '#ff6050' : '#60ff70'; ctx.beginPath(); ctx.arc(b[0], b[1], 3, 0, 7); ctx.fill(); } });
+    M.moored.forEach(m10DrawBoat); m10DrawTanker(M.tanker, now); M.subs.forEach(function (h) { m10DrawSub(h, now); });
+    M.charges.forEach(function (c) { const k = (now - c.t) / 1500; ctx.strokeStyle = 'rgba(220,230,240,' + (.5 - k * .4) + ')'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(c.x, c.y, 6 + k * 18, 0, 7); ctx.stroke(); m8Disc(ctx, c.x, c.y, 4 * (1 - k * .6), '#1a1a18', '#5a5a50'); });
+    if (P.sub) m10DrawFrogman(P, now);
+    m10DrawCanoe(M10_START.x, M10_START.y, now); m10DrawMGB(M10_PICK.x, M10_PICK.y, now, M.subs.every(function (s) { return s.mined; }));
+    M.launches.forEach(function (L) { m10DrawLaunch(L, now); });
+    if (!P.sub) m10DrawFrogman(P, now);
+    M.sentries.forEach(function (s) { m8DrawMan({ x: s.x, y: s.y, ang: s.ang, team: 'en', kind: 'sold', gun: s.gun, seed: s.seed, hp: 1, maxHp: 1, dead: s.dead, deathAng: s.deathAng, moving: !s.wait && !s.dead, walk: s.walk, r: 10 }, now); });
+    M.lights.forEach(function (L) { m8Disc(ctx, L.x, L.y, 9, '#1a1a18', L.dead ? '#3a3a36' : '#d8d4c0'); ctx.save(); ctx.translate(L.x, L.y); ctx.rotate(L.ang); ctx.fillStyle = '#2a2a26'; ctx.fillRect(-4, -7, 14, 14); ctx.fillStyle = L.dead ? '#202020' : '#fffbe0'; ctx.fillRect(9, -6, 3, 12); ctx.restore(); });
+    // pen roof (fades when you're underneath it)
+    const inPen = M.cine ? 1 : (P.x > M10_PEN.x0 - 10 && P.x < M10_PEN.x1 + 10 && P.y < M10_PEN.y1 + 10 ? 1 : 0); M.roofA = (M.roofA === undefined ? 1 : M.roofA) + ((inPen ? .15 : 1) - (M.roofA === undefined ? 1 : M.roofA)) * .12; ctx.save(); ctx.globalAlpha = M.roofA; ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(M10_PEN.x0 + 14, M10_PEN.y0 + 20, 900, 420); ctx.drawImage(M.roof, M10_PEN.x0, M10_PEN.y0 - 20); ctx.restore();
+    // particles + fx
+    M.parts.forEach(function (p) { const a = Math.max(0, p.life); if (p.k === 'bub') { ctx.strokeStyle = 'rgba(200,230,240,' + a * .6 + ')'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(p.x, p.y - (1 - a) * 8, p.r, 0, 7); ctx.stroke(); } else if (p.k === 'ring') { ctx.strokeStyle = 'rgba(200,220,230,' + a * .3 + ')'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(p.x, p.y, p.r + (1 - a) * 22, 0, 7); ctx.stroke(); } else if (p.k === 'drop' || p.k === 'splash') { ctx.fillStyle = 'rgba(220,235,245,' + a * .8 + ')'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r || 2.4, 0, 7); ctx.fill(); } else if (p.k === 'spark') { ctx.fillStyle = 'rgba(255,230,160,' + a + ')'; ctx.fillRect(p.x - 1, p.y - 1, 3, 3); } else if (p.k === 'chunk') { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot + (1 - a) * 6); ctx.fillStyle = 'rgba(120,118,110,' + a + ')'; ctx.fillRect(-p.r, -p.r * .6, p.r * 2, p.r * 1.2); ctx.restore(); } else if (p.k === 'smoke') { const gg = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r); gg.addColorStop(0, 'rgba(30,26,22,' + a * .55 + ')'); gg.addColorStop(1, 'rgba(30,26,22,0)'); ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill(); } });
+    M.fx.forEach(function (f) { const k = (now - f.t) / (f.k === 'boom' ? 1800 : 400); if (f.k === 'flash') { ctx.fillStyle = 'rgba(255,230,160,' + (1 - k) + ')'; ctx.beginPath(); ctx.arc(f.x, f.y, 7, 0, 7); ctx.fill(); }
+        else if (f.k === 'geyser') { const kk = (now - f.t) / 600; if (kk < 1) { ctx.fillStyle = 'rgba(230,240,250,' + (1 - kk) * .8 + ')'; for (let i = 0; i < 9; i++) { const a = i / 9 * 6.28; ctx.beginPath(); ctx.arc(f.x + Math.cos(a) * 20 * kk * f.s, f.y + Math.sin(a) * 20 * kk * f.s, (14 - kk * 8) * f.s, 0, 7); ctx.fill(); } } }
+        else if (f.k === 'boom') { const r = 40 * f.s + k * 160 * f.s, gg = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r); gg.addColorStop(0, 'rgba(255,250,220,' + Math.max(0, 1 - k * 1.4) + ')'); gg.addColorStop(.4, 'rgba(255,140,40,' + Math.max(0, .9 - k) + ')'); gg.addColorStop(1, 'rgba(120,40,10,0)'); ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(f.x, f.y, r, 0, 7); ctx.fill(); } });
+    M.bullets.forEach(function (b) { ctx.strokeStyle = 'rgba(255,240,180,.9)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx * .6, b.y - b.vy * .6); ctx.stroke(); });
+    ctx.restore();
+    m10Dark(now);
+    if (P.sub) { const ug = ctx.createRadialGradient(550, 350, 180, 550, 350, 700); ug.addColorStop(0, 'rgba(10,40,60,.1)'); ug.addColorStop(1, 'rgba(4,20,34,.62)'); ctx.fillStyle = ug; ctx.fillRect(0, 0, 1100, 700); }
+    if (P.hurtAt && now - P.hurtAt < 350) { const g = ctx.createRadialGradient(550, 350, 200, 550, 350, 650); g.addColorStop(0, 'rgba(160,10,0,0)'); g.addColorStop(1, 'rgba(160,10,0,' + .45 * (1 - (now - P.hurtAt) / 350) + ')'); ctx.fillStyle = g; ctx.fillRect(0, 0, 1100, 700); }
+    if (!M.cine) m10Hud(now); else m10CineHud(now);
+    const st = (now - M.t0) / 1000; if (st < 1.2) { ctx.fillStyle = 'rgba(0,0,0,' + (1 - st / 1.2) + ')'; ctx.fillRect(0, 0, 1100, 700); }
+    if (M.lost) { ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, 280, 1100, 110); ctx.textAlign = 'center'; ctx.font = '700 44px "Stardos Stencil", Impact, sans-serif'; ctx.fillStyle = '#ff5040'; ctx.fillText(M.failWhy === 'drown' ? 'LOST IN THE HARBOUR' : 'THE RAID HAS FAILED', 550, 345); }
+    ctx.restore();
+}
+function m10Dark(now) {
+    const M = M10; if (!M.dk) { M.dk = document.createElement('canvas'); M.dk.width = 1100; M.dk.height = 700; }
+    const d = M.dk.getContext('2d'); d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, 1100, 700); d.fillStyle = 'rgba(4,8,20,.5)'; d.fillRect(0, 0, 1100, 700); d.save(); d.translate(-M.cam.x, -M.cam.y); d.globalCompositeOperation = 'destination-out';
+    const hole = function (x, y, r, a) { const g = d.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(0,0,0,' + a + ')'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.beginPath(); d.arc(x, y, r, 0, 7); d.fill(); };
+    const cone = function (x, y, ang, len, half, a) { d.save(); d.translate(x, y); d.rotate(ang); const g = d.createLinearGradient(0, 0, len, 0); g.addColorStop(0, 'rgba(0,0,0,' + a + ')'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.beginPath(); d.moveTo(0, 0); d.lineTo(len, -Math.tan(half) * len); d.lineTo(len, Math.tan(half) * len); d.closePath(); d.fill(); d.restore(); };
+    M.lights.forEach(function (L) { if (!L.dead) { cone(L.x, L.y, L.ang, L.len, L.half, .95); hole(L.x, L.y, 40, .6); } });
+    M.lamps.forEach(function (L) { if (!L.dead) hole(L.x, L.y, L.r, .8); });
+    M.launches.forEach(function (L) { cone(L.x, L.y, L.ang, 300, .25, .8); hole(L.x, L.y, 60, .4); });
+    M.sentries.forEach(function (s) { if (!s.dead) cone(s.x, s.y, s.ang, 170, .3, .45); });
+    M.fx.forEach(function (f) { if (f.k === 'boom') hole(f.x, f.y, 420 * f.s, Math.max(0, 1 - (now - f.t) / 1800)); if (f.k === 'flash') hole(f.x, f.y, 60, .8); });
+    M.subs.concat([M.tanker]).forEach(function (h) { if (h.sunk) hole(h.ax, (h.ay + h.by) / 2, 260, .7); });
+    hole(M10_PICK.x, M10_PICK.y, 80, .4);
+    d.restore(); ctx.drawImage(M.dk, 0, 0);
+    // beams: additive
+    ctx.save(); ctx.translate(-M.cam.x, -M.cam.y); ctx.globalCompositeOperation = 'lighter';
+    M.lights.forEach(function (L) { if (L.dead) return; ctx.save(); ctx.translate(L.x, L.y); ctx.rotate(L.ang); const g = ctx.createLinearGradient(0, 0, L.len, 0); g.addColorStop(0, 'rgba(210,225,255,.28)'); g.addColorStop(1, 'rgba(210,225,255,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, -3); ctx.lineTo(L.len, -Math.tan(L.half) * L.len); ctx.lineTo(L.len, Math.tan(L.half) * L.len); ctx.lineTo(0, 3); ctx.fill(); ctx.restore(); });
+    M.lamps.forEach(function (L) { if (L.dead) return; const g = ctx.createRadialGradient(L.x, L.y, 0, L.x, L.y, L.r); g.addColorStop(0, 'rgba(255,200,120,.16)'); g.addColorStop(1, 'rgba(255,200,120,0)'); ctx.fillStyle = g; ctx.fillRect(L.x - L.r, L.y - L.r, L.r * 2, L.r * 2); });
+    M.subs.concat([M.tanker]).forEach(function (h) { if (!h.sunk) return; const x = h.ax, y = (h.ay + h.by) / 2, g = ctx.createRadialGradient(x, y, 0, x, y, 300); g.addColorStop(0, 'rgba(255,140,50,.3)'); g.addColorStop(1, 'rgba(255,140,50,0)'); ctx.fillStyle = g; ctx.fillRect(x - 300, y - 300, 600, 600); });
+    ctx.restore();
+}
+function m10Objective() { const M = M10, n = M.subs.filter(function (s) { return s.mined; }).length; if (M.timer > 0 || n === 3) return 'GET TO THE GUNBOAT (EAST, OUTSIDE THE MOLE)' + (M.timer > 0 ? ' · ' + Math.floor(M.timer / 60) + ':' + String(Math.floor(M.timer % 60)).padStart(2, '0') : ''); if (!M.netGaps.length && M.p.y > 1100) return 'CUT THROUGH THE BOOM NET AT THE HARBOUR MOUTH'; return 'MINE THE U-BOATS IN THE PENS · ' + n + ' / 3' + (M.tanker.mined ? ' · TANKER ✓' : ' · OPTIONAL: THE TANKER'); }
+function m10Hud(now) {
+    const M = M10, P = M.p; ctx.save();
+    m8Panel(12, 12, 236, 136, M.alarm); ctx.textAlign = 'left'; ctx.font = '700 12px "Stardos Stencil", Impact'; ctx.fillStyle = '#9ab8d0'; ctx.fillText('LT. HAYES · RNVR FROGMAN', 22, 30);
+    const bar = function (y, label, v, col) { ctx.font = 'bold 11px monospace'; ctx.fillStyle = '#e0e8ee'; ctx.fillText(label, 22, y + 8); ctx.fillStyle = 'rgba(255,255,255,.1)'; ctx.fillRect(100, y, 136, 10); ctx.fillStyle = col; ctx.fillRect(100, y, 136 * Math.max(0, v) / 100, 10); };
+    bar(42, 'HEALTH', P.hp, P.hp > 50 ? '#7fc06a' : P.hp > 25 ? '#e0a040' : '#e04030'); bar(60, 'OXYGEN', P.o2, P.o2 > 30 ? '#60b0e0' : (Math.floor(now / 300) % 2 ? '#e04030' : '#60b0e0'));
+    ctx.font = 'bold 12px monospace'; ctx.fillStyle = P.sub ? '#60c0f0' : '#f0d070'; ctx.fillText(P.sub ? '▼ SUBMERGED — HIDDEN' : '▲ SURFACED — VISIBLE', 22, 92);
+    ctx.fillStyle = '#e0e8ee'; ctx.font = 'bold 11px monospace'; ctx.fillText('LIMPETS ×' + M.limpets + '   WELROD ×' + M.ammo, 22, 112); ctx.fillStyle = 'rgba(224,232,238,.55)'; ctx.font = '10px monospace'; ctx.fillText('SPACE dive · F plant/cut · click shoot', 22, 132);
+    // objective + alert
+    ctx.font = 'bold 12px monospace'; const ob = m10Objective(), ow = ctx.measureText(ob).width + 40; m8Panel(550 - ow / 2, 10, ow, 30, M.timer > 0); ctx.textAlign = 'center'; ctx.fillStyle = M.timer > 0 ? '#ffb0a0' : '#e7edc9'; ctx.fillText(ob, 550, 30);
+    const st = M.alarm ? 'ALARM — THEY\'RE HUNTING YOU' : M.sus > .05 ? 'SOMEONE\'S LOOKING...' : 'UNDETECTED'; ctx.font = 'bold 13px monospace'; ctx.fillStyle = M.alarm ? (Math.floor(now / 300) % 2 ? '#ff5040' : '#ffb0a0') : M.sus > .05 ? '#ffd070' : '#8fd07a'; ctx.fillText('● ' + st, 550, 58); if (!M.alarm && M.sus > .02) { ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(480, 64, 140, 5); ctx.fillStyle = '#ffd070'; ctx.fillRect(480, 64, 140 * Math.min(1, M.sus), 5); }
+    // minimap
+    const mx = 1100 - 12 - 240, my = 12, sc = 240 / M10W; m8Panel(mx - 4, my - 4, 248, M10H * sc + 8); ctx.fillStyle = '#1c3038'; ctx.fillRect(mx, my, 240, M10H * sc); ctx.fillStyle = '#6a6862'; M.land.forEach(function (R) { ctx.fillRect(mx + R[0] * sc, my + R[1] * sc, R[2] * sc, R[3] * sc); });
+    M.subs.forEach(function (h) { ctx.fillStyle = h.mined ? '#7fc06a' : '#ffd040'; ctx.fillRect(mx + (h.ax - 6) * sc, my + h.ay * sc, 12 * sc + 1, (h.by - h.ay) * sc); }); ctx.fillStyle = M.tanker.mined ? '#7fc06a' : '#c0a060'; ctx.fillRect(mx + (M.tanker.ax - 20) * sc, my + M.tanker.ay * sc, 40 * sc, (M.tanker.by - M.tanker.ay) * sc);
+    M.lights.forEach(function (L) { if (L.dead) return; ctx.strokeStyle = 'rgba(220,230,255,.5)'; ctx.beginPath(); ctx.moveTo(mx + L.x * sc, my + L.y * sc); ctx.lineTo(mx + (L.x + Math.cos(L.ang) * L.len) * sc, my + (L.y + Math.sin(L.ang) * L.len) * sc); ctx.stroke(); });
+    M.launches.forEach(function (L) { ctx.fillStyle = '#ff6040'; ctx.fillRect(mx + L.x * sc - 2, my + L.y * sc - 2, 4, 4); });
+    ctx.strokeStyle = '#d0c070'; ctx.beginPath(); ctx.moveTo(mx + M10_NET.x0 * sc, my + M10_NET.y * sc); ctx.lineTo(mx + M10_NET.x1 * sc, my + M10_NET.y * sc); ctx.stroke();
+    ctx.fillStyle = '#80b0ff'; ctx.fillRect(mx + M10_PICK.x * sc - 3, my + M10_PICK.y * sc - 3, 6, 6); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(mx + P.x * sc, my + P.y * sc, 3, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.4)'; ctx.strokeRect(mx + M.cam.x * sc, my + M.cam.y * sc, 1100 * sc, 700 * sc);
+    // interaction prompt
+    const sx = P.x - M.cam.x, sy = P.y - M.cam.y; if (M.act) { const need = M.act.k === 'net' ? 2.2 : 2.4, k = Math.min(1, P.plantT / need); ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#e7edc9'; ctx.fillText(M.act.k === 'net' ? 'HOLD F — CUT THE NET' : 'HOLD F — LIMPET ON ' + M.act.h.name, sx, sy - 30); ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(sx, sy, 20, 0, 7); ctx.stroke(); if (k > 0) { ctx.strokeStyle = '#ffd040'; ctx.beginPath(); ctx.arc(sx, sy, 20, -Math.PI / 2, -Math.PI / 2 + k * 6.28); ctx.stroke(); } }
+    else if (!P.sub && M.subs.concat([M.tanker]).some(function (h) { return !h.mined && m10CapDist(h, P.x, P.y) < 40; })) { ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffd070'; ctx.fillText('DIVE (SPACE) TO PLACE A LIMPET BELOW THE WATERLINE', sx, sy - 30); }
+    if (M.msg && now - M.msgAt < M.msgDur) { ctx.textAlign = 'center'; ctx.font = 'bold 14px "Special Elite", "Courier New", monospace'; const wd = ctx.measureText(M.msg).width + 50; m8Panel(550 - wd / 2, 620, wd, 32); ctx.fillStyle = '#e7edc9'; ctx.fillText(M.msg, 550, 641); }
+    if (!P.sub) { ctx.strokeStyle = 'rgba(255,240,200,.85)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(M.mx, M.my, 8, 0, 7); ctx.moveTo(M.mx - 13, M.my); ctx.lineTo(M.mx - 4, M.my); ctx.moveTo(M.mx + 4, M.my); ctx.lineTo(M.mx + 13, M.my); ctx.moveTo(M.mx, M.my - 13); ctx.lineTo(M.mx, M.my - 4); ctx.moveTo(M.mx, M.my + 4); ctx.lineTo(M.mx, M.my + 13); ctx.stroke(); }
+    ctx.restore();
+}
+function m10CineHud(now) { const M = M10, k = Math.min(1, (now - M.cine.t0 - 3000) / 900); if (k <= 0) return; ctx.save(); ctx.globalAlpha = k; ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, 560, 1100, 100); ctx.textAlign = 'center'; ctx.font = '700 44px "Stardos Stencil", Impact, sans-serif'; ctx.fillStyle = '#ffd24a'; ctx.fillText('THE PENS ARE BURNING', 550, 612); ctx.font = '15px "Special Elite", monospace'; ctx.fillStyle = '#e8e0c0'; ctx.fillText('MGB 314 RUNS FOR HOME AT FORTY KNOTS', 550, 640); ctx.restore(); }
 /* =====================================================
    END-OF-ACT CARDS (after Mission 4 and Mission 8)
 ===================================================== */
@@ -9545,7 +9984,7 @@ function drawDDayCutscene(now) {
     let flash = 0, useGL = false;
     if (ddgInit(w, h)) { try { const S3 = ddglRender(Math.min(t, DD.dur), w, h); ctx.drawImage(DDGL.cv, 0, 0, w, h); useGL = true; flash = S3.flash || 0; } catch (e) { DDGL.why = 'render: ' + String(e && e.message).slice(0, 200); if (++DDGL.runErr > 3) DDGL.ok = false; } }
     if (!useGL) {
-    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } }
+    try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; try { flash = ddpFrame(t, w, h); } catch (e) { DDP.err = e; if (t < DD.cuts[0]) flash = ddShot1(t, w, h); else if (t < DD.cuts[1]) flash = ddShot2(t, w, h); else if (t < DD.cuts[2]) flash = ddShot3(t, w, h); else flash = ddShot4(t, w, h); } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } } }
     }
     DD.cuts.forEach(function(c) { const d = t - c; if (d >= 0 && d < .16) flash = Math.max(flash, .5 * (1 - d / .16)); });
     if (!useGL && !DDP.ok) {
@@ -9963,6 +10402,7 @@ function finishCampaignCutscene(){
     if(campaignMission===5){ m5ShowBrief(function() { startCampaignMission(); }); return; }
     if(campaignMission===6){ m6ShowBrief(function() { startCampaignMission(); }); return; }
     if(campaignMission===7){ m7ShowBrief(function() { startCampaignMission(); }); return; }
+    if(campaignMission===10){ m10ShowBrief(); return; }
     if(campaignMission===9){ m9ShowBrief(); return; }
     if(campaignMission===8){ m8ShowBrief(); return; }
     if(campaignMission===4){ m4ShowBrief(function() { startCampaignMission(); }); return; }
@@ -20912,6 +21352,11 @@ function checkCampaignBunkerHit(shell){
     for(let i=0;i<campaignBunkers.length;i++){const b=campaignBunkers[i];if(b.destroyed)continue;if(shell.x>b.x-b.w/2&&shell.x<b.x+b.w/2&&shell.y>b.y-b.h/2&&shell.y<b.y+b.h/2){b.hp=Math.max(0,b.hp-(shell.damage||player.damage||50));createImpact(shell.x,shell.y);createHitSparks(shell.x,shell.y);if(b.hp<=0){b.destroyed=true;addXP(100,'bunker');showRadioText(b.name+' DESTROYED!',true);createExplosion(b.x,b.y,1.35);createCampaignMap();}return true;}}return false;
 }
 function showCampaignResult(success){
+    if(campaignMission===10){
+        if(success) scheduleDebrief({ win:true, stamp:'MISSION COMPLETE', title:'MISSION 10 \u00b7 THE PENS ARE BURNING', sub:'Three U-boats lie on the bottom of their own pens and Lorient is lit up like day. MGB 314 hauled one wet lieutenant aboard and ran for Falmouth.', delay:600 });
+        else scheduleDebrief({ win:false, stamp:'MISSION FAILED', title:'MISSION 10 \u00b7 DEEP WATER', sub: M10.failWhy==='drown' ? 'The rebreather ran dry in the dark water of the harbour.' : M10.failWhy==='blast' ? 'You were still in the pens when the time pencils went off.' : 'The harbour defences found you. The U-boats sail at dawn.', delay:900 });
+        return;
+    }
     if(campaignMission===9){
         if(success) scheduleDebrief({ win:true, stamp:'MISSION COMPLETE', title:'MISSION 9 \u00b7 THE KEYS ARE HOME', sub:'The colonel\'s Horch rolled through the British checkpoint full of bullet holes. By breakfast the key sheets were on a motor launch to England, and Bletchley Park was reading the Panzer corps\' orders.', delay:600 });
         else scheduleDebrief({ win:false, stamp:'MISSION FAILED', title:'MISSION 9 \u00b7 NIGHTJAR FAILED', sub: M9.failWhy==='chase' ? 'The staff car was shot to pieces on the road home. The key sheets burned with it.' : 'You went down inside the château walls. The Germans changed every key setting by dawn.', delay:900 });
@@ -22502,6 +22947,10 @@ function m2csShot4(t0, w, h) {
     if (!ok4) {
     let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
     if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
+    let ok4 = false; try { ddpM2Scene4(t0, w, h, u); ok4 = true; } catch (e) { ctx.restore(); }
+    if (!ok4) {
     m2csSky(t0, w, h, yH, pan, .5);
     m2csRidge(t0, w, h, yH, pan, true);
     m2csFarGuns(t0, w, yH, pan, true);
@@ -22513,6 +22962,8 @@ function m2csShot4(t0, w, h) {
     // column in the distance starting to move out
     const road = h * .6; ctx.fillStyle = '#6e5e40'; ctx.fillRect(-w, road, w * 3, 30); 
     [[w * .70, 0], [w * .56, 1], [w * .42, 2], [w * .30, 3]].forEach(function(c, i) { const go = cs2C((u - 1.8) / 2.2, 0, 1), x = c[0] + go * go * 200 + i * 0; for (let k = 6; k >= 0; k--) { ctx.fillStyle = 'rgba(176,152,106,' + (.3 * (1 - k / 7) * (u > 2 ? 1 : .2)) + ')'; ctx.beginPath(); ctx.arc(x - 70 * .5 - k * 18, road + 18 - k * 2, 8 + k * 3.4, 0, 7); ctx.fill(); } m2csAllied(x, road + 2, .46, t0 + i * .3, i + 5, false); });
+    }
+    }
     }
     }
     }
@@ -24000,14 +24451,15 @@ CMAP_M.push({ n: 7, x: 540, y: 470, name: 'THE IRON ROAD', date: '12 JUNE 1944 \
   obj: ['Race alongside the train in your jeep', 'Turn left onto the rock outcrop to jump aboard', 'Shoot the gunners and pull the brake at the tender'], extra: 'SOLO MISSION: BRITISH JEEP' });
 CMAP_M.push({ n: 8, x: 300, y: 478, name: 'SCHWERER GUSTAV', date: '13 JUNE 1944 \u00b7 D+7', place: 'THE HILLS SOUTH OF BAYEUX', tag: 'RAID', desc: 'The largest gun ever built is shelling the beachhead from a railway tunnel in the hills. No tank can get close. A five-man commando section can. Slip past the towers and patrols, board the gun and blow it from the inside.', obj: ['Avoid the searchlights, sentries and patrols', 'Clear Gustav\'s four compartments: engine, ammunition, breech, elevation', 'Plant a charge in each, get clear and detonate'], extra: 'STEALTH \u00b7 COMMANDO RAID \u00b7 CHOOSE PRIMARY + SECONDARY' });
 CMAP_M.push({ n: 9, x: 150, y: 400, name: 'CODEBREAKER RAID', date: '16 JUNE 1944 \u00b7 D+10', place: 'CH\u00c2TEAU DE VAUX', tag: 'RAID', desc: 'A Panzer corps headquarters holds this month\'s Enigma key sheets. Slip over the château walls past patrols and guard dogs, crack the colonel\'s safe by ear, then steal his staff car and race the garrison back to British lines.', obj: ['Get into the château unseen: watch the dogs', 'Crack the wall safe in the colonel\'s study', 'Steal the staff car and outrun the pursuit to British lines'], extra: 'STEALTH \u00b7 SAFE-CRACKING \u00b7 NIGHT CAR CHASE' });
-const CMAP_FUTURE = [{ x: 96, y: 300 }];
+CMAP_M.push({ n: 10, x: 84, y: 318, name: 'U-BOAT PENS', date: '21 JUNE 1944 \u00b7 D+15', place: 'LORIENT, BRITTANY', tag: 'FROGMAN', desc: 'The key sheets showed Bletchley where the U-boats hide: concrete pens at Lorient that bombs cannot crack. Swim in alone on a rebreather, cut the harbour net, fix limpet mines to three U-boats and get out to the gunboat before the time pencils fire.', obj: ['Cut through the anti-submarine net', 'Fix a limpet to each of the three U-boats', 'Reach MGB 314 before the pens go up'], extra: 'SOLO \u00b7 UNDERWATER STEALTH \u00b7 OXYGEN' });
+const CMAP_FUTURE = [{ x: 60, y: 190 }];
 function cmapM(n) { return CMAP_M.filter(function(m) { return m.n === n; })[0]; }
 const CMAP = { sel: 1, built: false };
 function cmapR(i) { const v = Math.sin(i * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); }
-function cmapUnlocked(n) { return n === 1 || (n === 2 && progression.campaignM1Done) || (n === 3 && progression.campaignM2Done) || (n === 4 && progression.campaignM3Done) || (n === 5 && progression.campaignM4Done) || (n === 6 && progression.campaignM4Done) || (n === 7 && progression.campaignM6Done) || (n === 8 && progression.campaignM7Done) || (n === 9 && progression.campaignM8Done); }
+function cmapUnlocked(n) { return n === 1 || (n === 2 && progression.campaignM1Done) || (n === 3 && progression.campaignM2Done) || (n === 4 && progression.campaignM3Done) || (n === 5 && progression.campaignM4Done) || (n === 6 && progression.campaignM4Done) || (n === 7 && progression.campaignM6Done) || (n === 8 && progression.campaignM7Done) || (n === 9 && progression.campaignM8Done) || (n === 10 && progression.campaignM9Done); }
 function cmapDone(n) { return !!progression['campaignM' + n + 'Done']; }
 function cmapStars(n) { return ((progression.campaignStars || {})[n]) || 0; }
-function cmapFrontier() { for (const n of [1, 2, 3, 4, 5, 6, 7, 8, 9]) if (cmapUnlocked(n) && !cmapDone(n)) return n; return 9; }
+function cmapFrontier() { for (const n of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) if (cmapUnlocked(n) && !cmapDone(n)) return n; return 10; }
 
 function cmapInjectStyle() {
     if (document.getElementById('cmapStyle')) return;
@@ -24076,7 +24528,7 @@ function cmapBuildSVG() {
     const pts = CMAP_M.filter(function(m) { return m.n <= 4; }).map(function(m) { return [m.x, m.y]; });
     const m7p = cmapM(7);
     function seg(a, b, ci) { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1], k = (ci % 2 ? 1 : -1) * .16; return 'C' + (a[0] + dx * .35 - dy * k).toFixed(0) + ',' + (a[1] + dy * .35 + dx * k).toFixed(0) + ' ' + (a[0] + dx * .65 - dy * k).toFixed(0) + ',' + (a[1] + dy * .65 + dx * k).toFixed(0) + ' ' + b[0] + ',' + b[1]; }
-    const m5p = cmapM(5), m6p = cmapM(6), all = pts.concat([[m5p.x, m5p.y], [m6p.x, m6p.y], [m7p.x, m7p.y], [cmapM(8).x, cmapM(8).y], [cmapM(9).x, cmapM(9).y], [CMAP_FUTURE[0].x, CMAP_FUTURE[0].y]]);
+    const m5p = cmapM(5), m6p = cmapM(6), all = pts.concat([[m5p.x, m5p.y], [m6p.x, m6p.y], [m7p.x, m7p.y], [cmapM(8).x, cmapM(8).y], [cmapM(9).x, cmapM(9).y], [cmapM(10).x, cmapM(10).y], [CMAP_FUTURE[0].x, CMAP_FUTURE[0].y]]);
     let full = 'M' + all[0][0] + ',' + all[0][1]; for (let i = 1; i < all.length; i++) full += ' ' + seg(all[i - 1], all[i], i);
     o += '<path d="' + full + '" fill="none" stroke="rgba(60,40,15,.55)" stroke-width="7" stroke-linecap="round"/><path d="' + full + '" fill="none" stroke="#e8dcae" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="10 8"/>';
     let prog = ''; let any = false; for (let n = 1; n < 4; n++) if (cmapDone(n)) { prog += (any ? ' ' : 'M' + pts[n - 1][0] + ',' + pts[n - 1][1] + ' ') + seg(pts[n - 1], pts[n], n); any = true; } else break;
@@ -24134,7 +24586,7 @@ function cmapRender() {
         g.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cmapSelect(n); } });
     });
     const m = cmapM(CMAP.sel), unl = cmapUnlocked(m.n), done = cmapDone(m.n), st = cmapStars(m.n);
-    const ready = !!(campaignFaction && campaignTankClass) || m.n === 7 || m.n === 8 || m.n === 9;
+    const ready = !!(campaignFaction && campaignTankClass) || m.n === 7 || m.n === 8 || m.n === 9 || m.n === 10;
     panel.innerHTML = '<div><div class="cpK">MISSION ' + String(m.n).padStart(2, '0') + ' · ' + m.tag + '</div><h3>' + m.name + '</h3><div class="cpD">' + m.date + ' · ' + m.place + '</div>' +
         (unl ? '<p>' + m.desc + '</p><ul>' + m.obj.map(function(x) { return '<li>' + x + '</li>'; }).join('') + '</ul><span class="cpTag">' + m.extra + '</span>' : (m.ph ? '<p>CLASSIFIED. These orders have not been issued yet. Intel is still coming in.</p>' : '<p>CLASSIFIED. Complete the previous mission to receive these orders.</p>')) + '</div>' +
         '<div class="cpSide"><div class="cpStamp ' + (done ? 'done' : (unl ? 'open' : 'lock')) + '">' + (done ? 'COMPLETE' : (unl ? 'READY' : (m.ph ? '???' : 'LOCKED'))) + '</div>' +
@@ -24149,6 +24601,7 @@ function cmapDeploy(n) {
     if (n === 5) { startMission5(); return; }
     if (n === 8) { startMission8(); return; }
     if (n === 9) { startMission9(); return; }
+    if (n === 10) { startMission10(); return; }
     if (!campaignFaction || !campaignTankClass) {
         const sec = document.querySelector('#campaignScreen .section'); const h = document.getElementById('cmapHint'); if (h) h.textContent = '▼ CHOOSE YOUR FACTION AND TANK FIRST';
         if (sec) { sec.scrollIntoView({ behavior: 'smooth', block: 'center' }); sec.classList.remove('cmFlash'); void sec.offsetWidth; sec.classList.add('cmFlash'); }
@@ -26700,6 +27153,7 @@ function dbCommon(win) {
     const hpRatio = player ? Math.max(0, player.health) / Math.max(1, player.maxHealth) : 0;
     const secs = (Date.now() - battleStats.start) / 1000;
     let stars = 0;
+    if (win && selectedGameMode === 'campaign' && campaignMission === 10 && typeof m10Stars === 'function') { const r10 = M10.result || {}; return { diff: '\u2014', stars: m10Stars(), rows: [['FROGMAN', 'LT. HAYES \u00b7 ' + r10.hp + '% HEALTH'], ['ALARM', r10.alarm ? 'RAISED' : 'NEVER RAISED'], ['U-BOATS SUNK', '3 / 3'], ['TANKER', r10.tanker ? 'SUNK' : 'AFLOAT'], ['OXYGEN LEFT', r10.o2 + '%'], ['TIME IN ACTION', dbTime(Date.now() - battleStats.start)]], hp: 1 }; }
     if (win && selectedGameMode === 'campaign' && campaignMission === 9 && typeof m9Stars === 'function') { const r9 = M9.result || {}; return { diff: '\u2014', stars: m9Stars(), rows: [['SECTION', 'No. 2 COMMANDO \u00b7 ' + ((r9.crew || 0) + 1) + '/5 HOME'], ['ALARM', r9.alarm ? 'RAISED' : 'NEVER RAISED'], ['RADIO ROOM', r9.radioOut ? 'SMASHED' : 'INTACT'], ['STAFF CAR', r9.carHp + '% BODYWORK'], ['ENEMY KILLED', String(r9.kills || 0)], ['TIME IN ACTION', dbTime(Date.now() - battleStats.start)]], hp: 1 }; }
     if (win && selectedGameMode === 'campaign' && campaignMission === 8 && typeof m8Stars === 'function') { const r8 = [['SECTION', 'No. 2 COMMANDO \u00b7 ' + M8.units.slice(0, 5).filter(function (u) { return !u.dead; }).length + '/5 HOME'], ['ALARM', M8.alarm ? 'RAISED' : 'NEVER RAISED'], ['ENEMY KILLED', String(M8.kills)], ['TIME IN ACTION', dbTime(Date.now() - battleStats.start)]]; return { diff: '\u2014', stars: m8Stars(), rows: r8, hp: 1 }; }
     if (win) { stars = 1; if (hpRatio > .5) stars++; if ((campaignMission === 3 ? M3.breakthrough === 0 : secs < (campaignMission === 8 ? 330 : campaignMission === 7 ? 100 : campaignMission === 6 ? 130 : campaignMission === 5 ? 420 : campaignMission === 4 ? 300 : ((selectedGameMode === 'pointControl' || campaignMission === 2) ? 420 : 240))) || (AIDIFF[selectedDifficulty] || {}).smart >= 2) stars++; }
@@ -26720,7 +27174,7 @@ function scheduleDebrief(o) {
 function buildAndShowDebrief(o) {
     const c = dbCommon(o.win);
     if (o.win && selectedGameMode === 'campaign') { progression.campaignStars = progression.campaignStars || {}; if (c.stars > (progression.campaignStars[campaignMission] || 0)) { progression.campaignStars[campaignMission] = c.stars; saveProgression(); } }
-    const again = function() { if (selectedGameMode === 'campaign' && campaignMission === 2) { startMission2(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 3) { startMission3(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 4) { startMission4(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 7) { startMission7(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 6) { startMission6(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 5) { startMission5(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 8) { startMission8(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 9) { startMission9(true); return; } returnToMenu(); if (selectedGameMode === 'campaign') startCampaignLanding(); else startGame(); };
+    const again = function() { if (selectedGameMode === 'campaign' && campaignMission === 2) { startMission2(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 3) { startMission3(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 4) { startMission4(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 7) { startMission7(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 6) { startMission6(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 5) { startMission5(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 8) { startMission8(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 9) { startMission9(true); return; } if (selectedGameMode === 'campaign' && campaignMission === 10) { startMission10(true); return; } returnToMenu(); if (selectedGameMode === 'campaign') startCampaignLanding(); else startGame(); };
     const home = function() { returnToMenu(); };
     let rows = c.rows.slice();
     if (selectedGameMode === 'pointControl') rows.splice(2, 0, ['FINAL SCORE', 'YOU ' + pointControlScores.friendly + ' — ' + pointControlScores.enemy + ' ENEMY']);
@@ -26735,6 +27189,7 @@ function buildAndShowDebrief(o) {
             rows.splice(2, 0, ['THE TIGER', (M4.tiger && M4.tiger.destroyed) ? 'DESTROYED' : 'STILL HUNTING'], ['ENEMY TANKS DESTROYED', String(battleStats.kills)]);
         } else if (campaignMission === 3) {
             rows.splice(2, 0, ['BRIDGE HELD FOR', dbTime(Math.min(M3.elapsed, M3.DUR))], ['BREAKTHROUGHS', M3.breakthrough + ' / ' + M3.maxBreak], ['ENEMY TANKS DESTROYED', String(battleStats.kills)]);
+        } else if (campaignMission === 8 || campaignMission === 9 || campaignMission === 10) {
         } else if (campaignMission === 8 || campaignMission === 9) {
         } else if (campaignMission === 2) {
             const ad = M2.aa.filter(function(a) { return a.destroyed; }).length;
@@ -26753,6 +27208,7 @@ function buildAndShowDebrief(o) {
         buttons = o.win ? (campaignMission === 1 ? [{ label: 'MISSION 2', fn: function() { startMission2(); } }, { label: 'CAMPAIGN MAP', fn: function() { closeBattle(); openCampaign(); } }, { label: 'MAIN MENU', fn: home }] : (campaignMission === 2 ? [{ label: 'MISSION 3', fn: function() { startMission3(); } }, { label: 'CAMPAIGN MAP', fn: function() { closeBattle(); openCampaign(); } }, { label: 'MAIN MENU', fn: home }] : (campaignMission === 3 ? [{ label: 'MISSION 4', fn: function() { startMission4(); } }, { label: 'CAMPAIGN MAP', fn: function() { closeBattle(); openCampaign(); } }, { label: 'MAIN MENU', fn: home }] : [{ label: 'CAMPAIGN MAP', fn: function() { closeBattle(); openCampaign(); } }, { label: 'MAIN MENU', fn: home }])))
                         : [{ label: 'RETRY MISSION', fn: again }, { label: 'CAMPAIGN MAP', fn: function() { closeBattle(); openCampaign(); } }, { label: 'MAIN MENU', fn: home }];
     } else buttons = [{ label: o.win ? 'FIGHT AGAIN' : 'TRY AGAIN', fn: again }, { label: 'MAIN MENU', fn: home }];
+    if (o.win && selectedGameMode === 'campaign' && campaignMission === 9 && typeof startMission10 === 'function') buttons = [{ label: 'MISSION 10', fn: function() { startMission10(); } }, { label: 'CAMPAIGN MAP', fn: function() { closeBattle(); openCampaign(); } }, { label: 'MAIN MENU', fn: home }];
     if (o.win && selectedGameMode === 'campaign' && campaignMission === 8 && typeof startMission9 === 'function') buttons = [{ label: 'MISSION 9', fn: function() { startMission9(); } }, { label: 'CAMPAIGN MAP', fn: function() { closeBattle(); openCampaign(); } }, { label: 'MAIN MENU', fn: home }];
     showDebrief({ win: o.win, stamp: o.stamp, title: o.title, sub: o.sub, stars: c.stars, stats: rows, buttons: buttons });
     if (o.win && selectedGameMode === 'campaign' && (campaignMission === 4 || campaignMission === 8) && typeof actCardShow === 'function') actCardShow(campaignMission === 4 ? 1 : 2);

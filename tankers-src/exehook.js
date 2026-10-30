@@ -60,10 +60,17 @@
     function failed() { DUEL.xPend = 0; try { showRadioText('EXECUTION FAILED — TARGET OUT OF REACH.', true); } catch (x) {} }
     function ask(e) { const v = e && e.duelSlot; if (v == null) return; if (DUEL.role === 'host') { if (!hostTry(DUEL.mySlot, v)) failed(); } else { DUEL.xPend = Date.now() + 1500; duelSend({ t: 'xr', v: v }); } }
     function watch(A, V, atk) { const end = function () { if (DUEL.role === 'host') hostDone(DUEL.mySlot); else duelSend({ t: 'xd' }); };
-        if (EXE.on || !window.THREE || !TK3_TSPEC[A.model]) { end(); return; }
+        if (EXE.on) { end(); return; }
+        if (!window.THREE || !TK3_TSPEC[A.model]) { card(A, V, atk, end); return; }
         const an = String(A.name || '').toUpperCase(), vn = String(V.name || '').toUpperCase();
         play(A, V, atk ? { kicker: 'EXECUTION', names: an + '  ▸  ' + vn, stamp: 'TARGET DESTROYED', stampSub: '+75 XP · EXECUTION', onEnd: end }
             : { kicker: 'EXECUTED', names: an + '  ▸  YOU', stamp: 'YOU WERE EXECUTED', stampSub: 'BACK IN THE FIGHT IN A MOMENT', onEnd: end }); }
+    // no 3D on this computer (three.js blocked or failed to load): show the title card on its own for a few seconds
+    function card(A, V, atk, end) { let el = document.getElementById('exeCard2d'); if (!el) { el = document.createElement('div'); el.id = 'exeCard2d'; el.style.cssText = 'position:fixed;inset:0;z-index:94;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,rgba(60,8,4,.35),rgba(0,0,0,.82));display:none;'; document.body.appendChild(el); }
+        const an = String(A.name || '').toUpperCase(), vn = String(V.name || '').toUpperCase(), mv = EXE_MOVES[A.model] || EXE_MOVES.sherman;
+        el.innerHTML = '<div style="position:absolute;left:0;right:0;top:0;height:11vh;background:#000"></div><div style="position:absolute;left:0;right:0;bottom:0;height:11vh;background:#000"></div><div id="exeStamp2" class="on" style="z-index:2"><b>' + esc(atk ? 'TARGET DESTROYED' : 'YOU WERE EXECUTED') + '</b><i>' + esc((atk ? '+75 XP · ' : '') + mv.name + ' · ' + (atk ? an + ' ▸ ' + vn : an + ' ▸ YOU')) + '</i></div>';
+        if (!document.getElementById('exe2dCss')) { const s2 = document.createElement('style'); s2.id = 'exe2dCss'; s2.textContent = (st.textContent.match(/#exeStamp[^{]*\{[^}]*\}/g) || []).join('').replace(/#exeStamp/g, '#exeStamp2'); document.head.appendChild(s2); }
+        el.style.display = 'block'; setTimeout(function () { el.style.display = 'none'; el.innerHTML = ''; end(); }, 2600); }
     function onExe(m) { const A = DUEL.tanks[m.a], V = DUEL.tanks[m.v], me = DUEL.mySlot; if (!A || !V) return; A.exeShowUntil = Date.now() + exeMs(A.model);
         try { addKillFeed('☠ EXECUTION! ' + slotName(m.a) + ' finished off ' + (m.v === me ? 'you' : slotName(m.v))); } catch (x) {}
         if (m.a === me) { DUEL.xPend = 0; try { addXP(75, 'execution'); showRadioText('EXECUTION! +75 XP', true); } catch (x) {} watch(A, V, true); }

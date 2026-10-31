@@ -9,7 +9,7 @@
 ===================================================== */
 const DUEL = { role: null, peer: null, conn: null, conns: [], code: '', foe: null, mode: '1v1', slots: 2, mySlot: 0, tanks: [], pTanks: [], names: [], inps: [], seenF: [], seenR: [], seenA: [], score: [0, 0], target: 5, sendAt: 0, sid: 0, over: false, winner: -1,
     tank: { f: 'american', c: 'medium' }, map: 'town', snap: null, snapAt: 0, active: false, myFire: 0, myRep: 0, myAb: 0, inSent: 0, lastIn: '', prevDiff: null, gone: false, gid: '', chat: [] };
-const DUEL_BUILD = 161;
+const DUEL_BUILD = 162;
 const DUEL_WORDS = ['TIGER', 'PANTHER', 'SHERMAN', 'CHURCHILL', 'CROMWELL', 'FIREFLY', 'HELLCAT', 'PERSHING', 'STUART', 'MATILDA', 'COMET', 'PUMA', 'LUCHS', 'NASHORN', 'HETZER', 'JUMBO', 'JACKSON', 'ACHILLES', 'VALENTINE', 'GRANT', 'TETRARCH', 'MARDER', 'WOLVERINE', 'CHAFFEE', 'CENTAUR', 'KV', 'SU', 'IS'];
 const DUEL_MAPS = [['town', 'RUINED TOWN'], ['trenches', 'TRENCH FRONT'], ['snow', 'SNOWY FOREST'], ['bocage', 'HEDGEROWS']];
 const DUEL_CHAT = ['GG!', 'NICE SHOT!', 'HELP ME!', 'ATTACK!', 'LOL 😂', 'OOPS!'];

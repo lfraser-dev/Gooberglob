@@ -23,3 +23,6 @@ The order the files are joined in is set in `build2.py`. Running the build more 
 - `fxbattle.js`: battle lighting and explosions
 - `duel.js`, `duelload*.js`: online 1v1 / 2v2
 - `tk3audio.js`: sound
+- `sk3d.js`: 3D Skirmish (test). The normal 2D Skirmish keeps running the battle; this file draws it in 3D
+  (third-person camera, tank driving controls, gunsight) using the execution tank models. Scale: 1 game pixel = 0.1 m.
+  Menu button "3D SKIRMISH (TEST)"; plain Skirmish stays 2D.

@@ -26,3 +26,5 @@ The order the files are joined in is set in `build2.py`. Running the build more 
 - `sk3d.js`: 3D Skirmish (test). The normal 2D Skirmish keeps running the battle; this file draws it in 3D
   (third-person camera, tank driving controls, gunsight) using the execution tank models. Scale: 1 game pixel = 0.1 m.
   Menu button "3D SKIRMISH (TEST)"; plain Skirmish stays 2D.
+  In 3D the battle runs at a fixed 60 steps a second (like 2D on a 60 Hz screen), whatever the 3D frame rate, so shells and
+  tanks move at the same speed as 2D. The hidden 2D map isn't painted while 3D is on.

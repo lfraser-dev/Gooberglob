@@ -28,3 +28,8 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   Menu button "3D SKIRMISH (TEST)"; plain Skirmish stays 2D.
   In 3D the battle runs at a fixed 60 steps a second (like 2D on a 60 Hz screen), whatever the 3D frame rate, so shells and
   tanks move at the same speed as 2D. The hidden 2D map isn't painted while 3D is on.
+- `sk3look.js`: how 3D Skirmish looks: daylight per map, baked height map, ground colours (crop fields, roads),
+  instanced trees, houses, church, streets. `sk3BuildWorld` is here.
+- `sk3world.js`: 3D Skirmish gameplay changes: 4800 x 3000 battlefield with a generated layout per battle
+  (`sk3GenTown/Snow/Bocage/Trenches`), 8 enemies v 6 allies + you, tank-like AI driving (`sk3AiPost`),
+  real-life speeds (x0.55, slower hull turn and turret traverse), and a spatial grid for fast collision checks.

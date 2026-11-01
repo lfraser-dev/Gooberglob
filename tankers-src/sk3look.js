@@ -113,7 +113,7 @@ function sk3Church(L, S, mats, x, z, w, d, ruined, R) { const nw = w * .72, nx =
     for (let i = 0; i < 5; i++) for (const sd of [-1, 1]) { sk3Add(L.W, new THREE.BoxGeometry(1.1, 3.6, .2), '#2a3038', nx - nw / 2 + 3 + i * (nw - 6) / 4, 5.6, z + sd * (d / 2 - .25)); } }
 
 /* ---------- the battlefield ---------- */
-function sk3BuildWorld(st) { const S = TK3.scene, kind = sk3Map(), Lk = SK3_LOOK[kind], G = SK3W.gen, R = tk3Rand(91 + kind.length + (G ? G.seed % 997 : 0)), WW = SKIRMISH_WORLD_WIDTH * SK3D.S, WD = SKIRMISH_WORLD_HEIGHT * SK3D.S, hw = WW / 2, hd = WD / 2;
+function sk3BuildWorld(st) { const S = TK3.scene, kind = sk3Map(), Lk = typeof sk3LookFor === 'function' ? sk3LookFor(kind) : SK3_LOOK[kind], G = SK3W.gen, R = tk3Rand(91 + kind.length + (G ? G.seed % 997 : 0)), WW = SKIRMISH_WORLD_WIDTH * SK3D.S, WD = SKIRMISH_WORLD_HEIGHT * SK3D.S, hw = WW / 2, hd = WD / 2;
     st.map = kind; const sun = new THREE.Vector3(Lk.sun[0], Lk.sun[1], Lk.sun[2]).normalize(); st.sun = sun;
     TK3.grade = Object.assign({ bloom: .2, expo: 1, sat: 1, con: 1.05, lift: [.01, .01, .012], th: 2.4, vig: .26, grain: .018, dirt: .06 }, Lk.grade); TK3.sunDir = sun; TK3.rayK = kind === 'bocage' ? .25 : .12; TK3.rayCol = tk3C(Lk.sunCol);
     tk3Sky({ top: Lk.sky[0], hor: Lk.sky[1], bot: Lk.sky[2], sunDir: sun, sunCol: Lk.sunCol, sunI: 2.6, glow: .7, glowCol: Lk.sunCol }); tk3Fog(Lk.fog, Lk.fogD);
@@ -126,13 +126,13 @@ function sk3BuildWorld(st) { const S = TK3.scene, kind = sk3Map(), Lk = SK3_LOOK
         else if (kind === 'snow') { c.multiplyScalar(.9 + n2 * .1); c.lerp(sc('#aab8d0'), Math.max(0, 1 - ny) * 3); const rd = HM.road(x, z); if (rd > 0) c.lerp(sc(Math.sin(x * 3) > .6 ? '#8e877c' : '#b0aaa0'), rd * .85); }
         else if (kind === 'trenches') { c.multiplyScalar(.72 + n1 * .45); if (n2 > .6) c.lerp(sc('#2e261e'), .55); c.lerp(sc('#6a5c46'), Math.max(0, n1 - .58) * 1.1); }
         else { c.multiplyScalar(.82 + n1 * .3); if (outside) c.lerp(sc('#6a6a50'), .3); }
-        if (h < -.25) c.multiplyScalar(kind === 'snow' ? .85 : .58); c.multiplyScalar(kind === 'bocage' ? 1.05 : kind === 'trenches' ? .95 : 1); };
+        if (h < -.25) c.multiplyScalar(kind === 'snow' ? .85 : .58); c.multiplyScalar((kind === 'bocage' ? 1.05 : kind === 'trenches' ? .95 : 1) * (Lk.wet ? .78 : 1)); };
     const segX = Math.round((WW + 190) / 1.4), segZ = Math.round((WD + 190) / 1.4);
     const gtex = sk3DetailTex(kind === 'bocage' ? 'grass' : kind === 'snow' ? 'snow' : 'dirt'); gtex.repeat.set((WW + 190) / 5, (WD + 190) / 5);
-    const ground = new THREE.Mesh(tk3Terrain(WW + 190, WD + 190, segX, segZ, HM.h, cf), tk3Std('#ffffff', kind === 'snow' ? .72 : .96, 0, { vertexColors: true, map: gtex })); ground.receiveShadow = true; S.add(ground);
+    const ground = new THREE.Mesh(tk3Terrain(WW + 190, WD + 190, segX, segZ, HM.h, cf), tk3Std('#ffffff', Lk.wet ? (kind === 'snow' ? .6 : .48) : kind === 'snow' ? .72 : .96, 0, { vertexColors: true, map: gtex })); ground.receiveShadow = true; S.add(ground);
     st.L = tk3Lights({ sky: Lk.hemi[1], ground: Lk.hemi[2], hemi: Lk.hemi[0], dir: sun, dirCol: Lk.sunCol, dirI: Lk.sunI, shadowSize: 42 }); st.L.dir.shadow.mapSize.set(2048, 2048); st.L.dir.shadow.bias = -.0005; st.L.dir.shadow.camera.far = 400; st.L.dir.shadow.camera.updateProjectionMatrix();
-    const rim = new THREE.DirectionalLight(tk3C(kind === 'snow' ? '#b0c0e0' : '#9aaccc'), .4); rim.position.set(-sun.x * 50, 25, -sun.z * 50); S.add(rim);
-    st.fill = new THREE.DirectionalLight(tk3C('#fff2e0'), .6); S.add(st.fill); S.add(st.fill.target);
+    const rim = new THREE.DirectionalLight(tk3C(kind === 'snow' ? '#b0c0e0' : '#9aaccc'), Lk.rim == null ? .4 : Lk.rim); rim.position.set(-sun.x * 50, 25, -sun.z * 50); S.add(rim);
+    st.fill = new THREE.DirectionalLight(tk3C(Lk.fillCol || '#fff2e0'), Lk.fill == null ? .6 : Lk.fill); S.add(st.fill); S.add(st.fill.target);
     // ---- everything on it ----
     const bt = sk3BrickTex(), pt = sk3PlasterTex(); const mats = { ruinP: tk3Std('#9a8e7c', .96, 0, { map: pt }), brick: tk3Std('#ffffff', .92, 0, { map: bt, vertexColors: true }), plaster: tk3Std('#ffffff', .95, 0, { map: pt, vertexColors: true }), dark: tk3Std('#2e2a26', .95), ruin: tk3Std('#a49480', .94, 0, { map: bt }), plain: tk3Std('#ffffff', .9, 0, { vertexColors: true }) }; SK3D.mats = mats;
     const L = { B: [], P: [], W: [], ST: [], wire: [], bush: [], bank: [] }, plant = { broad: [], pine: [], dead: [] }, rubAt = [], gutted = []; SK3D.tall = [];

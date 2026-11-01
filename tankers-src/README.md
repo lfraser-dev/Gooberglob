@@ -43,3 +43,16 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   with a map seed (DUEL.seed), so every player generates the same map (3200 x 2000 for 1v1, 3600 x 2250 for 2v2).
   No AI tanks and no AI driving filter online. When a finisher plays, the 3D battlefield is parked (`sk3Park`)
   and handed back afterwards (`sk3Unpark`) instead of being rebuilt.
+- `sk3extra.js`: 3D extras (build 167).
+  - Settings panel (`SK3C`, saved in localStorage `tankers_sk3cfg`; O key in 3D, or the button on the 3D setup screen /
+    online lobby): master volume for the whole game (every WebAudio connection to the speakers is routed through one
+    gain node), mouse sensitivity, invert Y, time of day and weather.
+  - Co-axial machine gun (`SK3X`): hold Q. 10 rounds a second, tracers, overheats after ~5 s. Shreds hedges, sandbags
+    and huts (`SK3_MGDMG`), only scratches tanks (can't take one below 1 health). Online: `mgf` messages (trigger on/off);
+    the host's bullets do the damage.
+  - Binoculars: B. Camera at the commander's hatch, look freely, wheel zooms, rangefinder; enemies you look at with a
+    clear line of sight are spotted for 12 s (`sk3Spot`, red diamond with distance).
+  - Time/weather: `sk3LookFor(kind)` adjusts the map's look for dusk, night (parachute flares light the field) and rain
+    (wet ground, rain streaks, lightning and thunder; heavy snowfall on the snow map). `sk3TagRange` limits how far away
+    enemy tags show at night or in rain unless spotted, lit by a flare or just fired. Online the host's choice is sent
+    in the `start` message (`tod`, `wx`).

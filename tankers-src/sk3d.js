@@ -31,7 +31,7 @@ function sk3SyncTank(st, t, dt) { const m = sk3Model(t); m.seen = true; const g 
     const hF = st.hgt(x + ca * hl, z + sa * hl), hB = st.hgt(x - ca * hl, z - sa * hl), hP = st.hgt(x - sa * hw2, z + ca * hw2), hN = st.hgt(x + sa * hw2, z - ca * hw2), y = Math.max(-1.2, Math.max((hF + hB) / 2, (hP + hN) / 2, st.hgt(x, z)));
     const k8 = Math.min(1, dt * 7); m.tp += (Math.atan2(hF - hB, hl * 2) - m.tp) * k8; m.tr += (-Math.atan2(hP - hN, hw2 * 2) - m.tr) * k8; g.position.set(x, y, z); g.rotation.set(m.dead ? g.rotation.x : m.tr, -a, m.dead ? g.rotation.z : m.tp);
     if (m.turret && !m.dead) m.turret.rotation.y = -((t.turretAngle || 0) - (t.angle || 0));
-    if (t.destroyed && !m.dead) sk3KillModel(st, m, t); if (!t.destroyed && m.dead) { TK3.scene.remove(m.g); SK3D.models.delete(t); return sk3SyncTank(st, t, dt); }
+    if (t.destroyed && !m.dead) sk3KillModel(st, m, t); if (!t.destroyed && m.dead) { SK3D.models.delete(t); return sk3SyncTank(st, t, dt); }
     const far = SK3D.camP ? SK3D.camP.distanceTo(g.position) > 55 : false; if (far !== m.far) { m.far = far; (m.wheels || []).forEach(function (w) { w.visible = !far; }); }
     if (!m.dead) { try { exDyn(st, m, dt); } catch (e) {} } return m; }
 function sk3KillModel(st, m, t) { m.dead = true; m.deadAt = SK3D.now; try { exBurn(m.g); EX_BURN.heat.value = .7; } catch (e) {} const p = m.g.position; tk3Boom(st.fire, st.smoke, p.x, 1.5, p.z, .9 * m.k, {}); st.boomL.position.set(p.x, 3, p.z); st.boomL.intensity = 70; sk3Debris(st, p.x, 1.6, p.z, 1.3);
@@ -147,8 +147,11 @@ function sk3Hud() { const c = SK3D.hud; if (!c) return; const q = Math.max(1, Ma
     const tag = function (t, foe) { if (!t || t.destroyed) return; const m = SK3D.models.get(t), top = m ? (m.spec.tt + m.spec.th + .9) * m.k : 3.6, p = proj(sk3X(t.x), top, sk3Z(t.y)); if (!p) return; const dist = Math.hypot(t.x - player.x, t.y - player.y) * SK3D.S; if (dist > 170) return; const a = Math.max(.35, 1 - dist / 220);
         g.globalAlpha = a; g.textAlign = 'center'; g.font = 'bold 12px "Stardos Stencil", Impact, sans-serif'; g.fillStyle = foe ? '#ffb0a0' : '#b8d4ff'; g.shadowColor = '#000'; g.shadowBlur = 4; g.fillText(String(t.name || '').toUpperCase() + '  ' + Math.round(dist) + 'm', p[0], p[1] - 10); g.shadowBlur = 0;
         const w = 56, hp = Math.max(0, t.health / t.maxHealth); g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(p[0] - w / 2 - 1, p[1] - 5, w + 2, 7); g.fillStyle = foe ? (hp < .3 ? '#ff4030' : '#d8503c') : '#4a90e0'; g.fillRect(p[0] - w / 2, p[1] - 4, w * hp, 5); g.globalAlpha = 1;
-        if (foe && window.EXE && EXE.cand === t) { const lab = 'F  EXECUTE', tw = g.measureText(lab).width + 22; g.fillStyle = 'rgba(120,20,10,.92)'; g.fillRect(p[0] - tw / 2, p[1] - 44, tw, 22); g.strokeStyle = '#ffb08a'; g.strokeRect(p[0] - tw / 2, p[1] - 44, tw, 22); g.fillStyle = '#fff0e0'; g.font = 'bold 14px "Stardos Stencil", Impact, sans-serif'; g.fillText(lab, p[0], p[1] - 28); } };
+        if (foe && typeof EXE !== 'undefined' && EXE.cand === t) { const lab = 'F  EXECUTE', tw = g.measureText(lab).width + 22; g.fillStyle = 'rgba(120,20,10,.92)'; g.fillRect(p[0] - tw / 2, p[1] - 44, tw, 22); g.strokeStyle = '#ffb08a'; g.strokeRect(p[0] - tw / 2, p[1] - 44, tw, 22); g.fillStyle = '#fff0e0'; g.font = 'bold 14px "Stardos Stencil", Impact, sans-serif'; g.fillText(lab, p[0], p[1] - 28); } };
     (enemies || []).forEach(function (e) { tag(e, true); }); (allies || []).forEach(function (a) { tag(a, false); });
+    if (typeof DUEL !== 'undefined' && DUEL.active) { const now = Date.now(); DUEL.tanks.forEach(function (t) { if (!t || t.destroyed) return; const m = SK3D.models.get(t), top = m ? (m.spec.tt + m.spec.th + 1.6) * m.k : 4.2, p = proj(sk3X(t.x), top, sk3Z(t.y)); if (!p) return; let y = p[1] - (t === player ? 0 : 26); g.textAlign = 'center';
+            if (now < (t.exeShowUntil || 0)) { g.font = 'bold 13px "Stardos Stencil", Impact, sans-serif'; const lab = '⚔ EXECUTING', w = g.measureText(lab).width + 18; g.fillStyle = 'rgba(40,28,10,.9)'; g.fillRect(p[0] - w / 2, y - 20, w, 20); g.strokeStyle = '#ffcf6a'; g.strokeRect(p[0] - w / 2, y - 20, w, 20); g.fillStyle = '#ffe9b8'; g.fillText(lab, p[0], y - 6); y -= 24; }
+            if (t.duelChat && now < (t.duelChatUntil || 0)) { g.globalAlpha = Math.min(1, (t.duelChatUntil - now) / 400); g.font = 'bold 15px "Stardos Stencil", Impact, sans-serif'; const w = g.measureText(t.duelChat).width + 18; g.fillStyle = 'rgba(245,238,210,.95)'; g.fillRect(p[0] - w / 2, y - 24, w, 22); g.fillStyle = '#1a1a10'; g.fillText(t.duelChat, p[0], y - 8); g.globalAlpha = 1; } }); }
     if (player.destroyed) return;
     // where the gun is actually pointing (lags behind the crosshair while the turret traverses)
     const ta = player.turretAngle || 0, gp = proj(sk3X(player.x) + Math.cos(ta) * SK3D.aimD, 1.2, sk3Z(player.y) + Math.sin(ta) * SK3D.aimD);
@@ -176,11 +179,22 @@ function sk3Build() { const vp = document.getElementById('canvasViewport'); if (
     if (!SK3D.hud) { SK3D.hud = document.createElement('canvas'); SK3D.hud.id = 'sk3Hud'; const sc = document.createElement('div'); sc.id = 'sk3Scope'; SK3D.scopeEl = sc; } vp.insertBefore(SK3D.hud, document.getElementById('minimapPanel')); vp.insertBefore(SK3D.scopeEl, document.getElementById('minimapPanel')); SK3D.hud.style.display = 'block';
     if (!TK3.cv.sk3Bound) { TK3.cv.sk3Bound = true; sk3Bind(TK3.cv); } SK3D.ready = true; sk3LoadMsg(false); return true; }
 function sk3LoadMsg(on) { const vp = document.getElementById('canvasViewport'); let e = document.getElementById('sk3Load'); if (!on) { if (e) e.remove(); return; } if (!e && vp) { e = document.createElement('div'); e.id = 'sk3Load'; e.textContent = 'BUILDING THE 3D BATTLEFIELD…'; vp.appendChild(e); } return e; }
-function sk3Start() { if (!SK3D.want || selectedGameMode !== 'skirmish' || (typeof DUEL !== 'undefined' && DUEL.active)) return; sk3Style(); SK3D.on = true; SK3D.yaw = player ? player.angle || 0 : 0; SK3D.pitch = .3; SK3D.scope = false; SK3D.hint = performance.now(); document.body.classList.add('sk3d'); clearMovementKeys();
+function sk3Start() { const duel = typeof DUEL !== 'undefined' && DUEL.active; if (!SK3D.want || selectedGameMode !== 'skirmish' || (duel && !DUEL.three)) return; sk3Style(); SK3D.on = true; SK3D.yaw = player ? player.angle || 0 : 0; SK3D.pitch = .3; SK3D.scope = false; SK3D.hint = performance.now(); document.body.classList.add('sk3d'); clearMovementKeys();
     const go = function () { if (!SK3D.on || !gameRunning) return; if (!sk3Build()) { sk3Stop(); try { showRadioText('3D COULD NOT START ON THIS COMPUTER — PLAYING IN 2D.', true); } catch (e) {} } };
     if (window.THREE) { sk3LoadMsg(true); setTimeout(go, 30); } else { sk3LoadMsg(true); TK3.failed = false; tk3Load(function (ok) { if (ok) go(); else { sk3Stop(); try { showRadioText('3D COULD NOT LOAD (NO CONNECTION TO THE 3D LIBRARY) — PLAYING IN 2D.', true); } catch (e) {} } }); } }
-function sk3Stop() { const was = SK3D.on; SK3D.on = false; SK3D.ready = false; SK3D.scope = false; document.body.classList.remove('sk3d'); sk3LoadMsg(false); if (SK3D.hud) SK3D.hud.style.display = 'none'; if (SK3D.scopeEl) SK3D.scopeEl.style.display = 'none'; try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {}
+function sk3Stop() { sk3DropPark(); const was = SK3D.on; SK3D.on = false; SK3D.ready = false; SK3D.scope = false; document.body.classList.remove('sk3d'); sk3LoadMsg(false); if (SK3D.hud) SK3D.hud.style.display = 'none'; if (SK3D.scopeEl) SK3D.scopeEl.style.display = 'none'; try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {}
     if (TK3.cv && TK3.cv.parentNode && TK3.cv.parentNode.id === 'canvasViewport') TK3.cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;'; if (was && TK3.cur === SK3D.idx) { try { tk3Clear(); TK3.cur = -1; } catch (e) {} } SK3D.models = new Map(); SK3D.wrecks = []; SK3D.st = null; }
+
+/* ---------- sharing the renderer with the execution finishers ----------
+   tk3Build() wipes the current scene. When a finisher starts during a 3D battle the battlefield is parked
+   (kept intact) and put back when the finisher ends, so there's no multi-second rebuild (which would also
+   stall an online battle). */
+const SK3_PARK = ['scene', 'cam', 'parts', 'sky', 'water', 'st', 'grade', 'fogU', 'sunDir', 'rayK', 'rayCol', 'objs', 't0', 'prev', 'timeScale', 'cur', 'flash', 'shake', 'zb', 'cab'];
+function sk3Park() { if (SK3D.park || !SK3D.on || TK3.cur !== SK3D.idx || !TK3.scene) return; const p = {}; SK3_PARK.forEach(function (k) { p[k] = TK3[k]; }); SK3D.park = p; TK3.scene = null; TK3.parts = []; TK3.sky = null; TK3.water = null; TK3.objs = [TK3.softT, TK3.smokeT].filter(Boolean); }
+function sk3Unpark() { const p = SK3D.park; if (!p || (typeof EXE !== 'undefined' && EXE.on)) return false; try { if (TK3.scene) tk3Clear(); } catch (e) {} SK3_PARK.forEach(function (k) { TK3[k] = p[k]; }); SK3D.park = null; TK3.cur = SK3D.idx;
+    const vp = document.getElementById('canvasViewport'); if (vp && TK3.cv.parentNode !== vp) vp.insertBefore(TK3.cv, document.getElementById('sk3Hud') || document.getElementById('minimapPanel')); TK3.cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;cursor:crosshair;'; TK3.W = 0; return true; }
+function sk3DropPark() { const p = SK3D.park; if (!p) return; SK3D.park = null; const keep = { scene: TK3.scene, objs: TK3.objs, parts: TK3.parts }; try { TK3.scene = p.scene; TK3.objs = p.objs; TK3.parts = p.parts; tk3Clear(); } catch (e) {} TK3.scene = keep.scene; TK3.objs = keep.objs; TK3.parts = keep.parts; }
+(function () { const _tb = tk3Build; tk3Build = function (idx) { if (idx !== SK3D.idx) sk3Park(); return _tb.apply(this, arguments); }; })();
 
 /* ---------- mouse + keys ---------- */
 function sk3Bind(cv) { cv.addEventListener('contextmenu', function (e) { if (SK3D.on) e.preventDefault(); });
@@ -207,12 +221,12 @@ function sk3SetScope(on) { SK3D.scope = !!on && !!player && !player.destroyed; c
         addTrackMarks(player); };
     const _ap = aimPlayer; aimPlayer = function () { if (!SK3D.on) return _ap.apply(this, arguments); sk3Turret(); };
     // in 3D the 2D battlefield canvas is hidden, so don't spend time painting it; just keep the execution prompt check running
-    const _de = drawEverything; drawEverything = function () { if (!(SK3D.on && SK3D.ready)) return _de.apply(this, arguments); if (SK3D.skip) return; if (window.EXE && EXE.on) return;
-        try { drawAlliedRadioBoxes(); } catch (e) {} if (TK3.cur !== SK3D.idx) { SK3D.ready = false; setTimeout(function () { if (SK3D.on && gameRunning && !(window.EXE && EXE.on)) sk3Build(); }, 0); return; } sk3Frame(performance.now()); };
+    const _de = drawEverything; drawEverything = function () { if (!(SK3D.on && SK3D.ready)) return _de.apply(this, arguments); if (SK3D.skip) return; if (typeof EXE !== 'undefined' && EXE.on) return;
+        try { drawAlliedRadioBoxes(); } catch (e) {} if (TK3.cur !== SK3D.idx && sk3Unpark()) { sk3Frame(performance.now()); return; } if (TK3.cur !== SK3D.idx) { SK3D.ready = false; setTimeout(function () { if (SK3D.on && gameRunning && !(typeof EXE !== 'undefined' && EXE.on)) sk3Build(); }, 0); return; } sk3Frame(performance.now()); };
     if (typeof drawMinimap === 'function') { const _mm = drawMinimap; drawMinimap = function () { if (SK3D.skip) return; return _mm.apply(this, arguments); }; }
     // The 2D game moves everything one step per screen refresh. 3D frames take longer, which would slow the whole battle
     // (shells included), so in 3D the battle runs at a fixed 60 steps a second and only the last step of each frame is drawn.
-    const STEP = 1000 / 60, _gl = gameLoop; gameLoop = function () { if (!SK3D.on || !SK3D.ready || !gameRunning || (typeof gamePaused !== 'undefined' && gamePaused) || (window.EXE && EXE.on)) { SK3D.simT = 0; return _gl.apply(this, arguments); }
+    const STEP = 1000 / 60, _gl = gameLoop; gameLoop = function () { if (!SK3D.on || !SK3D.ready || !gameRunning || (typeof gamePaused !== 'undefined' && gamePaused) || (typeof EXE !== 'undefined' && EXE.on)) { SK3D.simT = 0; return _gl.apply(this, arguments); }
         const now = performance.now(); if (!SK3D.simT || now - SK3D.simT > 250) SK3D.simT = now - STEP; let n = Math.floor((now - SK3D.simT) / STEP);
         if (n < 1) { requestAnimationFrame(gameLoop); return; } if (n > 5) { n = 5; SK3D.simT = now - 5 * STEP; } SK3D.simT += n * STEP; SK3D.steps = (SK3D.steps || 0) + n;
         if (n > 1) { const raf = window.requestAnimationFrame, later = []; window.requestAnimationFrame = function (f) { if (f !== gameLoop) later.push(f); return 0; }; SK3D.skip = true;
@@ -222,10 +236,16 @@ function sk3SetScope(on) { SK3D.scope = !!on && !!player && !player.destroyed; c
     const _ce = createExplosion; createExplosion = function (x, y, s) { const r = _ce.apply(this, arguments); if (SK3D.on && SK3D.ready) try { sk3Boom(x, y, s); } catch (e) {} return r; };
     const _hs = createHitSparks; createHitSparks = function (x, y) { const r = _hs.apply(this, arguments); if (SK3D.on && SK3D.ready) try { sk3Sparks(x, y); } catch (e) {} return r; };
     // starting / leaving a battle
-    const _sg = startGame; startGame = function () { if (SK3D.on) sk3Stop(); const r = _sg.apply(this, arguments); try { sk3Start(); } catch (e) { try { console.warn('3D skirmish start', e); } catch (x) {} sk3Stop(); } return r; };
+    const _sg = startGame; startGame = function () { if (SK3D.on) sk3Stop(); if (typeof DUEL !== 'undefined' && DUEL.active) SK3D.want = !!DUEL.three; const r = _sg.apply(this, arguments); try { sk3Start(); } catch (e) { try { console.warn('3D skirmish start', e); } catch (x) {} sk3Stop(); } return r; };
     const _rm = returnToMenu; returnToMenu = function () { sk3Stop(); SK3D.want = false; sk3Badge(); return _rm.apply(this, arguments); };
     const _cg = chooseGameMode; chooseGameMode = function (mode, three) { SK3D.want = !!three && mode === 'skirmish'; const r = _cg.apply(this, arguments); sk3Badge(); return r; };
     if (typeof openDuel === 'function') { const _od = openDuel; openDuel = function () { SK3D.want = false; return _od.apply(this, arguments); }; }
+    // online lobby: the host can switch the battle to 3D for everyone
+    if (typeof duelBuild === 'function') { try { DUEL.three = localStorage.getItem('tankers_duel3d') === '1'; } catch (e) {}
+        const sync3 = function () { const b = document.getElementById('duel3dBtn'); if (b) { b.classList.toggle('sel', !!DUEL.three); b.innerHTML = (DUEL.three ? '🎥 3D BATTLE: ON' : '🗺️ 3D BATTLE: OFF') + '<small style="display:block;font-size:10px;letter-spacing:.12em;opacity:.75">TEST · THE HOST DECIDES</small>'; } };
+        const _db = duelBuild; duelBuild = function () { const r = _db.apply(this, arguments); try { const maps = document.getElementById('duelMaps'); if (maps && !document.getElementById('duel3dBtn')) { const d = document.createElement('div'); d.className = 'choices'; d.id = 'duel3d'; d.style.marginTop = '8px'; d.innerHTML = '<button id="duel3dBtn" style="width:100%"></button>'; maps.parentNode.insertBefore(d, maps.nextSibling);
+                    document.getElementById('duel3dBtn').onclick = function () { DUEL.three = !DUEL.three; try { localStorage.setItem('tankers_duel3d', DUEL.three ? '1' : '0'); } catch (e) {} sync3(); }; } sync3(); } catch (e) {} return r; };
+        const _sm2 = duelStartMatch; duelStartMatch = function () { const r = _sm2.apply(this, arguments); try { if (DUEL.three) showRadioText('3D BATTLE — W/S THROTTLE, A/D TURN, MOUSE AIMS. CLICK THE BATTLEFIELD TO TAKE THE GUNNER\'S SEAT.', true); } catch (e) {} return r; }; }
     // SHIFT toggles the gunner's sight
     window.addEventListener('keydown', function (e) { if (!SK3D.on || e.repeat) return; if (e.key === 'Shift') { e.preventDefault(); sk3SetScope(!SK3D.scope); } }, true);
     // the menu button

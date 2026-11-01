@@ -33,3 +33,7 @@ The order the files are joined in is set in `build2.py`. Running the build more 
 - `sk3world.js`: 3D Skirmish gameplay changes: 4800 x 3000 battlefield with a generated layout per battle
   (`sk3GenTown/Snow/Bocage/Trenches`), 8 enemies v 6 allies + you, tank-like AI driving (`sk3AiPost`),
   real-life speeds (x0.55, slower hull turn and turret traverse), and a spatial grid for fast collision checks.
+- 3D online battles: the host's "3D BATTLE" switch in the online lobby (DUEL.three) is sent in the `start` message
+  with a map seed (DUEL.seed), so every player generates the same map (3200 x 2000 for 1v1, 3600 x 2250 for 2v2).
+  No AI tanks and no AI driving filter online. When a finisher plays, the 3D battlefield is parked (`sk3Park`)
+  and handed back afterwards (`sk3Unpark`) instead of being rebuilt.

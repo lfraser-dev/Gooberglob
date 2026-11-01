@@ -9,14 +9,16 @@
    - Speeds: about 55% of the 2D speeds (a medium tank does ~28 km/h), slower hull turning, real turret traverse.
 ===================================================== */
 const SK3W = { W: 4800, H: 3000, speedK: .55, gen: null, on: false };
-function sk3Big() { return !!(SK3D.want && selectedGameMode === 'skirmish' && window.THREE && !(typeof DUEL !== 'undefined' && DUEL.active)); }
+function sk3Duel() { return typeof DUEL !== 'undefined' && DUEL.active; }
+// online: the host's 3D switch decides for everyone (the map must match even if one player's 3D fails to load)
+function sk3Big() { if (selectedGameMode !== 'skirmish') return false; if (sk3Duel()) return !!DUEL.three; return !!(SK3D.want && window.THREE); }
 function sk3Rng(seed) { let s = (seed >>> 0) || 1; return function () { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
 function sk3Hit(r, list, pad) { pad = pad || 0; return list.some(function (o) { return r.x < o.x + o.width + pad && r.x + r.width + pad > o.x && r.y < o.y + o.height + pad && r.y + r.height + pad > o.y; }); }
 function sk3Ob(x, y, w, h, type) { addObstacle(Math.round(x), Math.round(y), Math.round(w), Math.round(h), type); return obstacles[obstacles.length - 1]; }
 const SK3_SOLID = ['sk3Forest', 'sk3Sandbag', 'sk3Fountain', 'sk3Church'];
 
 /* ---------- TOWN: city blocks of houses, shops and ruins on a grid of avenues, a central square ---------- */
-function sk3GenTown(R) { const W = SK3W.W, H = SK3W.H, g = { roads: [], blocks: [], parks: [], plaza: null };
+function sk3GenTown(R) { const W = SK3W.W, H = SK3W.H, g = { roads: [], blocks: [], parks: [], plaza: null, empty: [], hog: [] };
     const cols = []; let x = 260; while (x < W - 560) { let w = 470 + R() * 210; if (x + w > W - 260) w = W - 260 - x; if (w < 300) break; cols.push([x, x + w]); x += w + 140 + R() * 50; }
     const rows = []; let y = 140; while (y < H - 440) { let h = 400 + R() * 150; if (y + h > H - 140) h = H - 140 - y; if (h < 300) break; rows.push([y, y + h]); y += h + 140 + R() * 40; }
     const xe = [0].concat(cols.reduce(function (a, c) { return a.concat(c); }, [])).concat([W]), ye = [0].concat(rows.reduce(function (a, r) { return a.concat(r); }, [])).concat([H]);
@@ -32,12 +34,17 @@ function sk3GenTown(R) { const W = SK3W.W, H = SK3W.H, g = { roads: [], blocks: 
         if (lane === 'v') { const m = cx + (R() - .5) * bw * .2; subs.push([b.x0, b.y0, m - 55, b.y1], [m + 55, b.y0, b.x1, b.y1]); } else if (lane === 'h') { const m = cy + (R() - .5) * bh * .2; subs.push([b.x0, b.y0, b.x1, m - 55], [b.x0, m + 55, b.x1, b.y1]); } else subs.push([b.x0, b.y0, b.x1, b.y1]);
         subs.forEach(function (s) { const sw = s[2] - s[0], sh = s[3] - s[1], nx = Math.max(1, Math.round(sw / 200)), ny = sh > 360 ? 2 : 1;
             for (let a = 0; a < nx; a++) for (let k = 0; k < ny; k++) { const lx = s[0] + a * sw / nx, ly = s[1] + k * sh / ny, lw = sw / nx, lh = sh / ny, edge = k === 0 || k === ny - 1, rr = R();
-                const t = rr < .14 ? 'ruinBuilding' : (rr < .32 && edge) ? 'shop' : rr < .37 ? null : 'building'; if (!t) continue;
+                const t = rr < .24 ? 'ruinBuilding' : (rr < .38 && edge) ? 'shop' : rr < .45 ? null : 'building'; if (!t) { g.empty.push([lx + 10, ly + 10, lw - 20, lh - 20]); continue; }
                 const ix = 6 + R() * 10, iy = 6 + R() * 10; sk3Ob(lx + ix, ly + iy, lw - ix * 2, lh - iy * 2, t); } }); }); });
     // burnt-out wrecks and sandbag barricades tucked against the kerbs (they never close a street)
     let n = 0; for (let tries = 0; n < 18 && tries < 400; tries++) { const b = g.blocks[(R() * g.blocks.length) | 0]; if (b.plaza) continue; const side = R() * 4 | 0, horiz = side < 2, len = 70, th = 32;
         const r = horiz ? { x: b.x0 + R() * (b.x1 - b.x0 - len), y: side ? b.y1 + 6 : b.y0 - 6 - th, width: len, height: th } : { x: side === 2 ? b.x1 + 6 : b.x0 - 6 - th, y: b.y0 + R() * (b.y1 - b.y0 - len), width: th, height: len };
         if (r.x < 320 || r.x > W - 390 || sk3Hit(r, obstacles, 30)) continue; sk3Ob(r.x, r.y, r.width, r.height, R() < .65 ? 'wreck' : 'sk3Sandbag'); n++; }
+    // shell craters torn into the streets (you can drive through them) and steel anti-tank hedgehogs on the kerbs
+    const roads = g.roads; let c = 0;
+    for (let tries = 0; c < Math.round(26 * W * H / 14.4e6) && tries < 600; tries++) { const r = roads[(R() * roads.length) | 0], sz = 60 + R() * 55, cx = r.v ? r.x + r.w / 2 + (R() - .5) * (r.w - sz) * .5 : 330 + R() * (W - 660), cy = r.v ? 120 + R() * (H - 240) : r.y + r.h / 2 + (R() - .5) * (r.h - sz) * .5, o = { x: cx - sz / 2, y: cy - sz * .4, width: sz, height: sz * .8 };
+        if (o.x < 330 || o.x + o.width > W - 330 || sk3Hit(o, obstacles, 12)) continue; sk3Ob(o.x, o.y, o.width, o.height, 'crater'); c++; }
+    g.blocks.forEach(function (b) { if (R() < .35) { const corner = [[b.x0 - 34, b.y0 - 34], [b.x1 + 34, b.y0 - 34], [b.x0 - 34, b.y1 + 34], [b.x1 + 34, b.y1 + 34]][(R() * 4) | 0]; if (corner[0] > 330 && corner[0] < W - 330) g.hog.push(corner); } });
     return g; }
 
 /* ---------- SNOW: villages, pine forests, frozen ponds, rocks and a winding road ---------- */
@@ -86,7 +93,7 @@ function sk3GenTrenches(R) { const W = SK3W.W, H = SK3W.H, g = { lines: [] };
     for (let s = 0; s < 90; s++) { const x = 850 + R() * (W - 1700), y = 40 + R() * (H - 80); if (!sk3Hit({ x: x, y: y, width: 1, height: 1 }, obstacles, 20)) sk3Ob(x, y, 1, 1, 'sk3Stump'); }
     return g; }
 
-function sk3Gen(map) { const seed = (Math.random() * 1e9) | 0, R = sk3Rng(seed); obstacles = []; let g;
+function sk3Gen(map) { const seed = sk3Duel() ? (DUEL.seed || 1) : (Math.random() * 1e9) | 0, R = sk3Rng(seed); obstacles = []; let g;
     if (map === 'snow') g = sk3GenSnow(R); else if (map === 'bocage') g = sk3GenBocage(R); else if (map === 'trenches') g = sk3GenTrenches(R); else g = sk3GenTown(R);
     g.seed = seed; g.map = map; return g; }
 
@@ -138,12 +145,28 @@ function sk3Grid() { const k = obstacles; if (SK3G.key === k && SK3G.n === k.len
     k.forEach(function (o) { if (!(isSolidObstacle(o) || o.type === 'campaignHillBarrier')) return; const x0 = Math.max(0, Math.floor((o.x - pad) / C)), x1 = Math.min(cols - 1, Math.floor((o.x + o.width + pad) / C)), y0 = Math.max(0, Math.floor((o.y - pad) / C)), y1 = Math.min(rows - 1, Math.floor((o.y + o.height + pad) / C)); for (let j = y0; j <= y1; j++) for (let i = x0; i <= x1; i++) (b[j * cols + i] = b[j * cols + i] || []).push(o); });
     SK3G.key = k; SK3G.n = k.length; SK3G.cols = cols; SK3G.rows = rows; SK3G.b = b; SK3G.none = []; return SK3G; }
 
+/* ---------- 2D fallback drawing for the generated obstacle types (only if a player's 3D failed to load) ---------- */
+function sk3Draw2D() { if (!SK3W.gen || typeof ctx === 'undefined') return; obstacles.forEach(function (o) { const t = o.type; if (t.indexOf('sk3') !== 0) return; ctx.save();
+    if (t === 'sk3Forest') { ctx.fillStyle = SK3W.gen.map === 'snow' ? '#2e4632' : '#36502a'; ctx.fillRect(o.x, o.y, o.width, o.height); ctx.fillStyle = 'rgba(255,255,255,.22)'; for (let x = o.x + 14; x < o.x + o.width; x += 32) for (let y = o.y + 14; y < o.y + o.height; y += 32) { ctx.beginPath(); ctx.arc(x, y, 9, 0, 6.3); ctx.fill(); } }
+    else if (t === 'sk3Pond') { ctx.fillStyle = '#c8d8e6'; ctx.beginPath(); ctx.ellipse(o.x + o.width / 2, o.y + o.height / 2, o.width / 2, o.height / 2, 0, 0, 6.3); ctx.fill(); }
+    else if (t === 'sk3Sandbag') { ctx.fillStyle = '#a8986e'; ctx.fillRect(o.x, o.y, o.width, o.height); }
+    else if (t === 'sk3Church') { ctx.fillStyle = '#8a8478'; ctx.fillRect(o.x, o.y, o.width, o.height); ctx.fillStyle = '#5a5650'; ctx.fillRect(o.x, o.y, o.height * .6, o.height); }
+    else if (t === 'sk3Fountain') { ctx.fillStyle = '#8a8a86'; ctx.beginPath(); ctx.arc(o.x + o.width / 2, o.y + o.height / 2, o.width / 2, 0, 6.3); ctx.fill(); }
+    else if (t === 'sk3Stump') { ctx.fillStyle = '#3a3430'; ctx.beginPath(); ctx.arc(o.x, o.y, 5, 0, 6.3); ctx.fill(); }
+    ctx.restore(); }); }
+
 /* ---------- hooks ---------- */
 (function () {
     // bigger battlefield + generated layout (3D Skirmish only)
-    const _ap = applyPointControlCanvasSize; applyPointControlCanvasSize = function () { const r = _ap.apply(this, arguments); SK3W.on = sk3Big(); if (SK3W.on) { SKIRMISH_WORLD_WIDTH = SK3W.W; SKIRMISH_WORLD_HEIGHT = SK3W.H; canvas.width = SK3W.W; canvas.height = SK3W.H; } else { SK3W.gen = null; } return r; };
+    const _ap = applyPointControlCanvasSize; applyPointControlCanvasSize = function () { const r = _ap.apply(this, arguments); SK3W.on = sk3Big(); const d = sk3Duel(); SK3W.W = d ? (DUEL.slots > 2 ? 3600 : 3200) : 4800; SK3W.H = d ? (DUEL.slots > 2 ? 2250 : 2000) : 3000; if (SK3W.on) { SKIRMISH_WORLD_WIDTH = SK3W.W; SKIRMISH_WORLD_HEIGHT = SK3W.H; canvas.width = SK3W.W; canvas.height = SK3W.H; } else { SK3W.gen = null; } return r; };
+    if (typeof drawMap === 'function') { const _dm = drawMap; drawMap = function () { const r = _dm.apply(this, arguments); if (SK3W.on && !(SK3D.on && SK3D.ready)) try { sk3Draw2D(); } catch (e) {} return r; }; }
+    // online 3D: start each tank somewhere with a clear view towards the enemy side (no randomness, so every player computes the same spot)
+    if (typeof duelSpawnPos === 'function') { const _sp = duelSpawnPos; duelSpawnPos = function (t, side, k) { if (!SK3W.on || !SK3W.gen) return _sp.apply(this, arguments); const W = canvas.width, H = canvas.height, bx = side ? W - 170 : 170, by = H / 2 + (DUEL.slots > 2 ? (k ? 170 : -170) : 0), dir = side ? -1 : 1, size = t.size || 26;
+            const ok = function (x, y) { return x > size + 4 && x < W - size - 4 && y > size + 4 && y < H - size - 4 && !tankHitsObstacle(t, x, y); }, clear = function (x, y) { let d = 0; for (; d < 700; d += 35) if (tankHitsObstacle(t, x + dir * d, y)) break; return d; };
+            let best = null, bestS = -1e9; for (let r = 0; r < 900; r += 30) for (let q = 0; q < 12; q++) { const a = q / 12 * Math.PI * 2, x = Math.max(size + 4, Math.min(W - size - 4, bx + Math.cos(a) * r * .4)), y = Math.max(size + 4, Math.min(H - size - 4, by + Math.sin(a) * r)); if (!ok(x, y)) continue; const sc = clear(x, y) - r * .35; if (sc > bestS) { bestS = sc; best = [x, y]; } }
+            return best || _sp.apply(this, arguments); }; }
     const _cm = createMap; createMap = function () { if (!SK3W.on || !sk3Big()) { SK3W.gen = null; return _cm.apply(this, arguments); } SK3W.gen = sk3Gen(selectedMap); };
-    const _cb = createBattle; createBattle = function () { const r = _cb.apply(this, arguments); if (SK3W.on && SK3W.gen && selectedGameMode === 'skirmish') try { sk3Populate(); } catch (e) { try { console.warn('3D skirmish populate', e); } catch (x) {} } return r; };
+    const _cb = createBattle; createBattle = function () { const r = _cb.apply(this, arguments); if (SK3W.on && SK3W.gen && selectedGameMode === 'skirmish' && !sk3Duel()) try { sk3Populate(); } catch (e) { try { console.warn('3D skirmish populate', e); } catch (x) {} } return r; };
     const _so = isSolidObstacle; isSolidObstacle = function (o) { return (o && SK3_SOLID.indexOf(o.type) >= 0) || _so.apply(this, arguments); };
     const _th = tankHitsObstacle; tankHitsObstacle = function (t, x, y) { if (!SK3W.on || selectedGameMode !== 'skirmish') return _th.apply(this, arguments); const G = sk3Grid(), i = Math.floor(x / G.cell), j = Math.floor(y / G.cell);
         const near = i < 0 || j < 0 || i >= G.cols || j >= G.rows ? G.none : (G.b[j * G.cols + i] || G.none), all = obstacles; obstacles = near; try { return _th.apply(this, arguments); } finally { obstacles = all; } };
@@ -151,6 +174,6 @@ function sk3Grid() { const k = obstacles; if (SK3G.key === k && SK3G.n === k.len
     const _ts = getTankSpeed; getTankSpeed = function (t) { const v = _ts.apply(this, arguments); return SK3D.on ? v * SK3W.speedK : v; };
     const _tr = getTurretTurnRate; getTurretTurnRate = function (t) { return SK3D.on ? sk3TurretRate(t) : _tr.apply(this, arguments); };
     // the AI drives like a tank
-    const _ue = updateEnemies; updateEnemies = function () { if (!SK3D.on) return _ue.apply(this, arguments); sk3AiPre(enemies); const r = _ue.apply(this, arguments); sk3AiPost(enemies); return r; };
-    const _ua = updateAllies; updateAllies = function () { if (!SK3D.on) return _ua.apply(this, arguments); sk3AiPre(allies); const r = _ua.apply(this, arguments); sk3AiPost(allies); return r; };
+    const _ue = updateEnemies; updateEnemies = function () { if (!SK3D.on || sk3Duel()) return _ue.apply(this, arguments); sk3AiPre(enemies); const r = _ue.apply(this, arguments); sk3AiPost(enemies); return r; };
+    const _ua = updateAllies; updateAllies = function () { if (!SK3D.on || sk3Duel()) return _ua.apply(this, arguments); sk3AiPre(allies); const r = _ua.apply(this, arguments); sk3AiPost(allies); return r; };
 })();

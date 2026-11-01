@@ -8,8 +8,8 @@
    Rooms use tank-themed codes (TIGER-4821) and a join link: tank-game.html?duel=TIGER-4821
 ===================================================== */
 const DUEL = { role: null, peer: null, conn: null, conns: [], code: '', foe: null, mode: '1v1', slots: 2, mySlot: 0, tanks: [], pTanks: [], names: [], inps: [], seenF: [], seenR: [], seenA: [], score: [0, 0], target: 5, sendAt: 0, sid: 0, over: false, winner: -1,
-    tank: { f: 'american', c: 'medium' }, map: 'town', snap: null, snapAt: 0, active: false, myFire: 0, myRep: 0, myAb: 0, inSent: 0, lastIn: '', prevDiff: null, gone: false, gid: '', chat: [] };
-const DUEL_BUILD = 164;
+    tank: { f: 'american', c: 'medium' }, map: 'town', three: false, seed: 0, snap: null, snapAt: 0, active: false, myFire: 0, myRep: 0, myAb: 0, inSent: 0, lastIn: '', prevDiff: null, gone: false, gid: '', chat: [] };
+const DUEL_BUILD = 165;
 const DUEL_WORDS = ['TIGER', 'PANTHER', 'SHERMAN', 'CHURCHILL', 'CROMWELL', 'FIREFLY', 'HELLCAT', 'PERSHING', 'STUART', 'MATILDA', 'COMET', 'PUMA', 'LUCHS', 'NASHORN', 'HETZER', 'JUMBO', 'JACKSON', 'ACHILLES', 'VALENTINE', 'GRANT', 'TETRARCH', 'MARDER', 'WOLVERINE', 'CHAFFEE', 'CENTAUR', 'KV', 'SU', 'IS'];
 const DUEL_MAPS = [['town', 'RUINED TOWN'], ['trenches', 'TRENCH FRONT'], ['snow', 'SNOWY FOREST'], ['bocage', 'HEDGEROWS']];
 const DUEL_CHAT = ['GG!', 'NICE SHOT!', 'HELP ME!', 'ATTACK!', 'LOL 😂', 'OOPS!'];
@@ -126,7 +126,7 @@ function duelFastOf(c) { const f = DUEL.fastBy && c && c.gid ? DUEL.fastBy[c.gid
 function duelSendTo(c, m) { try { if (c && c.open) c.send(m); } catch (e) {} }
 function duelBroadcast(m, except) { DUEL.conns.forEach(function (c) { if (c && c !== except) duelSendTo(c, m); }); }
 function duelBroadcastFast(m) { DUEL.conns.forEach(function (c) { if (c) duelSendTo(duelFastOf(c), m); }); }
-function duelBroadcastStart() { for (let s = 1; s < DUEL.slots; s++) { const c = DUEL.conns[s]; if (c) duelSendTo(c, { t: 'start', map: DUEL.map, target: DUEL.target, mode: DUEL.mode, slots: DUEL.slots, you: s, P: DUEL.pTanks.slice(0, DUEL.slots) }); } }
+function duelBroadcastStart() { DUEL.seed = (Math.random() * 1e9) | 0; for (let s = 1; s < DUEL.slots; s++) { const c = DUEL.conns[s]; if (c) duelSendTo(c, { t: 'start', map: DUEL.map, target: DUEL.target, mode: DUEL.mode, slots: DUEL.slots, you: s, P: DUEL.pTanks.slice(0, DUEL.slots), three: DUEL.three ? 1 : 0, seed: DUEL.seed }); } }
 function duelOnData(m, c) { if (!m || !m.t) return; DUEL.lastRx = Date.now(); c.lastRx = Date.now();
     if (m.t === 'busy') { duelStatus('That battle is already full.', true); duelJoinReset(); return; }
     if (m.t === 'ver') { duelVerMsg(m.v, true); return; }
@@ -142,7 +142,7 @@ function duelOnData(m, c) { if (!m || !m.t) return; DUEL.lastRx = Date.now(); c.
     } else {
         if (m.t === 'joined') { DUEL.mySlot = m.you; DUEL.slots = m.slots; }
         else if (m.t === 'lobby') { DUEL.slots = m.slots; DUEL.mode = m.mode; duelLobbyShow(m.L, m.slots, DUEL.mySlot); }
-        else if (m.t === 'start') { DUEL.map = m.map; DUEL.target = m.target || 5; DUEL.mode = m.mode || '1v1'; DUEL.slots = m.slots || 2; DUEL.mySlot = m.you; DUEL.pTanks = m.P; duelStartMatch(); }
+        else if (m.t === 'start') { DUEL.three = !!m.three; DUEL.seed = m.seed | 0; DUEL.map = m.map; DUEL.target = m.target || 5; DUEL.mode = m.mode || '1v1'; DUEL.slots = m.slots || 2; DUEL.mySlot = m.you; DUEL.pTanks = m.P; duelStartMatch(); }
         else if (m.t === 's') { DUEL.snap = m; DUEL.snapAt = performance.now(); }
         else if (m.t === 'left') { duelPlayerLeft(m.s); }
     } }

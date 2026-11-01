@@ -14918,8 +14918,8 @@ function m15ShowBrief() {
    Rooms use tank-themed codes (TIGER-4821) and a join link: tank-game.html?duel=TIGER-4821
 ===================================================== */
 const DUEL = { role: null, peer: null, conn: null, conns: [], code: '', foe: null, mode: '1v1', slots: 2, mySlot: 0, tanks: [], pTanks: [], names: [], inps: [], seenF: [], seenR: [], seenA: [], score: [0, 0], target: 5, sendAt: 0, sid: 0, over: false, winner: -1,
-    tank: { f: 'american', c: 'medium' }, map: 'town', snap: null, snapAt: 0, active: false, myFire: 0, myRep: 0, myAb: 0, inSent: 0, lastIn: '', prevDiff: null, gone: false, gid: '', chat: [] };
-const DUEL_BUILD = 164;
+    tank: { f: 'american', c: 'medium' }, map: 'town', three: false, seed: 0, snap: null, snapAt: 0, active: false, myFire: 0, myRep: 0, myAb: 0, inSent: 0, lastIn: '', prevDiff: null, gone: false, gid: '', chat: [] };
+const DUEL_BUILD = 165;
 const DUEL_WORDS = ['TIGER', 'PANTHER', 'SHERMAN', 'CHURCHILL', 'CROMWELL', 'FIREFLY', 'HELLCAT', 'PERSHING', 'STUART', 'MATILDA', 'COMET', 'PUMA', 'LUCHS', 'NASHORN', 'HETZER', 'JUMBO', 'JACKSON', 'ACHILLES', 'VALENTINE', 'GRANT', 'TETRARCH', 'MARDER', 'WOLVERINE', 'CHAFFEE', 'CENTAUR', 'KV', 'SU', 'IS'];
 const DUEL_MAPS = [['town', 'RUINED TOWN'], ['trenches', 'TRENCH FRONT'], ['snow', 'SNOWY FOREST'], ['bocage', 'HEDGEROWS']];
 const DUEL_CHAT = ['GG!', 'NICE SHOT!', 'HELP ME!', 'ATTACK!', 'LOL 😂', 'OOPS!'];
@@ -15036,7 +15036,7 @@ function duelFastOf(c) { const f = DUEL.fastBy && c && c.gid ? DUEL.fastBy[c.gid
 function duelSendTo(c, m) { try { if (c && c.open) c.send(m); } catch (e) {} }
 function duelBroadcast(m, except) { DUEL.conns.forEach(function (c) { if (c && c !== except) duelSendTo(c, m); }); }
 function duelBroadcastFast(m) { DUEL.conns.forEach(function (c) { if (c) duelSendTo(duelFastOf(c), m); }); }
-function duelBroadcastStart() { for (let s = 1; s < DUEL.slots; s++) { const c = DUEL.conns[s]; if (c) duelSendTo(c, { t: 'start', map: DUEL.map, target: DUEL.target, mode: DUEL.mode, slots: DUEL.slots, you: s, P: DUEL.pTanks.slice(0, DUEL.slots) }); } }
+function duelBroadcastStart() { DUEL.seed = (Math.random() * 1e9) | 0; for (let s = 1; s < DUEL.slots; s++) { const c = DUEL.conns[s]; if (c) duelSendTo(c, { t: 'start', map: DUEL.map, target: DUEL.target, mode: DUEL.mode, slots: DUEL.slots, you: s, P: DUEL.pTanks.slice(0, DUEL.slots), three: DUEL.three ? 1 : 0, seed: DUEL.seed }); } }
 function duelOnData(m, c) { if (!m || !m.t) return; DUEL.lastRx = Date.now(); c.lastRx = Date.now();
     if (m.t === 'busy') { duelStatus('That battle is already full.', true); duelJoinReset(); return; }
     if (m.t === 'ver') { duelVerMsg(m.v, true); return; }
@@ -15052,7 +15052,7 @@ function duelOnData(m, c) { if (!m || !m.t) return; DUEL.lastRx = Date.now(); c.
     } else {
         if (m.t === 'joined') { DUEL.mySlot = m.you; DUEL.slots = m.slots; }
         else if (m.t === 'lobby') { DUEL.slots = m.slots; DUEL.mode = m.mode; duelLobbyShow(m.L, m.slots, DUEL.mySlot); }
-        else if (m.t === 'start') { DUEL.map = m.map; DUEL.target = m.target || 5; DUEL.mode = m.mode || '1v1'; DUEL.slots = m.slots || 2; DUEL.mySlot = m.you; DUEL.pTanks = m.P; duelStartMatch(); }
+        else if (m.t === 'start') { DUEL.three = !!m.three; DUEL.seed = m.seed | 0; DUEL.map = m.map; DUEL.target = m.target || 5; DUEL.mode = m.mode || '1v1'; DUEL.slots = m.slots || 2; DUEL.mySlot = m.you; DUEL.pTanks = m.P; duelStartMatch(); }
         else if (m.t === 's') { DUEL.snap = m; DUEL.snapAt = performance.now(); }
         else if (m.t === 'left') { duelPlayerLeft(m.s); }
     } }
@@ -17732,7 +17732,7 @@ function sk3SyncTank(st, t, dt) { const m = sk3Model(t); m.seen = true; const g 
     const hF = st.hgt(x + ca * hl, z + sa * hl), hB = st.hgt(x - ca * hl, z - sa * hl), hP = st.hgt(x - sa * hw2, z + ca * hw2), hN = st.hgt(x + sa * hw2, z - ca * hw2), y = Math.max(-1.2, Math.max((hF + hB) / 2, (hP + hN) / 2, st.hgt(x, z)));
     const k8 = Math.min(1, dt * 7); m.tp += (Math.atan2(hF - hB, hl * 2) - m.tp) * k8; m.tr += (-Math.atan2(hP - hN, hw2 * 2) - m.tr) * k8; g.position.set(x, y, z); g.rotation.set(m.dead ? g.rotation.x : m.tr, -a, m.dead ? g.rotation.z : m.tp);
     if (m.turret && !m.dead) m.turret.rotation.y = -((t.turretAngle || 0) - (t.angle || 0));
-    if (t.destroyed && !m.dead) sk3KillModel(st, m, t); if (!t.destroyed && m.dead) { TK3.scene.remove(m.g); SK3D.models.delete(t); return sk3SyncTank(st, t, dt); }
+    if (t.destroyed && !m.dead) sk3KillModel(st, m, t); if (!t.destroyed && m.dead) { SK3D.models.delete(t); return sk3SyncTank(st, t, dt); }
     const far = SK3D.camP ? SK3D.camP.distanceTo(g.position) > 55 : false; if (far !== m.far) { m.far = far; (m.wheels || []).forEach(function (w) { w.visible = !far; }); }
     if (!m.dead) { try { exDyn(st, m, dt); } catch (e) {} } return m; }
 function sk3KillModel(st, m, t) { m.dead = true; m.deadAt = SK3D.now; try { exBurn(m.g); EX_BURN.heat.value = .7; } catch (e) {} const p = m.g.position; tk3Boom(st.fire, st.smoke, p.x, 1.5, p.z, .9 * m.k, {}); st.boomL.position.set(p.x, 3, p.z); st.boomL.intensity = 70; sk3Debris(st, p.x, 1.6, p.z, 1.3);
@@ -17848,8 +17848,11 @@ function sk3Hud() { const c = SK3D.hud; if (!c) return; const q = Math.max(1, Ma
     const tag = function (t, foe) { if (!t || t.destroyed) return; const m = SK3D.models.get(t), top = m ? (m.spec.tt + m.spec.th + .9) * m.k : 3.6, p = proj(sk3X(t.x), top, sk3Z(t.y)); if (!p) return; const dist = Math.hypot(t.x - player.x, t.y - player.y) * SK3D.S; if (dist > 170) return; const a = Math.max(.35, 1 - dist / 220);
         g.globalAlpha = a; g.textAlign = 'center'; g.font = 'bold 12px "Stardos Stencil", Impact, sans-serif'; g.fillStyle = foe ? '#ffb0a0' : '#b8d4ff'; g.shadowColor = '#000'; g.shadowBlur = 4; g.fillText(String(t.name || '').toUpperCase() + '  ' + Math.round(dist) + 'm', p[0], p[1] - 10); g.shadowBlur = 0;
         const w = 56, hp = Math.max(0, t.health / t.maxHealth); g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(p[0] - w / 2 - 1, p[1] - 5, w + 2, 7); g.fillStyle = foe ? (hp < .3 ? '#ff4030' : '#d8503c') : '#4a90e0'; g.fillRect(p[0] - w / 2, p[1] - 4, w * hp, 5); g.globalAlpha = 1;
-        if (foe && window.EXE && EXE.cand === t) { const lab = 'F  EXECUTE', tw = g.measureText(lab).width + 22; g.fillStyle = 'rgba(120,20,10,.92)'; g.fillRect(p[0] - tw / 2, p[1] - 44, tw, 22); g.strokeStyle = '#ffb08a'; g.strokeRect(p[0] - tw / 2, p[1] - 44, tw, 22); g.fillStyle = '#fff0e0'; g.font = 'bold 14px "Stardos Stencil", Impact, sans-serif'; g.fillText(lab, p[0], p[1] - 28); } };
+        if (foe && typeof EXE !== 'undefined' && EXE.cand === t) { const lab = 'F  EXECUTE', tw = g.measureText(lab).width + 22; g.fillStyle = 'rgba(120,20,10,.92)'; g.fillRect(p[0] - tw / 2, p[1] - 44, tw, 22); g.strokeStyle = '#ffb08a'; g.strokeRect(p[0] - tw / 2, p[1] - 44, tw, 22); g.fillStyle = '#fff0e0'; g.font = 'bold 14px "Stardos Stencil", Impact, sans-serif'; g.fillText(lab, p[0], p[1] - 28); } };
     (enemies || []).forEach(function (e) { tag(e, true); }); (allies || []).forEach(function (a) { tag(a, false); });
+    if (typeof DUEL !== 'undefined' && DUEL.active) { const now = Date.now(); DUEL.tanks.forEach(function (t) { if (!t || t.destroyed) return; const m = SK3D.models.get(t), top = m ? (m.spec.tt + m.spec.th + 1.6) * m.k : 4.2, p = proj(sk3X(t.x), top, sk3Z(t.y)); if (!p) return; let y = p[1] - (t === player ? 0 : 26); g.textAlign = 'center';
+            if (now < (t.exeShowUntil || 0)) { g.font = 'bold 13px "Stardos Stencil", Impact, sans-serif'; const lab = '⚔ EXECUTING', w = g.measureText(lab).width + 18; g.fillStyle = 'rgba(40,28,10,.9)'; g.fillRect(p[0] - w / 2, y - 20, w, 20); g.strokeStyle = '#ffcf6a'; g.strokeRect(p[0] - w / 2, y - 20, w, 20); g.fillStyle = '#ffe9b8'; g.fillText(lab, p[0], y - 6); y -= 24; }
+            if (t.duelChat && now < (t.duelChatUntil || 0)) { g.globalAlpha = Math.min(1, (t.duelChatUntil - now) / 400); g.font = 'bold 15px "Stardos Stencil", Impact, sans-serif'; const w = g.measureText(t.duelChat).width + 18; g.fillStyle = 'rgba(245,238,210,.95)'; g.fillRect(p[0] - w / 2, y - 24, w, 22); g.fillStyle = '#1a1a10'; g.fillText(t.duelChat, p[0], y - 8); g.globalAlpha = 1; } }); }
     if (player.destroyed) return;
     // where the gun is actually pointing (lags behind the crosshair while the turret traverses)
     const ta = player.turretAngle || 0, gp = proj(sk3X(player.x) + Math.cos(ta) * SK3D.aimD, 1.2, sk3Z(player.y) + Math.sin(ta) * SK3D.aimD);
@@ -17877,11 +17880,22 @@ function sk3Build() { const vp = document.getElementById('canvasViewport'); if (
     if (!SK3D.hud) { SK3D.hud = document.createElement('canvas'); SK3D.hud.id = 'sk3Hud'; const sc = document.createElement('div'); sc.id = 'sk3Scope'; SK3D.scopeEl = sc; } vp.insertBefore(SK3D.hud, document.getElementById('minimapPanel')); vp.insertBefore(SK3D.scopeEl, document.getElementById('minimapPanel')); SK3D.hud.style.display = 'block';
     if (!TK3.cv.sk3Bound) { TK3.cv.sk3Bound = true; sk3Bind(TK3.cv); } SK3D.ready = true; sk3LoadMsg(false); return true; }
 function sk3LoadMsg(on) { const vp = document.getElementById('canvasViewport'); let e = document.getElementById('sk3Load'); if (!on) { if (e) e.remove(); return; } if (!e && vp) { e = document.createElement('div'); e.id = 'sk3Load'; e.textContent = 'BUILDING THE 3D BATTLEFIELD…'; vp.appendChild(e); } return e; }
-function sk3Start() { if (!SK3D.want || selectedGameMode !== 'skirmish' || (typeof DUEL !== 'undefined' && DUEL.active)) return; sk3Style(); SK3D.on = true; SK3D.yaw = player ? player.angle || 0 : 0; SK3D.pitch = .3; SK3D.scope = false; SK3D.hint = performance.now(); document.body.classList.add('sk3d'); clearMovementKeys();
+function sk3Start() { const duel = typeof DUEL !== 'undefined' && DUEL.active; if (!SK3D.want || selectedGameMode !== 'skirmish' || (duel && !DUEL.three)) return; sk3Style(); SK3D.on = true; SK3D.yaw = player ? player.angle || 0 : 0; SK3D.pitch = .3; SK3D.scope = false; SK3D.hint = performance.now(); document.body.classList.add('sk3d'); clearMovementKeys();
     const go = function () { if (!SK3D.on || !gameRunning) return; if (!sk3Build()) { sk3Stop(); try { showRadioText('3D COULD NOT START ON THIS COMPUTER — PLAYING IN 2D.', true); } catch (e) {} } };
     if (window.THREE) { sk3LoadMsg(true); setTimeout(go, 30); } else { sk3LoadMsg(true); TK3.failed = false; tk3Load(function (ok) { if (ok) go(); else { sk3Stop(); try { showRadioText('3D COULD NOT LOAD (NO CONNECTION TO THE 3D LIBRARY) — PLAYING IN 2D.', true); } catch (e) {} } }); } }
-function sk3Stop() { const was = SK3D.on; SK3D.on = false; SK3D.ready = false; SK3D.scope = false; document.body.classList.remove('sk3d'); sk3LoadMsg(false); if (SK3D.hud) SK3D.hud.style.display = 'none'; if (SK3D.scopeEl) SK3D.scopeEl.style.display = 'none'; try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {}
+function sk3Stop() { sk3DropPark(); const was = SK3D.on; SK3D.on = false; SK3D.ready = false; SK3D.scope = false; document.body.classList.remove('sk3d'); sk3LoadMsg(false); if (SK3D.hud) SK3D.hud.style.display = 'none'; if (SK3D.scopeEl) SK3D.scopeEl.style.display = 'none'; try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {}
     if (TK3.cv && TK3.cv.parentNode && TK3.cv.parentNode.id === 'canvasViewport') TK3.cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:none;'; if (was && TK3.cur === SK3D.idx) { try { tk3Clear(); TK3.cur = -1; } catch (e) {} } SK3D.models = new Map(); SK3D.wrecks = []; SK3D.st = null; }
+
+/* ---------- sharing the renderer with the execution finishers ----------
+   tk3Build() wipes the current scene. When a finisher starts during a 3D battle the battlefield is parked
+   (kept intact) and put back when the finisher ends, so there's no multi-second rebuild (which would also
+   stall an online battle). */
+const SK3_PARK = ['scene', 'cam', 'parts', 'sky', 'water', 'st', 'grade', 'fogU', 'sunDir', 'rayK', 'rayCol', 'objs', 't0', 'prev', 'timeScale', 'cur', 'flash', 'shake', 'zb', 'cab'];
+function sk3Park() { if (SK3D.park || !SK3D.on || TK3.cur !== SK3D.idx || !TK3.scene) return; const p = {}; SK3_PARK.forEach(function (k) { p[k] = TK3[k]; }); SK3D.park = p; TK3.scene = null; TK3.parts = []; TK3.sky = null; TK3.water = null; TK3.objs = [TK3.softT, TK3.smokeT].filter(Boolean); }
+function sk3Unpark() { const p = SK3D.park; if (!p || (typeof EXE !== 'undefined' && EXE.on)) return false; try { if (TK3.scene) tk3Clear(); } catch (e) {} SK3_PARK.forEach(function (k) { TK3[k] = p[k]; }); SK3D.park = null; TK3.cur = SK3D.idx;
+    const vp = document.getElementById('canvasViewport'); if (vp && TK3.cv.parentNode !== vp) vp.insertBefore(TK3.cv, document.getElementById('sk3Hud') || document.getElementById('minimapPanel')); TK3.cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;cursor:crosshair;'; TK3.W = 0; return true; }
+function sk3DropPark() { const p = SK3D.park; if (!p) return; SK3D.park = null; const keep = { scene: TK3.scene, objs: TK3.objs, parts: TK3.parts }; try { TK3.scene = p.scene; TK3.objs = p.objs; TK3.parts = p.parts; tk3Clear(); } catch (e) {} TK3.scene = keep.scene; TK3.objs = keep.objs; TK3.parts = keep.parts; }
+(function () { const _tb = tk3Build; tk3Build = function (idx) { if (idx !== SK3D.idx) sk3Park(); return _tb.apply(this, arguments); }; })();
 
 /* ---------- mouse + keys ---------- */
 function sk3Bind(cv) { cv.addEventListener('contextmenu', function (e) { if (SK3D.on) e.preventDefault(); });
@@ -17908,12 +17922,12 @@ function sk3SetScope(on) { SK3D.scope = !!on && !!player && !player.destroyed; c
         addTrackMarks(player); };
     const _ap = aimPlayer; aimPlayer = function () { if (!SK3D.on) return _ap.apply(this, arguments); sk3Turret(); };
     // in 3D the 2D battlefield canvas is hidden, so don't spend time painting it; just keep the execution prompt check running
-    const _de = drawEverything; drawEverything = function () { if (!(SK3D.on && SK3D.ready)) return _de.apply(this, arguments); if (SK3D.skip) return; if (window.EXE && EXE.on) return;
-        try { drawAlliedRadioBoxes(); } catch (e) {} if (TK3.cur !== SK3D.idx) { SK3D.ready = false; setTimeout(function () { if (SK3D.on && gameRunning && !(window.EXE && EXE.on)) sk3Build(); }, 0); return; } sk3Frame(performance.now()); };
+    const _de = drawEverything; drawEverything = function () { if (!(SK3D.on && SK3D.ready)) return _de.apply(this, arguments); if (SK3D.skip) return; if (typeof EXE !== 'undefined' && EXE.on) return;
+        try { drawAlliedRadioBoxes(); } catch (e) {} if (TK3.cur !== SK3D.idx && sk3Unpark()) { sk3Frame(performance.now()); return; } if (TK3.cur !== SK3D.idx) { SK3D.ready = false; setTimeout(function () { if (SK3D.on && gameRunning && !(typeof EXE !== 'undefined' && EXE.on)) sk3Build(); }, 0); return; } sk3Frame(performance.now()); };
     if (typeof drawMinimap === 'function') { const _mm = drawMinimap; drawMinimap = function () { if (SK3D.skip) return; return _mm.apply(this, arguments); }; }
     // The 2D game moves everything one step per screen refresh. 3D frames take longer, which would slow the whole battle
     // (shells included), so in 3D the battle runs at a fixed 60 steps a second and only the last step of each frame is drawn.
-    const STEP = 1000 / 60, _gl = gameLoop; gameLoop = function () { if (!SK3D.on || !SK3D.ready || !gameRunning || (typeof gamePaused !== 'undefined' && gamePaused) || (window.EXE && EXE.on)) { SK3D.simT = 0; return _gl.apply(this, arguments); }
+    const STEP = 1000 / 60, _gl = gameLoop; gameLoop = function () { if (!SK3D.on || !SK3D.ready || !gameRunning || (typeof gamePaused !== 'undefined' && gamePaused) || (typeof EXE !== 'undefined' && EXE.on)) { SK3D.simT = 0; return _gl.apply(this, arguments); }
         const now = performance.now(); if (!SK3D.simT || now - SK3D.simT > 250) SK3D.simT = now - STEP; let n = Math.floor((now - SK3D.simT) / STEP);
         if (n < 1) { requestAnimationFrame(gameLoop); return; } if (n > 5) { n = 5; SK3D.simT = now - 5 * STEP; } SK3D.simT += n * STEP; SK3D.steps = (SK3D.steps || 0) + n;
         if (n > 1) { const raf = window.requestAnimationFrame, later = []; window.requestAnimationFrame = function (f) { if (f !== gameLoop) later.push(f); return 0; }; SK3D.skip = true;
@@ -17923,10 +17937,16 @@ function sk3SetScope(on) { SK3D.scope = !!on && !!player && !player.destroyed; c
     const _ce = createExplosion; createExplosion = function (x, y, s) { const r = _ce.apply(this, arguments); if (SK3D.on && SK3D.ready) try { sk3Boom(x, y, s); } catch (e) {} return r; };
     const _hs = createHitSparks; createHitSparks = function (x, y) { const r = _hs.apply(this, arguments); if (SK3D.on && SK3D.ready) try { sk3Sparks(x, y); } catch (e) {} return r; };
     // starting / leaving a battle
-    const _sg = startGame; startGame = function () { if (SK3D.on) sk3Stop(); const r = _sg.apply(this, arguments); try { sk3Start(); } catch (e) { try { console.warn('3D skirmish start', e); } catch (x) {} sk3Stop(); } return r; };
+    const _sg = startGame; startGame = function () { if (SK3D.on) sk3Stop(); if (typeof DUEL !== 'undefined' && DUEL.active) SK3D.want = !!DUEL.three; const r = _sg.apply(this, arguments); try { sk3Start(); } catch (e) { try { console.warn('3D skirmish start', e); } catch (x) {} sk3Stop(); } return r; };
     const _rm = returnToMenu; returnToMenu = function () { sk3Stop(); SK3D.want = false; sk3Badge(); return _rm.apply(this, arguments); };
     const _cg = chooseGameMode; chooseGameMode = function (mode, three) { SK3D.want = !!three && mode === 'skirmish'; const r = _cg.apply(this, arguments); sk3Badge(); return r; };
     if (typeof openDuel === 'function') { const _od = openDuel; openDuel = function () { SK3D.want = false; return _od.apply(this, arguments); }; }
+    // online lobby: the host can switch the battle to 3D for everyone
+    if (typeof duelBuild === 'function') { try { DUEL.three = localStorage.getItem('tankers_duel3d') === '1'; } catch (e) {}
+        const sync3 = function () { const b = document.getElementById('duel3dBtn'); if (b) { b.classList.toggle('sel', !!DUEL.three); b.innerHTML = (DUEL.three ? '🎥 3D BATTLE: ON' : '🗺️ 3D BATTLE: OFF') + '<small style="display:block;font-size:10px;letter-spacing:.12em;opacity:.75">TEST · THE HOST DECIDES</small>'; } };
+        const _db = duelBuild; duelBuild = function () { const r = _db.apply(this, arguments); try { const maps = document.getElementById('duelMaps'); if (maps && !document.getElementById('duel3dBtn')) { const d = document.createElement('div'); d.className = 'choices'; d.id = 'duel3d'; d.style.marginTop = '8px'; d.innerHTML = '<button id="duel3dBtn" style="width:100%"></button>'; maps.parentNode.insertBefore(d, maps.nextSibling);
+                    document.getElementById('duel3dBtn').onclick = function () { DUEL.three = !DUEL.three; try { localStorage.setItem('tankers_duel3d', DUEL.three ? '1' : '0'); } catch (e) {} sync3(); }; } sync3(); } catch (e) {} return r; };
+        const _sm2 = duelStartMatch; duelStartMatch = function () { const r = _sm2.apply(this, arguments); try { if (DUEL.three) showRadioText('3D BATTLE — W/S THROTTLE, A/D TURN, MOUSE AIMS. CLICK THE BATTLEFIELD TO TAKE THE GUNNER\'S SEAT.', true); } catch (e) {} return r; }; }
     // SHIFT toggles the gunner's sight
     window.addEventListener('keydown', function (e) { if (!SK3D.on || e.repeat) return; if (e.key === 'Shift') { e.preventDefault(); sk3SetScope(!SK3D.scope); } }, true);
     // the menu button
@@ -17943,7 +17963,7 @@ function sk3Badge() { const sc = document.getElementById('skirmishScreen'); if (
    Works for the bigger generated maps (SK3W.gen) and the normal-size maps.
 ===================================================== */
 const SK3_LOOK = {
-    town: { sky: ['#6c88ae', '#dcdad2', '#8c8478'], fog: '#bcbab2', fogD: .0036, sun: [.52, .66, .38], sunCol: '#fff1dc', sunI: 2.5, hemi: [1.0, '#b4c4dc', '#6c6052'], amp: .1, ground: '#8c877e', grade: { bloom: .2, expo: .96, sat: .92, con: 1.06, tint: [1.02, 1, .97] } },
+    town: { sky: ['#7a8698', '#d8cdbc', '#8a7e6e'], fog: '#b6ab9a', fogD: .0047, sun: [.5, .46, .42], sunCol: '#ffe0b6', sunI: 2.5, hemi: [.95, '#b4bccb', '#64584a'], amp: .1, ground: '#857c70', grade: { bloom: .22, expo: .95, sat: .84, con: 1.08, tint: [1.05, 1, .93], vig: .32 } },
     snow: { sky: ['#8794a8', '#d6dae0', '#c6cad2'], fog: '#c9cdd4', fogD: .0046, sun: [.42, .5, .6], sunCol: '#f6f2ec', sunI: 1.6, hemi: [1.3, '#d4dcea', '#b4b8c0'], amp: 1.2, ground: '#f2f4f8', grade: { bloom: .16, expo: .86, sat: .86, con: 1.04, tint: [.97, 1, 1.04] } },
     bocage: { sky: ['#4876b4', '#d2e2f0', '#9aa888'], fog: '#c6d2da', fogD: .0029, sun: [.56, .72, .34], sunCol: '#fff3df', sunI: 2.9, hemi: [.95, '#a8c4e6', '#5c6a3a'], amp: .9, ground: '#6c8a3a', grade: { bloom: .2, expo: .98, sat: 1.0, con: 1.05, tint: [1, 1, .97] } },
     trenches: { sky: ['#686e76', '#b6aea2', '#7a7064'], fog: '#9c968c', fogD: .0048, sun: [.45, .52, .58], sunCol: '#efe2cc', sunI: 1.7, hemi: [.98, '#a2aab6', '#4a4036'], amp: .55, ground: '#4e4032', grade: { bloom: .18, expo: .9, sat: .8, con: 1.07, tint: [1.02, 1, .96] } } };
@@ -18014,22 +18034,37 @@ function sk3House(L, x, z, w, d, h, R, o) { o = o || {}; const plaster = !!o.pla
     sk3Add(list, new THREE.BoxGeometry(w, h, d), o.wall || '#c4b49a', x, h / 2, z);
     sk3Add(L.W, new THREE.BoxGeometry(w + .14, .9, d + .14), '#5c5750', x, .45, z); sk3Add(L.W, new THREE.BoxGeometry(w + .4, .32, d + .4), '#6a645c', x, h + .16, z);
     for (let f = 1; f * 3.4 < h - 1; f++) sk3Add(L.W, new THREE.BoxGeometry(w + .1, .12, d + .1), plaster ? '#b4aa96' : '#8a7e70', x, f * 3.4, z);
-    if (!o.flat && R() < .62) { const rh = Math.min(4.2, Math.min(w, d) * .38), along = w >= d, g = sk3Prism((along ? d : w) + .5, rh, (along ? w : d) + .5); if (along) tk3Xf(g, 0, 0, 0, 0, Math.PI / 2, 0); sk3Add(L.W, g, o.roof || '#6a3a2e', x, h + .3, z);
+    const dmg = o.damage || (o.damaged ? 1 : 0);
+    if (!o.flat && R() < .62) { const rh = Math.min(4.2, Math.min(w, d) * .38), along = w >= d, Lr = (along ? w : d) + .5, Wr = (along ? d : w) + .5, part = dmg >= 2 && R() < .8 ? .3 + R() * .35 : 1, sd = R() < .5 ? 1 : -1, sh = (Lr - Lr * part) / 2 * sd, g = sk3Prism(Wr, rh, Lr * part); if (along) tk3Xf(g, 0, 0, 0, 0, Math.PI / 2, 0); sk3Add(L.W, g, o.roof || '#6a3a2e', x + (along ? sh : 0), h + .3, z + (along ? 0 : sh));
+        if (part < 1) { const half = Wr / 2, Lb = Math.hypot(half, rh), th = Math.atan2(rh, half), n = Math.floor(Lr * (1 - part) / .9); for (let k = 0; k < n; k++) { if (R() < .25) continue; for (const s2 of [-1, 1]) { const b = new THREE.BoxGeometry(Lb, .15, .15); tk3Xf(b, 0, 0, 0, 0, 0, -s2 * th * (R() < .2 ? .6 : 1)); tk3Xf(b, s2 * half / 2, rh / 2, 0); if (along) tk3Xf(b, 0, 0, 0, 0, Math.PI / 2, 0); const pos = (sd > 0 ? -Lr / 2 + (k + .5) * .9 : Lr / 2 - (k + .5) * .9); sk3Add(L.W, b, '#2e241c', x + (along ? pos : 0), h + .3, z + (along ? 0 : pos)); } }
+            if (o.st) o.st.fires.push([x + (along ? (sd > 0 ? -Lr / 4 : Lr / 4) : 0), h - .5, z + (along ? 0 : (sd > 0 ? -Lr / 4 : Lr / 4)), .8 + R() * .5, 0, 1]); }
         for (let c = 0; c < 1 + (R() < .5 ? 1 : 0); c++) sk3Add(L.B, new THREE.BoxGeometry(.75, 2.2, .75), '#9a6a52', x + (along ? (c ? -1 : 1) * w * (.18 + R() * .15) : (R() - .5) * w * .3), h + rh * .55 + .9, z + (along ? (R() - .5) * d * .2 : (c ? -1 : 1) * d * .2)); }
     else { sk3Add(L.W, new THREE.BoxGeometry(w - .5, .55, d - .5), '#45413c', x, h + .55, z); if (R() < .7) sk3Add(L.B, new THREE.BoxGeometry(.9, 1.8, .9), '#9a6a52', x + (R() - .5) * w * .6, h + 1.2, z + (R() - .5) * d * .6); }
     const face = function (Lw, along, nx, nz) { const n = Math.max(1, Math.floor(Lw / 3.2)); for (let f = 0; f * 3.4 + 2.2 < h; f++) for (let i = 0; i < n; i++) { const off = -Lw / 2 + (i + .5) * Lw / n;
             const put = function (gw, gh, dep, col, y, out, lat) { lat = lat || 0; sk3Add(L.W, new THREE.BoxGeometry(along ? gw : dep, gh, along ? dep : gw), col, along ? x + off + lat : x + nx * (w / 2 + out), y, along ? z + nz * (d / 2 + out) : z + off + lat); };
             if (f === 0 && i === Math.floor(n / 2) && R() < .65) { put(1.5, 2.6, .12, frame, 1.3, .03); put(1.2, 2.35, .16, '#3a2a1e', 1.2, .05); continue; }
             if (f === 0 && o.shop) { put(2.4, 2.1, .12, '#3a3a3a', 1.6, .03); put(2.2, 1.9, .14, R() < .2 ? '#c8a060' : '#2a3036', 1.6, .05); continue; }
-            const y = f * 3.4 + 1.9, lit = R() < .05; put(1.2, 1.65, .12, frame, y, .03); put(.96, 1.42, .14, lit ? '#d8a050' : (R() < .25 ? '#1a1c20' : '#2a3038'), y, .05); put(1.35, .14, .32, '#8a8478', y - .85, .1);
+            const y = f * 3.4 + 1.9, lit = !dmg && R() < .05, burnt = dmg >= 2 && f * 3.4 + 4 > h; put(1.2, 1.65, .12, burnt ? '#2a2420' : frame, y, .03); put(.96, 1.42, .14, burnt ? '#0a0908' : lit ? '#d8a050' : (R() < .25 + dmg * .25 ? '#121314' : '#2a3038'), y, .05); put(1.35, .14, .32, '#8a8478', y - .85, .1);
+            if (dmg && f > 0 && R() < .3 + dmg * .15) put(1.1, 1.3, .06, '#28211c', y + 1.25, .036);
+            if (dmg && f === 0 && R() < .35) for (let k = 0; k < 3; k++) put(1.15, .2, .05, k % 2 ? '#6a5038' : '#7a5e42', y - .45 + k * .45, .11);
             if (shut) { put(.48, 1.5, .08, shut, y, .06, -.76); put(.48, 1.5, .08, shut, y, .06, .76); } } };
     face(w, true, 0, 1); face(w, true, 0, -1); face(d, false, 1, 0); face(d, false, -1, 0);
     if (o.shop) sk3Add(L.W, new THREE.BoxGeometry(w * .8, .25, 1.4), R() < .5 ? '#7a2a22' : '#2a4a5a', x, 3.3, z + d / 2 + .6);
-    if (o.damaged) for (let k = 0; k < 2 + (R() * 3 | 0); k++) { const side = R() * 4 | 0, g = new THREE.DodecahedronGeometry(.6 + R() * .9, 0), y = 1.5 + R() * (h - 2.5); tk3Xf(g, 0, 0, 0, R() * 3, R() * 3, 0, side < 2 ? 1 : .25, 1, side < 2 ? .25 : 1); sk3Add(L.W, g, '#141210', x + (side < 2 ? (R() - .5) * w * .8 : (side === 2 ? 1 : -1) * w / 2), y, z + (side < 2 ? (side ? 1 : -1) * d / 2 : (R() - .5) * d * .8)); } }
+    if (dmg) for (let k = 0; k < (dmg >= 2 ? 4 : 2) + (R() * 4 | 0); k++) { const side = R() * 4 | 0, sz = .6 + R() * (dmg >= 2 ? 1.4 : .9), g = new THREE.DodecahedronGeometry(sz, 0), y = 1.5 + R() * (h - 2.5), hx = x + (side < 2 ? (R() - .5) * w * .8 : (side === 2 ? 1 : -1) * w / 2), hz = z + (side < 2 ? (side ? 1 : -1) * d / 2 : (R() - .5) * d * .8);
+        tk3Xf(g, 0, 0, 0, R() * 3, R() * 3, 0, side < 2 ? 1 : .25, 1, side < 2 ? .25 : 1); sk3Add(L.W, g, '#141210', hx, y, hz);
+        const pg = new THREE.DodecahedronGeometry(sz * 1.35, 0); tk3Xf(pg, 0, 0, 0, 0, R() * 3, 0, side < 2 ? 1 : .05, .85, side < 2 ? .05 : 1); sk3Add(plaster ? L.B : L.W, pg, plaster ? '#a86a50' : '#6a4a3c', hx, y, hz);
+        if (o.rub) o.rub.push([hx + (side < 2 ? 0 : (side === 2 ? 1.6 : -1.6)), hz + (side < 2 ? (side ? 1.6 : -1.6) : 0), .8 + sz * .8]); } }
+// the shared ruin builder offsets its broken floors to one side, so they can poke out through a wall; pull them back inside
+function sk3Ruin(S, mat, dark, x, z, w, d, h, ry, R) { const grp = exRuin(S, mat, dark, x, z, w, d, h, ry, R); try { grp.children.forEach(function (c) { if (c.material === dark && c.geometry && c.geometry.type !== 'PlaneGeometry') { c.position.x += w * .16; c.rotation.z = (R() < .5 ? 1 : -1) * (.14 + R() * .2); c.position.y -= .7; } }); } catch (e) {} return grp; }
+function sk3Rubble(L, x, z, r, R, hy) { hy = hy || 0; const m = new THREE.SphereGeometry(1, 9, 4, 0, Math.PI * 2, 0, Math.PI / 2).toNonIndexed(), p = m.attributes.position; for (let k = 0; k < p.count; k++) { const n = .6 + tk3Noise(p.getX(k) * 3.1 + x, p.getZ(k) * 3.1 + z + p.getY(k)) * .8; p.setXYZ(k, p.getX(k) * n, p.getY(k) * n, p.getZ(k) * n); } m.computeVertexNormals();
+    tk3Xf(m, 0, 0, 0, 0, R() * 3, 0, r, r * (.3 + R() * .2), r * (.7 + R() * .3)); sk3Add(L.ST, m, R() < .5 ? '#6a5a4c' : '#625a52', x, hy - .05, z);
+    for (let i = 0; i < 10 + r * 9; i++) { const a = R() * 6.28, d = R() * r * .95, g = new THREE.DodecahedronGeometry(.12 + R() * .5, 0); tk3Xf(g, 0, 0, 0, R() * 3, R() * 3, 0, 1, .6, 1); sk3Add(L.ST, g, ['#8a5440', '#7a6656', '#9a8e80', '#6a5a4c'][(R() * 4) | 0], x + Math.cos(a) * d, hy + (r * .35) * (1 - d / r) + .05, z + Math.sin(a) * d); }
+    for (let b = 0; b < (r > 1.5 ? 2 : 1); b++) { const bm = new THREE.BoxGeometry(2 + R() * 2.5, .18, .2); tk3Xf(bm, 0, 0, 0, 0, R() * 6.28, (R() - .5) * .9); sk3Add(L.W, bm, '#3a2c22', x + (R() - .5) * r, hy + r * .25, z + (R() - .5) * r); } }
+function sk3Hog(L, x, z, R, hy) { const a0 = R() * 3; for (let i = 0; i < 3; i++) { const g = new THREE.BoxGeometry(2.2, .16, .16); tk3Xf(g, 0, 0, 0, i === 0 ? .6 : i === 1 ? -.6 : 0, a0 + i * 2.09, i === 2 ? .9 : .3); sk3Add(L.W, g, '#3c3c3a', x, hy + .75, z); } }
 function sk3Church(L, S, mats, x, z, w, d, ruined, R) { const nw = w * .72, nx = x + w * .14, tw = Math.min(8, d * .62), tx = x - w / 2 + tw / 2 + .2;
-    if (ruined) { exRuin(S, mats.ruin, mats.dark, nx, z, nw, d - .5, 10, 0, R); sk3Add(L.ST, new THREE.BoxGeometry(tw, 9 + R() * 5, tw), '#8a8478', tx, 6, z); for (let i = 0; i < 14; i++) { const g = new THREE.DodecahedronGeometry(.4 + R() * .8, 0); sk3Add(L.ST, g, '#7a746a', tx + (R() - .5) * 10, .3, z + (R() - .5) * 10); } return; }
+    if (ruined) { sk3Ruin(S, mats.ruin, mats.dark, nx, z, nw, d - .5, 10, 0, R); sk3Add(L.ST, new THREE.BoxGeometry(tw, 9 + R() * 5, tw), '#8a8478', tx, 6, z); for (let i = 0; i < 14; i++) { const g = new THREE.DodecahedronGeometry(.4 + R() * .8, 0); sk3Add(L.ST, g, '#7a746a', tx + (R() - .5) * 10, .3, z + (R() - .5) * 10); } return; }
     sk3Add(L.P, new THREE.BoxGeometry(nw, 11, d - .6), '#cfc6b2', nx, 5.5, z); const rf = sk3Prism(d, 5.5, nw + .6); tk3Xf(rf, 0, 0, 0, 0, Math.PI / 2, 0); sk3Add(L.W, rf, '#4a4c50', nx, 11, z);
-    sk3Add(L.P, new THREE.BoxGeometry(tw, 24, tw), '#c8bea8', tx, 12, z); sk3Add(L.W, new THREE.BoxGeometry(tw + .4, .5, tw + .4), '#8a8478', tx, 24.2, z); const sp = new THREE.ConeGeometry(tw * .72, 11, 4); tk3Xf(sp, 0, 0, 0, 0, Math.PI / 4, 0); sk3Add(L.W, sp, '#3e4448', tx, 30, z);
+    sk3Add(L.P, new THREE.BoxGeometry(tw, 24, tw), '#c8bea8', tx, 12, z); sk3Add(L.W, new THREE.BoxGeometry(tw + .4, .5, tw + .4), '#8a8478', tx, 24.2, z); const broken = sk3Map() === 'town' && R() < .7, sp = new THREE.ConeGeometry(tw * .72, broken ? 5 : 11, 4); tk3Xf(sp, 0, 0, 0, 0, Math.PI / 4, broken ? .32 : 0); sk3Add(L.W, sp, '#3e4448', tx + (broken ? .8 : 0), broken ? 26.6 : 30, z); if (broken) { sk3Rubble(L, tx + tw, z + tw * .6, 3.2, R); for (let k = 0; k < 4; k++) { const g = new THREE.DodecahedronGeometry(1 + R(), 0); tk3Xf(g, 0, 0, 0, R() * 3, R() * 3, 0, 1, 1, .25); sk3Add(L.W, g, '#141210', nx + (R() - .5) * nw * .7, 4 + R() * 5, z + d / 2 - .2); } }
     const cl = new THREE.CylinderGeometry(1.2, 1.2, .2, 20).rotateX(Math.PI / 2); sk3Add(L.W, cl, '#efe8d4', tx, 18, z + tw / 2 + .12);
     for (let i = 0; i < 5; i++) for (const sd of [-1, 1]) { sk3Add(L.W, new THREE.BoxGeometry(1.1, 3.6, .2), '#2a3038', nx - nw / 2 + 3 + i * (nw - 6) / 4, 5.6, z + sd * (d / 2 - .25)); } }
 
@@ -18055,14 +18090,17 @@ function sk3BuildWorld(st) { const S = TK3.scene, kind = sk3Map(), Lk = SK3_LOOK
     const rim = new THREE.DirectionalLight(tk3C(kind === 'snow' ? '#b0c0e0' : '#9aaccc'), .4); rim.position.set(-sun.x * 50, 25, -sun.z * 50); S.add(rim);
     st.fill = new THREE.DirectionalLight(tk3C('#fff2e0'), .6); S.add(st.fill); S.add(st.fill.target);
     // ---- everything on it ----
-    const bt = sk3BrickTex(), pt = sk3PlasterTex(); const mats = { brick: tk3Std('#ffffff', .92, 0, { map: bt, vertexColors: true }), plaster: tk3Std('#ffffff', .95, 0, { map: pt, vertexColors: true }), dark: tk3Std('#2e2a26', .95), ruin: tk3Std('#b8a894', .93, 0, { map: bt }), plain: tk3Std('#ffffff', .9, 0, { vertexColors: true }) };
-    const L = { B: [], P: [], W: [], ST: [], wire: [], bush: [], bank: [] }, plant = { broad: [], pine: [], dead: [] }; SK3D.tall = [];
+    const bt = sk3BrickTex(), pt = sk3PlasterTex(); const mats = { ruinP: tk3Std('#9a8e7c', .96, 0, { map: pt }), brick: tk3Std('#ffffff', .92, 0, { map: bt, vertexColors: true }), plaster: tk3Std('#ffffff', .95, 0, { map: pt, vertexColors: true }), dark: tk3Std('#2e2a26', .95), ruin: tk3Std('#a49480', .94, 0, { map: bt }), plain: tk3Std('#ffffff', .9, 0, { vertexColors: true }) };
+    const L = { B: [], P: [], W: [], ST: [], wire: [], bush: [], bank: [] }, plant = { broad: [], pine: [], dead: [] }, rubAt = [], gutted = []; SK3D.tall = [];
     const wallB = ['#b8a088', '#c4b49a', '#a89078', '#9c8c7c', '#b4a48c'], wallP = ['#d4cab4', '#c8bea6', '#d8ccb0', '#bfb6a2', '#cdbfa6'], roofC = ['#7a4632', '#6a3a2e', '#4a4c50', '#5a4a44', '#3e4246'];
     const tree = function (type, x, z, s) { if (Math.abs(x) < hw + 140 && Math.abs(z) < hd + 140) plant[type].push([x, z, s, R() * 6.28]); };
     obstacles.forEach(function (o) { const x = sk3X(o.x + o.width / 2), z = sk3Z(o.y + o.height / 2), w = o.width * SK3D.S, d = o.height * SK3D.S; let tall = 0;
         switch (o.type) {
-            case 'building': case 'shop': { const pl = R() < .45, h = o.type === 'shop' ? 6.5 + R() * 3 : 8.5 + R() * 8; sk3House(L, x, z, w - .4, d - .4, h, R, { plaster: pl, wall: pl ? wallP[(R() * 5) | 0] : wallB[(R() * 5) | 0], roof: roofC[(R() * 5) | 0], shop: o.type === 'shop', damaged: R() < .3 }); tall = h; break; }
-            case 'ruinBuilding': exRuin(S, mats.ruin, mats.dark, x, z, w - .6, d - .6, 6 + R() * 6, 0, R); for (let i = 0; i < 8; i++) { const g = new THREE.DodecahedronGeometry(.3 + R() * .7, 0); tk3Xf(g, 0, 0, 0, R() * 3, R() * 3, 0, 1, .6, 1); sk3Add(L.ST, g, R() < .5 ? '#7a6656' : '#8a7e70', x + (R() - .5) * (w + 3), .25, z + (R() - .5) * (d + 3)); } if (R() < .35) st.fires.push([x + (R() - .5) * w * .4, .6, z + (R() - .5) * d * .4, .9 + R() * .5, 0, 1]); tall = 6; break;
+            case 'building': case 'shop': { const pl = R() < .45, h = o.type === 'shop' ? 6.5 + R() * 3 : 8.5 + R() * 8, war = kind === 'town' || kind === 'trenches', rr = R();
+                if (war && o.type === 'building' && rr < .22) { sk3Ruin(S, pl ? mats.ruinP : mats.ruin, mats.dark, x, z, w - .6, d - .6, h * (.75 + R() * .25), 0, R); gutted.push([x, z, w, d]); rubAt.push([x + (R() - .5) * w * .6, z + (R() < .5 ? 1 : -1) * (d / 2 + 1.6), 2 + R() * 1.5], [x + (R() < .5 ? 1 : -1) * (w / 2 + 1.6), z + (R() - .5) * d * .6, 1.6 + R()]); if (R() < .5) st.fires.push([x + (R() - .5) * w * .4, .6, z + (R() - .5) * d * .4, 1 + R() * .5, 0, 1]); tall = h * .8; break; }
+                const dmg = !war ? (R() < .3 ? 1 : 0) : rr < .62 ? 2 : rr < .86 ? 1 : 0; sk3House(L, x, z, w - .4, d - .4, h, R, { plaster: pl, wall: pl ? wallP[(R() * 5) | 0] : wallB[(R() * 5) | 0], roof: roofC[(R() * 5) | 0], shop: o.type === 'shop', damage: dmg, st: st, rub: rubAt }); tall = h; break; }
+            case 'ruinBuilding': { const tallR = kind === 'town' ? 5 + R() * 9 : 4 + R() * 6; sk3Ruin(S, R() < .4 && kind === 'town' ? mats.ruinP : mats.ruin, mats.dark, x, z, w - .6, d - .6, tallR, 0, R); sk3Rubble(L, x + (R() - .5) * w * .3, z + (R() - .5) * d * .3, Math.min(w, d) * .3, R); rubAt.push([x + (R() - .5) * w * .7, z + (R() < .5 ? 1 : -1) * (d / 2 + 1.8), 1.8 + R() * 1.6]); if (R() < .5) rubAt.push([x + (R() < .5 ? 1 : -1) * (w / 2 + 1.8), z + (R() - .5) * d * .7, 1.5 + R() * 1.4]); gutted.push([x, z, w, d]);
+                if (R() < .5) st.fires.push([x + (R() - .5) * w * .4, .6, z + (R() - .5) * d * .4, .9 + R() * .6, 0, 1]); tall = tallR * .7; break; }
             case 'townhall': { sk3House(L, x, z, w - .4, d - .6, 14, function () { return .9; }, { plaster: true, wall: '#d8d0bc', roof: '#4a4c50', flat: true }); for (let i = 0; i < 6; i++) sk3Add(L.W, tk3Cyl(.55, .6, 8.5, 12), '#e2dccb', x - w * .36 + i * w * .144, 4.25, z + d / 2 + 1.4); sk3Add(L.W, new THREE.BoxGeometry(w * .9, 1.2, 3), '#ccc4ae', x, 9, z + d / 2 + 1.2); sk3Add(L.P, new THREE.BoxGeometry(5, 9, 5), '#cfc5ae', x, 18.5, z); const dm = new THREE.SphereGeometry(3, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2); sk3Add(L.W, dm, '#4a6a62', x, 23, z); const cl = new THREE.CylinderGeometry(1.4, 1.4, .2, 20).rotateX(Math.PI / 2); sk3Add(L.W, cl, '#efe8d4', x, 19.5, z + 2.6); tall = 26; break; }
             case 'civic': sk3House(L, x, z, w - .3, d - .3, 6.5, R, { plaster: true, wall: wallP[(R() * 5) | 0], roof: '#4a4c50' }); tall = 6.5; break;
             case 'sk3Church': sk3Church(L, S, mats, x, z, w, d, kind === 'trenches', R); tall = kind === 'trenches' ? 10 : 30; break;
@@ -18090,26 +18128,34 @@ function sk3BuildWorld(st) { const S = TK3.scene, kind = sk3Map(), Lk = SK3_LOOK
             case 'crater': break; }
         if (tall && isSolidObstacle(o)) SK3D.tall.push([x - w / 2 - .5, z - d / 2 - .5, x + w / 2 + .5, z + d / 2 + .5, tall]); });
     // ---- streets (town) ----
-    if (kind === 'town') sk3Streets(st, L, R, G);
+    rubAt.forEach(function (q) { sk3Rubble(L, q[0], q[1], q[2], R, HM.h(q[0], q[1])); });
+    if (G && G.empty) G.empty.forEach(function (e) { const x = sk3X(e[0] + e[2] / 2), z = sk3Z(e[1] + e[3] / 2), w = e[2] * SK3D.S, d = e[3] * SK3D.S; if (w < 4 || d < 4) return; if (R() < .6) sk3Ruin(S, mats.ruin, mats.dark, x, z, w * .8, d * .8, 1.2 + R() * 2.4, R() * .2, R); sk3Rubble(L, x + (R() - .5) * w * .3, z + (R() - .5) * d * .3, Math.min(w, d) * .35, R); for (let k = 0; k < 3; k++) sk3Rubble(L, x + (R() - .5) * w * .7, z + (R() - .5) * d * .7, .8 + R() * 1.2, R); });
+    if (G && G.hog) G.hog.forEach(function (q) { const x = sk3X(q[0]), z = sk3Z(q[1]); sk3Hog(L, x, z, R, HM.h(x, z)); if (R() < .6) sk3Hog(L, x + 2.6, z + (R() - .5) * 2, R, HM.h(x, z)); });
+    if (kind === 'town') sk3Streets(st, L, R, G, HM);
     // ---- scenery beyond the edge of the battlefield ----
     const ring = function (n, fn) { for (let i = 0; i < n; i++) { const side = R() * 4 | 0, u = R(), off = 5 + R() * 85; let x, z; if (side < 2) { x = (u - .5) * (WW + 160); z = (side ? 1 : -1) * (hd + off); } else { z = (u - .5) * (WD + 160); x = (side === 2 ? 1 : -1) * (hw + off); } fn(x, z, HM.h(x, z), off); } };
-    if (kind === 'town') ring(G ? 150 : 70, function (x, z, h) { const w = 9 + R() * 10, d = 9 + R() * 10; if (R() < .3) exRuin(S, mats.ruin, mats.dark, x, z, w, d, 6 + R() * 8, R() * 3, R); else sk3House(L, x, z, w, d, 8 + R() * 10, R, { plaster: R() < .45, wall: R() < .5 ? wallP[(R() * 5) | 0] : wallB[(R() * 5) | 0], roof: roofC[(R() * 5) | 0] }); });
+    if (kind === 'town') ring(G ? 150 : 70, function (x, z, h) { const w = 9 + R() * 10, d = 9 + R() * 10; if (R() < .3) sk3Ruin(S, mats.ruin, mats.dark, x, z, w, d, 6 + R() * 8, R() * 3, R); else sk3House(L, x, z, w, d, 8 + R() * 10, R, { plaster: R() < .45, wall: R() < .5 ? wallP[(R() * 5) | 0] : wallB[(R() * 5) | 0], roof: roofC[(R() * 5) | 0] }); });
     else if (kind === 'snow') ring(G ? 1500 : 500, function (x, z) { tree('pine', x, z, .9 + R() * .6); });
     else if (kind === 'bocage') ring(G ? 900 : 350, function (x, z) { tree('broad', x, z, .9 + R() * .6); });
     else ring(G ? 260 : 90, function (x, z) { tree('dead', x, z, .6 + R() * .6); });
     if (kind === 'town' || kind === 'snow') { const E = []; const seg = function (x0, z0, x1, z1) { const Lw = Math.hypot(x1 - x0, z1 - z0), g = new THREE.BoxGeometry(Lw, .9, .5); sk3Add(E, g, kind === 'snow' ? '#c8ccd4' : '#7a7266', (x0 + x1) / 2, .45, (z0 + z1) / 2, -Math.atan2(z1 - z0, x1 - x0)); }; seg(-hw - 1, -hd - 1, hw + 1, -hd - 1); seg(-hw - 1, hd + 1, hw + 1, hd + 1); seg(-hw - 1, -hd - 1, -hw - 1, hd + 1); seg(hw + 1, -hd - 1, hw + 1, hd + 1); sk3Mesh(E, mats.plain, null); }
     // distant battle: smoke columns (some with fires) rising beyond the edge of the field
-    st.cols = []; for (let i = 0; i < (kind === 'snow' ? 2 : kind === 'trenches' ? 6 : 4); i++) { const a = R() * 6.28, x = Math.cos(a) * (hw + 40 + R() * 80), z = Math.sin(a) * (hd + 40 + R() * 80); st.cols.push([x, HM.h(x, z) + 1, z, kind === 'snow' ? 1.2 : 2.2, R() < .6]); }
+    st.cols = []; gutted.slice().sort(function () { return R() - .5; }).slice(0, kind === 'town' ? 5 : 2).forEach(function (q) { st.cols.push([q[0], 2, q[1], 1.6, R() < .7]); });
+    for (let i = 0; i < (kind === 'snow' ? 2 : kind === 'trenches' ? 6 : 4); i++) { const a = R() * 6.28, x = Math.cos(a) * (hw + 40 + R() * 80), z = Math.sin(a) * (hd + 40 + R() * 80); st.cols.push([x, HM.h(x, z) + 1, z, kind === 'snow' ? 1.2 : 2.2, R() < .6]); }
     sk3Tufts(st, kind, R, HM);
     sk3Plant(st, plant, WW, WD);
     sk3Mesh(L.B, mats.brick, .3); sk3Mesh(L.P, mats.plaster, .25); sk3Mesh(L.W, mats.plain, null); sk3Mesh(L.ST, mats.plain, null); sk3Mesh(L.wire, tk3Std('#ffffff', .6, .5, { vertexColors: true }), null);
     sk3Mesh(L.bank, tk3Std('#ffffff', .95, 0, { vertexColors: true, map: gtex }), .4); sk3Mesh(L.bush, tk3Std('#ffffff', .85, 0, { vertexColors: true }), null); }
 
 /* ---------- town streets: cobbles, pavements, kerbs, lamps ---------- */
-function sk3Streets(st, L, R, G) { const S = TK3.scene, roads = [], pav = [], rd = [];
+function sk3Streets(st, L, R, G, HM) { const S = TK3.scene, roads = [], pav = [], rd = [];
     if (G && G.roads) G.roads.forEach(function (r) { roads.push([r.x, r.y, r.w, r.h, r.v]); }); else { [310, 690, 1080, 1420].forEach(function (y) { roads.push([0, y - 45, SKIRMISH_WORLD_WIDTH, 90, 0]); }); [230, 500, 845, 1190, 1560, 1920].forEach(function (x) { roads.push([x - 40, 0, 80, SKIRMISH_WORLD_HEIGHT, 1]); }); }
-    roads.forEach(function (r) { const g = new THREE.PlaneGeometry(r[2] * SK3D.S, r[3] * SK3D.S).rotateX(-Math.PI / 2); tk3Xf(g, sk3X(r[0] + r[2] / 2), .025, sk3Z(r[1] + r[3] / 2)); rd.push(g); });
-    if (rd.length) { const g = sk3PlanarUV(tk3Merge(rd), .22), m = new THREE.Mesh(g, tk3Std('#8e8882', .92, 0, { map: sk3CobbleTex(), polygonOffset: true, polygonOffsetFactor: -1 })); m.receiveShadow = true; S.add(m); }
+    roads.forEach(function (r) { const w = r[2] * SK3D.S, d = r[3] * SK3D.S, g = new THREE.PlaneGeometry(w, d, Math.max(1, Math.ceil(w / 1.5)), Math.max(1, Math.ceil(d / 1.5))).rotateX(-Math.PI / 2); tk3Xf(g, sk3X(r[0] + r[2] / 2), 0, sk3Z(r[1] + r[3] / 2));
+        const p = g.attributes.position, c = new Float32Array(p.count * 3), lift = r[4] ? .03 : .036; for (let i = 0; i < p.count; i++) { const hx = p.getX(i), hz = p.getZ(i), h = HM ? HM.h(hx, hz) : 0; p.setY(i, h + lift); const k = h < -.1 ? Math.max(.32, 1 + h * .55) : 1, n = .9 + tk3Noise(hx * .3, hz * .3) * .2; c[i * 3] = k * n * (h < -.1 ? .95 : 1); c[i * 3 + 1] = k * n * (h < -.1 ? .82 : 1); c[i * 3 + 2] = k * n * (h < -.1 ? .7 : 1); }
+        g.setAttribute('color', new THREE.BufferAttribute(c, 3)); g.computeVertexNormals(); rd.push(g);
+        // loose bricks, stones and splinters strewn along the street
+        for (let k = 0; k < w * d / 22; k++) { const bx = sk3X(r[0]) + R() * w, bz = sk3Z(r[1]) + R() * d, b = new THREE.BoxGeometry(.22 + R() * .2, .08 + R() * .06, .11 + R() * .08); tk3Xf(b, 0, 0, 0, (R() - .5) * .4, R() * 6.28, (R() - .5) * .4); sk3Add(L.ST, b, ['#8a5440', '#7a6656', '#9a9284', '#5a4a3c'][(R() * 4) | 0], bx, (HM ? HM.h(bx, bz) : 0) + .08, bz); } });
+    if (rd.length) { const g = sk3PlanarUV(tk3Merge(rd), .22), m = new THREE.Mesh(g, tk3Std('#8e8882', .92, 0, { map: sk3CobbleTex(), vertexColors: true, polygonOffset: true, polygonOffsetFactor: -1 })); m.receiveShadow = true; S.add(m); }
     // pavements: one slab per block on the big maps, per building otherwise
     const slabs = G && G.blocks ? G.blocks.filter(function (b) { return !b.park; }).map(function (b) { return [b.x0 - 24, b.y0 - 24, b.x1 + 24, b.y1 + 24]; }) : obstacles.filter(function (o) { return ['building', 'shop', 'ruinBuilding', 'townhall', 'civic'].indexOf(o.type) >= 0; }).map(function (o) { return [o.x - 15, o.y - 15, o.x + o.width + 15, o.y + o.height + 15]; });
     slabs.forEach(function (s) { const x = sk3X((s[0] + s[2]) / 2), z = sk3Z((s[1] + s[3]) / 2), w = (s[2] - s[0]) * SK3D.S, d = (s[3] - s[1]) * SK3D.S; sk3Add(L.ST, new THREE.BoxGeometry(w, .18, d), '#5e5a54', x, .09, z); sk3Add(L.ST, new THREE.BoxGeometry(w + .3, .2, .28), '#77736b', x, .1, z + d / 2); sk3Add(L.ST, new THREE.BoxGeometry(w + .3, .2, .28), '#77736b', x, .1, z - d / 2); sk3Add(L.ST, new THREE.BoxGeometry(.28, .2, d + .3), '#77736b', x + w / 2, .1, z); sk3Add(L.ST, new THREE.BoxGeometry(.28, .2, d + .3), '#77736b', x - w / 2, .1, z); });
@@ -18142,14 +18188,16 @@ function sk3Tufts(st, kind, R, HM) { const conf = { bocage: { n: 26000, cols: ['
    - Speeds: about 55% of the 2D speeds (a medium tank does ~28 km/h), slower hull turning, real turret traverse.
 ===================================================== */
 const SK3W = { W: 4800, H: 3000, speedK: .55, gen: null, on: false };
-function sk3Big() { return !!(SK3D.want && selectedGameMode === 'skirmish' && window.THREE && !(typeof DUEL !== 'undefined' && DUEL.active)); }
+function sk3Duel() { return typeof DUEL !== 'undefined' && DUEL.active; }
+// online: the host's 3D switch decides for everyone (the map must match even if one player's 3D fails to load)
+function sk3Big() { if (selectedGameMode !== 'skirmish') return false; if (sk3Duel()) return !!DUEL.three; return !!(SK3D.want && window.THREE); }
 function sk3Rng(seed) { let s = (seed >>> 0) || 1; return function () { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
 function sk3Hit(r, list, pad) { pad = pad || 0; return list.some(function (o) { return r.x < o.x + o.width + pad && r.x + r.width + pad > o.x && r.y < o.y + o.height + pad && r.y + r.height + pad > o.y; }); }
 function sk3Ob(x, y, w, h, type) { addObstacle(Math.round(x), Math.round(y), Math.round(w), Math.round(h), type); return obstacles[obstacles.length - 1]; }
 const SK3_SOLID = ['sk3Forest', 'sk3Sandbag', 'sk3Fountain', 'sk3Church'];
 
 /* ---------- TOWN: city blocks of houses, shops and ruins on a grid of avenues, a central square ---------- */
-function sk3GenTown(R) { const W = SK3W.W, H = SK3W.H, g = { roads: [], blocks: [], parks: [], plaza: null };
+function sk3GenTown(R) { const W = SK3W.W, H = SK3W.H, g = { roads: [], blocks: [], parks: [], plaza: null, empty: [], hog: [] };
     const cols = []; let x = 260; while (x < W - 560) { let w = 470 + R() * 210; if (x + w > W - 260) w = W - 260 - x; if (w < 300) break; cols.push([x, x + w]); x += w + 140 + R() * 50; }
     const rows = []; let y = 140; while (y < H - 440) { let h = 400 + R() * 150; if (y + h > H - 140) h = H - 140 - y; if (h < 300) break; rows.push([y, y + h]); y += h + 140 + R() * 40; }
     const xe = [0].concat(cols.reduce(function (a, c) { return a.concat(c); }, [])).concat([W]), ye = [0].concat(rows.reduce(function (a, r) { return a.concat(r); }, [])).concat([H]);
@@ -18165,12 +18213,17 @@ function sk3GenTown(R) { const W = SK3W.W, H = SK3W.H, g = { roads: [], blocks: 
         if (lane === 'v') { const m = cx + (R() - .5) * bw * .2; subs.push([b.x0, b.y0, m - 55, b.y1], [m + 55, b.y0, b.x1, b.y1]); } else if (lane === 'h') { const m = cy + (R() - .5) * bh * .2; subs.push([b.x0, b.y0, b.x1, m - 55], [b.x0, m + 55, b.x1, b.y1]); } else subs.push([b.x0, b.y0, b.x1, b.y1]);
         subs.forEach(function (s) { const sw = s[2] - s[0], sh = s[3] - s[1], nx = Math.max(1, Math.round(sw / 200)), ny = sh > 360 ? 2 : 1;
             for (let a = 0; a < nx; a++) for (let k = 0; k < ny; k++) { const lx = s[0] + a * sw / nx, ly = s[1] + k * sh / ny, lw = sw / nx, lh = sh / ny, edge = k === 0 || k === ny - 1, rr = R();
-                const t = rr < .14 ? 'ruinBuilding' : (rr < .32 && edge) ? 'shop' : rr < .37 ? null : 'building'; if (!t) continue;
+                const t = rr < .24 ? 'ruinBuilding' : (rr < .38 && edge) ? 'shop' : rr < .45 ? null : 'building'; if (!t) { g.empty.push([lx + 10, ly + 10, lw - 20, lh - 20]); continue; }
                 const ix = 6 + R() * 10, iy = 6 + R() * 10; sk3Ob(lx + ix, ly + iy, lw - ix * 2, lh - iy * 2, t); } }); }); });
     // burnt-out wrecks and sandbag barricades tucked against the kerbs (they never close a street)
     let n = 0; for (let tries = 0; n < 18 && tries < 400; tries++) { const b = g.blocks[(R() * g.blocks.length) | 0]; if (b.plaza) continue; const side = R() * 4 | 0, horiz = side < 2, len = 70, th = 32;
         const r = horiz ? { x: b.x0 + R() * (b.x1 - b.x0 - len), y: side ? b.y1 + 6 : b.y0 - 6 - th, width: len, height: th } : { x: side === 2 ? b.x1 + 6 : b.x0 - 6 - th, y: b.y0 + R() * (b.y1 - b.y0 - len), width: th, height: len };
         if (r.x < 320 || r.x > W - 390 || sk3Hit(r, obstacles, 30)) continue; sk3Ob(r.x, r.y, r.width, r.height, R() < .65 ? 'wreck' : 'sk3Sandbag'); n++; }
+    // shell craters torn into the streets (you can drive through them) and steel anti-tank hedgehogs on the kerbs
+    const roads = g.roads; let c = 0;
+    for (let tries = 0; c < Math.round(26 * W * H / 14.4e6) && tries < 600; tries++) { const r = roads[(R() * roads.length) | 0], sz = 60 + R() * 55, cx = r.v ? r.x + r.w / 2 + (R() - .5) * (r.w - sz) * .5 : 330 + R() * (W - 660), cy = r.v ? 120 + R() * (H - 240) : r.y + r.h / 2 + (R() - .5) * (r.h - sz) * .5, o = { x: cx - sz / 2, y: cy - sz * .4, width: sz, height: sz * .8 };
+        if (o.x < 330 || o.x + o.width > W - 330 || sk3Hit(o, obstacles, 12)) continue; sk3Ob(o.x, o.y, o.width, o.height, 'crater'); c++; }
+    g.blocks.forEach(function (b) { if (R() < .35) { const corner = [[b.x0 - 34, b.y0 - 34], [b.x1 + 34, b.y0 - 34], [b.x0 - 34, b.y1 + 34], [b.x1 + 34, b.y1 + 34]][(R() * 4) | 0]; if (corner[0] > 330 && corner[0] < W - 330) g.hog.push(corner); } });
     return g; }
 
 /* ---------- SNOW: villages, pine forests, frozen ponds, rocks and a winding road ---------- */
@@ -18219,7 +18272,7 @@ function sk3GenTrenches(R) { const W = SK3W.W, H = SK3W.H, g = { lines: [] };
     for (let s = 0; s < 90; s++) { const x = 850 + R() * (W - 1700), y = 40 + R() * (H - 80); if (!sk3Hit({ x: x, y: y, width: 1, height: 1 }, obstacles, 20)) sk3Ob(x, y, 1, 1, 'sk3Stump'); }
     return g; }
 
-function sk3Gen(map) { const seed = (Math.random() * 1e9) | 0, R = sk3Rng(seed); obstacles = []; let g;
+function sk3Gen(map) { const seed = sk3Duel() ? (DUEL.seed || 1) : (Math.random() * 1e9) | 0, R = sk3Rng(seed); obstacles = []; let g;
     if (map === 'snow') g = sk3GenSnow(R); else if (map === 'bocage') g = sk3GenBocage(R); else if (map === 'trenches') g = sk3GenTrenches(R); else g = sk3GenTown(R);
     g.seed = seed; g.map = map; return g; }
 
@@ -18271,12 +18324,28 @@ function sk3Grid() { const k = obstacles; if (SK3G.key === k && SK3G.n === k.len
     k.forEach(function (o) { if (!(isSolidObstacle(o) || o.type === 'campaignHillBarrier')) return; const x0 = Math.max(0, Math.floor((o.x - pad) / C)), x1 = Math.min(cols - 1, Math.floor((o.x + o.width + pad) / C)), y0 = Math.max(0, Math.floor((o.y - pad) / C)), y1 = Math.min(rows - 1, Math.floor((o.y + o.height + pad) / C)); for (let j = y0; j <= y1; j++) for (let i = x0; i <= x1; i++) (b[j * cols + i] = b[j * cols + i] || []).push(o); });
     SK3G.key = k; SK3G.n = k.length; SK3G.cols = cols; SK3G.rows = rows; SK3G.b = b; SK3G.none = []; return SK3G; }
 
+/* ---------- 2D fallback drawing for the generated obstacle types (only if a player's 3D failed to load) ---------- */
+function sk3Draw2D() { if (!SK3W.gen || typeof ctx === 'undefined') return; obstacles.forEach(function (o) { const t = o.type; if (t.indexOf('sk3') !== 0) return; ctx.save();
+    if (t === 'sk3Forest') { ctx.fillStyle = SK3W.gen.map === 'snow' ? '#2e4632' : '#36502a'; ctx.fillRect(o.x, o.y, o.width, o.height); ctx.fillStyle = 'rgba(255,255,255,.22)'; for (let x = o.x + 14; x < o.x + o.width; x += 32) for (let y = o.y + 14; y < o.y + o.height; y += 32) { ctx.beginPath(); ctx.arc(x, y, 9, 0, 6.3); ctx.fill(); } }
+    else if (t === 'sk3Pond') { ctx.fillStyle = '#c8d8e6'; ctx.beginPath(); ctx.ellipse(o.x + o.width / 2, o.y + o.height / 2, o.width / 2, o.height / 2, 0, 0, 6.3); ctx.fill(); }
+    else if (t === 'sk3Sandbag') { ctx.fillStyle = '#a8986e'; ctx.fillRect(o.x, o.y, o.width, o.height); }
+    else if (t === 'sk3Church') { ctx.fillStyle = '#8a8478'; ctx.fillRect(o.x, o.y, o.width, o.height); ctx.fillStyle = '#5a5650'; ctx.fillRect(o.x, o.y, o.height * .6, o.height); }
+    else if (t === 'sk3Fountain') { ctx.fillStyle = '#8a8a86'; ctx.beginPath(); ctx.arc(o.x + o.width / 2, o.y + o.height / 2, o.width / 2, 0, 6.3); ctx.fill(); }
+    else if (t === 'sk3Stump') { ctx.fillStyle = '#3a3430'; ctx.beginPath(); ctx.arc(o.x, o.y, 5, 0, 6.3); ctx.fill(); }
+    ctx.restore(); }); }
+
 /* ---------- hooks ---------- */
 (function () {
     // bigger battlefield + generated layout (3D Skirmish only)
-    const _ap = applyPointControlCanvasSize; applyPointControlCanvasSize = function () { const r = _ap.apply(this, arguments); SK3W.on = sk3Big(); if (SK3W.on) { SKIRMISH_WORLD_WIDTH = SK3W.W; SKIRMISH_WORLD_HEIGHT = SK3W.H; canvas.width = SK3W.W; canvas.height = SK3W.H; } else { SK3W.gen = null; } return r; };
+    const _ap = applyPointControlCanvasSize; applyPointControlCanvasSize = function () { const r = _ap.apply(this, arguments); SK3W.on = sk3Big(); const d = sk3Duel(); SK3W.W = d ? (DUEL.slots > 2 ? 3600 : 3200) : 4800; SK3W.H = d ? (DUEL.slots > 2 ? 2250 : 2000) : 3000; if (SK3W.on) { SKIRMISH_WORLD_WIDTH = SK3W.W; SKIRMISH_WORLD_HEIGHT = SK3W.H; canvas.width = SK3W.W; canvas.height = SK3W.H; } else { SK3W.gen = null; } return r; };
+    if (typeof drawMap === 'function') { const _dm = drawMap; drawMap = function () { const r = _dm.apply(this, arguments); if (SK3W.on && !(SK3D.on && SK3D.ready)) try { sk3Draw2D(); } catch (e) {} return r; }; }
+    // online 3D: start each tank somewhere with a clear view towards the enemy side (no randomness, so every player computes the same spot)
+    if (typeof duelSpawnPos === 'function') { const _sp = duelSpawnPos; duelSpawnPos = function (t, side, k) { if (!SK3W.on || !SK3W.gen) return _sp.apply(this, arguments); const W = canvas.width, H = canvas.height, bx = side ? W - 170 : 170, by = H / 2 + (DUEL.slots > 2 ? (k ? 170 : -170) : 0), dir = side ? -1 : 1, size = t.size || 26;
+            const ok = function (x, y) { return x > size + 4 && x < W - size - 4 && y > size + 4 && y < H - size - 4 && !tankHitsObstacle(t, x, y); }, clear = function (x, y) { let d = 0; for (; d < 700; d += 35) if (tankHitsObstacle(t, x + dir * d, y)) break; return d; };
+            let best = null, bestS = -1e9; for (let r = 0; r < 900; r += 30) for (let q = 0; q < 12; q++) { const a = q / 12 * Math.PI * 2, x = Math.max(size + 4, Math.min(W - size - 4, bx + Math.cos(a) * r * .4)), y = Math.max(size + 4, Math.min(H - size - 4, by + Math.sin(a) * r)); if (!ok(x, y)) continue; const sc = clear(x, y) - r * .35; if (sc > bestS) { bestS = sc; best = [x, y]; } }
+            return best || _sp.apply(this, arguments); }; }
     const _cm = createMap; createMap = function () { if (!SK3W.on || !sk3Big()) { SK3W.gen = null; return _cm.apply(this, arguments); } SK3W.gen = sk3Gen(selectedMap); };
-    const _cb = createBattle; createBattle = function () { const r = _cb.apply(this, arguments); if (SK3W.on && SK3W.gen && selectedGameMode === 'skirmish') try { sk3Populate(); } catch (e) { try { console.warn('3D skirmish populate', e); } catch (x) {} } return r; };
+    const _cb = createBattle; createBattle = function () { const r = _cb.apply(this, arguments); if (SK3W.on && SK3W.gen && selectedGameMode === 'skirmish' && !sk3Duel()) try { sk3Populate(); } catch (e) { try { console.warn('3D skirmish populate', e); } catch (x) {} } return r; };
     const _so = isSolidObstacle; isSolidObstacle = function (o) { return (o && SK3_SOLID.indexOf(o.type) >= 0) || _so.apply(this, arguments); };
     const _th = tankHitsObstacle; tankHitsObstacle = function (t, x, y) { if (!SK3W.on || selectedGameMode !== 'skirmish') return _th.apply(this, arguments); const G = sk3Grid(), i = Math.floor(x / G.cell), j = Math.floor(y / G.cell);
         const near = i < 0 || j < 0 || i >= G.cols || j >= G.rows ? G.none : (G.b[j * G.cols + i] || G.none), all = obstacles; obstacles = near; try { return _th.apply(this, arguments); } finally { obstacles = all; } };
@@ -18284,8 +18353,8 @@ function sk3Grid() { const k = obstacles; if (SK3G.key === k && SK3G.n === k.len
     const _ts = getTankSpeed; getTankSpeed = function (t) { const v = _ts.apply(this, arguments); return SK3D.on ? v * SK3W.speedK : v; };
     const _tr = getTurretTurnRate; getTurretTurnRate = function (t) { return SK3D.on ? sk3TurretRate(t) : _tr.apply(this, arguments); };
     // the AI drives like a tank
-    const _ue = updateEnemies; updateEnemies = function () { if (!SK3D.on) return _ue.apply(this, arguments); sk3AiPre(enemies); const r = _ue.apply(this, arguments); sk3AiPost(enemies); return r; };
-    const _ua = updateAllies; updateAllies = function () { if (!SK3D.on) return _ua.apply(this, arguments); sk3AiPre(allies); const r = _ua.apply(this, arguments); sk3AiPost(allies); return r; };
+    const _ue = updateEnemies; updateEnemies = function () { if (!SK3D.on || sk3Duel()) return _ue.apply(this, arguments); sk3AiPre(enemies); const r = _ue.apply(this, arguments); sk3AiPost(enemies); return r; };
+    const _ua = updateAllies; updateAllies = function () { if (!SK3D.on || sk3Duel()) return _ua.apply(this, arguments); sk3AiPre(allies); const r = _ua.apply(this, arguments); sk3AiPost(allies); return r; };
 })();
 
 // ===== TK3 sound: procedural ambience + spot effects for the 3D menu and loading scenes =====

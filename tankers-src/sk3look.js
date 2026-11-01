@@ -134,11 +134,13 @@ function sk3BuildWorld(st) { const S = TK3.scene, kind = sk3Map(), Lk = SK3_LOOK
     const rim = new THREE.DirectionalLight(tk3C(kind === 'snow' ? '#b0c0e0' : '#9aaccc'), .4); rim.position.set(-sun.x * 50, 25, -sun.z * 50); S.add(rim);
     st.fill = new THREE.DirectionalLight(tk3C('#fff2e0'), .6); S.add(st.fill); S.add(st.fill.target);
     // ---- everything on it ----
-    const bt = sk3BrickTex(), pt = sk3PlasterTex(); const mats = { ruinP: tk3Std('#9a8e7c', .96, 0, { map: pt }), brick: tk3Std('#ffffff', .92, 0, { map: bt, vertexColors: true }), plaster: tk3Std('#ffffff', .95, 0, { map: pt, vertexColors: true }), dark: tk3Std('#2e2a26', .95), ruin: tk3Std('#a49480', .94, 0, { map: bt }), plain: tk3Std('#ffffff', .9, 0, { vertexColors: true }) };
+    const bt = sk3BrickTex(), pt = sk3PlasterTex(); const mats = { ruinP: tk3Std('#9a8e7c', .96, 0, { map: pt }), brick: tk3Std('#ffffff', .92, 0, { map: bt, vertexColors: true }), plaster: tk3Std('#ffffff', .95, 0, { map: pt, vertexColors: true }), dark: tk3Std('#2e2a26', .95), ruin: tk3Std('#a49480', .94, 0, { map: bt }), plain: tk3Std('#ffffff', .9, 0, { vertexColors: true }) }; SK3D.mats = mats;
     const L = { B: [], P: [], W: [], ST: [], wire: [], bush: [], bank: [] }, plant = { broad: [], pine: [], dead: [] }, rubAt = [], gutted = []; SK3D.tall = [];
     const wallB = ['#b8a088', '#c4b49a', '#a89078', '#9c8c7c', '#b4a48c'], wallP = ['#d4cab4', '#c8bea6', '#d8ccb0', '#bfb6a2', '#cdbfa6'], roofC = ['#7a4632', '#6a3a2e', '#4a4c50', '#5a4a44', '#3e4246'];
     const tree = function (type, x, z, s) { if (Math.abs(x) < hw + 140 && Math.abs(z) < hd + 140) plant[type].push([x, z, s, R() * 6.28]); };
     obstacles.forEach(function (o) { const x = sk3X(o.x + o.width / 2), z = sk3Z(o.y + o.height / 2), w = o.width * SK3D.S, d = o.height * SK3D.S; let tall = 0;
+        // remember which geometry this obstacle adds, so it can be knocked down later (destructible cover, sk3fx.js)
+        const mark = typeof SK3F !== 'undefined' && SK3F.track && SK3_HP[o.type] ? {} : null; if (mark) { Object.keys(L).forEach(function (k) { mark[k] = L[k].length; }); SK3F.groupLog = []; }
         switch (o.type) {
             case 'building': case 'shop': { const pl = R() < .45, h = o.type === 'shop' ? 6.5 + R() * 3 : 8.5 + R() * 8, war = kind === 'town' || kind === 'trenches', rr = R();
                 if (war && o.type === 'building' && rr < .22) { sk3Ruin(S, pl ? mats.ruinP : mats.ruin, mats.dark, x, z, w - .6, d - .6, h * (.75 + R() * .25), 0, R); gutted.push([x, z, w, d]); rubAt.push([x + (R() - .5) * w * .6, z + (R() < .5 ? 1 : -1) * (d / 2 + 1.6), 2 + R() * 1.5], [x + (R() < .5 ? 1 : -1) * (w / 2 + 1.6), z + (R() - .5) * d * .6, 1.6 + R()]); if (R() < .5) st.fires.push([x + (R() - .5) * w * .4, .6, z + (R() - .5) * d * .4, 1 + R() * .5, 0, 1]); tall = h * .8; break; }
@@ -170,7 +172,8 @@ function sk3BuildWorld(st) { const S = TK3.scene, kind = sk3Map(), Lk = SK3_LOOK
             case 'sk3Forest': { for (let px = o.x + 16; px < o.x + o.width - 10; px += 30 + R() * 10) for (let py = o.y + 16; py < o.y + o.height - 10; py += 30 + R() * 10) { if (R() < .07) continue; const tx = sk3X(px + (R() - .5) * 14), tz = sk3Z(py + (R() - .5) * 14); if (kind === 'snow') tree(R() < .94 ? 'pine' : 'dead', tx, tz, .85 + R() * .45); else tree('broad', tx, tz, .9 + R() * .4); } tall = 12; break; }
             case 'sk3Pond': { const g = new THREE.CircleGeometry(1, 48); g.rotateX(-Math.PI / 2); tk3Xf(g, 0, 0, 0, 0, 0, 0, w / 2, 1, d / 2); const m = new THREE.Mesh(g, tk3Std('#d4e0ea', .14, .05, { polygonOffset: true, polygonOffsetFactor: -3 })); m.position.set(x, .02, z); m.receiveShadow = true; S.add(m); break; }
             case 'crater': break; }
-        if (tall && isSolidObstacle(o)) SK3D.tall.push([x - w / 2 - .5, z - d / 2 - .5, x + w / 2 + .5, z + d / 2 + .5, tall]); });
+        let tl = null; if (tall && isSolidObstacle(o)) { tl = [x - w / 2 - .5, z - d / 2 - .5, x + w / 2 + .5, z + d / 2 + .5, tall]; SK3D.tall.push(tl); }
+        if (mark) { const to = {}; Object.keys(L).forEach(function (k) { to[k] = L[k].length; }); SK3F.track.push({ o: o, L: L, from: mark, to: to, groups: SK3F.groupLog || [], h: tall || 3, tall: tl }); SK3F.groupLog = null; } });
     // ---- streets (town) ----
     rubAt.forEach(function (q) { sk3Rubble(L, q[0], q[1], q[2], R, HM.h(q[0], q[1])); });
     if (G && G.empty) G.empty.forEach(function (e) { const x = sk3X(e[0] + e[2] / 2), z = sk3Z(e[1] + e[3] / 2), w = e[2] * SK3D.S, d = e[3] * SK3D.S; if (w < 4 || d < 4) return; if (R() < .6) sk3Ruin(S, mats.ruin, mats.dark, x, z, w * .8, d * .8, 1.2 + R() * 2.4, R() * .2, R); sk3Rubble(L, x + (R() - .5) * w * .3, z + (R() - .5) * d * .3, Math.min(w, d) * .35, R); for (let k = 0; k < 3; k++) sk3Rubble(L, x + (R() - .5) * w * .7, z + (R() - .5) * d * .7, .8 + R() * 1.2, R); });

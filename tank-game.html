@@ -14919,7 +14919,7 @@ function m15ShowBrief() {
 ===================================================== */
 const DUEL = { role: null, peer: null, conn: null, conns: [], code: '', foe: null, mode: '1v1', slots: 2, mySlot: 0, tanks: [], pTanks: [], names: [], inps: [], seenF: [], seenR: [], seenA: [], score: [0, 0], target: 5, sendAt: 0, sid: 0, over: false, winner: -1,
     tank: { f: 'american', c: 'medium' }, map: 'town', three: false, seed: 0, snap: null, snapAt: 0, active: false, myFire: 0, myRep: 0, myAb: 0, inSent: 0, lastIn: '', prevDiff: null, gone: false, gid: '', chat: [] };
-const DUEL_BUILD = 171;
+const DUEL_BUILD = 172;
 const DUEL_WORDS = ['TIGER', 'PANTHER', 'SHERMAN', 'CHURCHILL', 'CROMWELL', 'FIREFLY', 'HELLCAT', 'PERSHING', 'STUART', 'MATILDA', 'COMET', 'PUMA', 'LUCHS', 'NASHORN', 'HETZER', 'JUMBO', 'JACKSON', 'ACHILLES', 'VALENTINE', 'GRANT', 'TETRARCH', 'MARDER', 'WOLVERINE', 'CHAFFEE', 'CENTAUR', 'KV', 'SU', 'IS'];
 const DUEL_MAPS = [['town', 'RUINED TOWN'], ['trenches', 'TRENCH FRONT'], ['snow', 'SNOWY FOREST'], ['bocage', 'HEDGEROWS']];
 const DUEL_CHAT = ['GG!', 'NICE SHOT!', 'HELP ME!', 'ATTACK!', 'LOL 😂', 'OOPS!'];
@@ -19218,11 +19218,13 @@ function m13Hud() { if (!M13D.on || !SK3D.hud || !TK3.cam || SK3D.map || !M13D.s
 function m13Stop() { if (!M13D.on) return; M13D.on = false; M13D.st = null; try { if (SK3D.on) sk3Stop(); } catch (e) {} SK3D.want = false; if (typeof SK3I !== 'undefined') { SK3I.on = false; SK3I.men = []; SK3I.squads = []; } SKIRMISH_WORLD_WIDTH = 2400; SKIRMISH_WORLD_HEIGHT = 1500; }
 (function () {
     const _scm = startCampaignMission; startCampaignMission = function () { m13Stop(); if (selectedGameMode === 'campaign' && campaignMission === 1 && m13Ok()) { M13D.on = true; SK3D.want = true; }
-        const r = _scm.apply(this, arguments); if (M13D.on) { try { sk3Start(); m13Infantry(); setTimeout(function () { try { showRadioText('3D — W/S DRIVE, A/D TURN, MOUSE AIMS · 1/2/3 AMMO · Q MG · G ARTILLERY · B BINOCULARS', true); } catch (e) {} }, 5200); } catch (e) { M13D.err = e; m13Stop(); } } return r; };
+        const r = _scm.apply(this, arguments); if (M13D.on) { try { sk3Start(); m13Infantry(); setTimeout(function () { try { showRadioText('3D — W/S DRIVE, A/D TURN, MOUSE AIMS · R REPAIR · 1/2/3 AMMO · Q MG · G ARTILLERY · B BINOCULARS', true); } catch (e) {} }, 5200); } catch (e) { M13D.err = e; m13Stop(); } } return r; };
     const _ap = applyPointControlCanvasSize; applyPointControlCanvasSize = function () { const r = _ap.apply(this, arguments); if (M13D.on && selectedGameMode === 'campaign' && campaignMission === 1) { SKIRMISH_WORLD_WIDTH = M13D.W; SKIRMISH_WORLD_HEIGHT = M13D.H; canvas.width = M13D.W; canvas.height = M13D.H; const vp = document.getElementById('canvasViewport'); if (vp) { vp.style.width = SKIRMISH_VIEW_WIDTH + 'px'; vp.style.height = SKIRMISH_VIEW_HEIGHT + 'px'; } canvas.classList.add('skirmishExpanded'); } return r; };
     const _ccm = createCampaignMap; createCampaignMap = function () { if (!(M13D.on && campaignMission === 1)) return _ccm.apply(this, arguments); const W = M13D.W, H = M13D.H; const ob = function (x, y, w, h, type) { obstacles.push({ x: x, y: y, width: w, height: h, type: type }); }; // already in battlefield pixels (addObstacle would rescale them)
         obstacles = []; campaignBunkers.forEach(function (b) { if (!b.destroyed) ob(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h, 'campaignBunker'); }); ob(0, H * .364, W * .355, H * .193, 'campaignHillBarrier'); ob(W * .645, H * .364, W * .355, H * .193, 'campaignHillBarrier'); };
     ['startCampaignLanding', 'openCampaign', 'startMission2', 'returnToMenu'].forEach(function (n) { if (typeof window[n] !== 'function') return; const f = window[n]; window[n] = function () { m13Stop(); return f.apply(this, arguments); }; });
+    // field repairs anywhere on the 3D beach (the 2D mission only allowed them at its repair point)
+    const _rep = startPlayerRepair; startPlayerRepair = function () { if (!M13D.on) return _rep.apply(this, arguments); const st = campaignRepairStation; campaignRepairStation = player ? { x: player.x, y: player.y, radius: 9999 } : st; try { return _rep.apply(this, arguments); } finally { campaignRepairStation = st; } };
     const _tod = sk3Tod, _wx = sk3Wx; sk3Tod = function () { return M13D.on ? 'day' : _tod(); }; sk3Wx = function () { return M13D.on ? 'clear' : _wx(); };
     const sc = TK3.list[SK3D.idx], _up = sc.update; sc.update = function (st, t, dt) { const r = _up.apply(this, arguments); if (M13D.on) try { m13Frame(st, t, dt); } catch (e) { M13D.err = e; } return r; };
     const _us = updateShells; updateShells = function () { const r = _us.apply(this, arguments); try { m13Step(); } catch (e) { M13D.err = e; } return r; };

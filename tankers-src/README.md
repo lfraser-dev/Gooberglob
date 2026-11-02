@@ -94,5 +94,5 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   bunkers (wrecks swap in when destroyed), pillboxes firing tracers, hedgehogs, wire, wrecked landing craft, burning
   Shermans, the fleet and landing craft bringing more men. Infantry: 3 American squads (respawn from the surf) and 3
   German squads holding the plateau (`sq.hold`, `sq.noRespawn`). HUD: bunker names + health, PUSH INLAND marker.
-  `m13Stop` restores everything when leaving. Camera near plane is now 0.5 (and much further out in the artillery
+  `m13Stop` restores everything when leaving. Field repairs (R) work anywhere on the 3D beach (build 172). Camera near plane is now 0.5 (and much further out in the artillery
   map view) because the render target depth buffer is 16-bit.

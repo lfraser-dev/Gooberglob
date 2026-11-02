@@ -25,7 +25,7 @@ The order the files are joined in is set in `build2.py`. Running the build more 
 - `tk3audio.js`: sound
 - `sk3d.js`: 3D Skirmish (test). The normal 2D Skirmish keeps running the battle; this file draws it in 3D
   (third-person camera, tank driving controls, gunsight) using the execution tank models. Scale: 1 game pixel = 0.1 m.
-  Menu button "3D SKIRMISH (TEST)"; plain Skirmish stays 2D.
+  Since build 174 the menu's SKIRMISH button starts the 3D battle (`chooseGameMode("skirmish")` defaults to 3D when WebGL works, `sk3Can`); "CLASSIC SKIRMISH" and the setup-screen button play the 2D original.
   In 3D the battle runs at a fixed 60 steps a second (like 2D on a 60 Hz screen), whatever the 3D frame rate, so shells and
   tanks move at the same speed as 2D. The hidden 2D map isn't painted while 3D is on.
 - `sk3look.js`: how 3D Skirmish looks: daylight per map, baked height map, ground colours (crop fields, roads),
@@ -101,3 +101,8 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   to the real spot); Normandy's nine fan out on a ring when zoomed in (cluster pin below ×8, NORMANDY button flies
   to ×26, wheel zoom to ×40); bigger pins with bigger mission emblems, labels show the mission type (`m.tag`); the
   hover card sits in the corner so it never hides other pins.
+- `m2c3d.js` (build 174): the mission 2 intro is a 3D cutscene ('M2 3D' scene): the Sherman column in a sunken
+  lane, binocular view of the two 88s on the ridge with Panzers, bombers, flak bursts and a bomber going down, the
+  gun crew firing, and your tank's hatch view with HQ's radio order and the PUSH INLAND stamp. `drawM2Cutscene` is
+  wrapped; the overlay (titles, captions, binocular mask, radio, stamp) is redrawn by `m2c3Overlay`, sounds keep the
+  same cues. Falls back to the 2D cutscene.

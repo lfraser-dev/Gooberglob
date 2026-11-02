@@ -86,3 +86,13 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   rolling off and firing at a bunker. Timed to the existing 2D cutscene (DD.dur, DD.cuts, captions, sounds, skip),
   which still draws all text: `ddgInit`/`ddglRender` are wrapped so the 3D frame (`dd3Render`, sized to the game
   canvas, adaptive resolution `DD3.q`) is what gets drawn. Falls back to the old picture if 3D can't start.
+- `m13d.js` (build 171): campaign mission 1 (THE LANDING) plays in 3D when 3D is available (`M13D.want`). The 2D
+  mission logic is untouched; the battlefield becomes 2400 x 1500 (positions are canvas fractions, so they scale;
+  `createCampaignMap` is replaced so the hill barrier and bunkers are added in battlefield pixels, since
+  `addObstacle` rescales campaign coordinates). `m13Build` (called from `sk3BuildWorld`) builds the beach: sea and
+  surf, sand, shingle, bluffs where the 2D hill barrier is, a road up the central draw, plateau trenches, casemate
+  bunkers (wrecks swap in when destroyed), pillboxes firing tracers, hedgehogs, wire, wrecked landing craft, burning
+  Shermans, the fleet and landing craft bringing more men. Infantry: 3 American squads (respawn from the surf) and 3
+  German squads holding the plateau (`sq.hold`, `sq.noRespawn`). HUD: bunker names + health, PUSH INLAND marker.
+  `m13Stop` restores everything when leaving. Camera near plane is now 0.5 (and much further out in the artillery
+  map view) because the render target depth buffer is 16-bit.

@@ -13,7 +13,7 @@ function sk3AOpen(on) { if (on && (!player || player.destroyed || !SK3D.ready)) 
     if (SK3D.map) { if (SK3D.bino) sk3Bino(false); if (SK3D.scope) sk3SetScope(false); try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {} SK3A.cx = sk3X(player.x) * .4; SK3A.cz = sk3Z(player.y) * .4; SK3A.zoom = 1;
         if (TK3.scene && TK3.scene.fog) { SK3A.fog = [TK3.scene.fog.color.getHexString(), TK3.scene.fog.density]; tk3Fog('#' + SK3A.fog[0], Math.min(SK3A.fog[1], .0007)); } if (SK3D.hud) SK3D.hud.style.cursor = 'none'; if (TK3.cv) TK3.cv.style.cursor = 'none';
         try { showRadioText(SK3A.charges > 0 ? 'ARTILLERY ON THE NET — MARK THE TARGET' : 'ARTILLERY RELOADING — ' + Math.ceil((SK3A.nextAt - Date.now()) / 1000) + ' S', true); } catch (e) {} }
-    else { if (SK3A.fog && TK3.scene && TK3.scene.fog) tk3Fog('#' + SK3A.fog[0], SK3A.fog[1]); SK3A.fog = null; if (TK3.cam) TK3.cam.userData.hfov = -1; if (TK3.cv) TK3.cv.style.cursor = 'crosshair'; } }
+    else { if (SK3A.fog && TK3.scene && TK3.scene.fog) tk3Fog('#' + SK3A.fog[0], SK3A.fog[1]); SK3A.fog = null; if (TK3.cam) { TK3.cam.userData.hfov = -1; TK3.cam.near = .5; TK3.cam.updateProjectionMatrix(); } if (TK3.cv) TK3.cv.style.cursor = 'crosshair'; } }
 // screen (HUD 1100x700) -> battlefield point (2D px)
 function sk3AGround(mx, my) { const cam = TK3.cam; if (!cam) return null; const v = new THREE.Vector3(mx / 550 - 1, 1 - my / 350, .5).unproject(cam).sub(cam.position).normalize(); if (v.y >= -.01) return null; let d = -cam.position.y / v.y;
     for (let i = 0; i < 3; i++) { const p = cam.position.clone().addScaledVector(v, d), h = TK3.st && TK3.st.hgt ? TK3.st.hgt(p.x, p.z) : 0; d = (h - cam.position.y) / v.y; }
@@ -53,6 +53,7 @@ function sk3AImpact(b, s) { SK3A.stats.shells++; createExplosion(s.x, s.y, 1.5);
 function sk3AMapCam() { const cam = TK3.cam, hf = 58; if (cam.userData.hfov !== hf) { cam.userData.hfov = hf; tk3Aspect(); }
     const WW = SKIRMISH_WORLD_WIDTH * SK3D.S, H = (WW * .5 / Math.tan(hf / 2 * Math.PI / 180)) * 1.02 / SK3A.zoom, maxX = WW * .5 * (1 - 1 / SK3A.zoom), maxZ = SKIRMISH_WORLD_HEIGHT * SK3D.S * .5 * (1 - 1 / SK3A.zoom);
     SK3A.cx = Math.max(-maxX, Math.min(maxX, SK3A.cx)); SK3A.cz = Math.max(-maxZ, Math.min(maxZ, SK3A.cz));
+    if (Math.abs(cam.near - H * .2) > 1) { cam.near = H * .2; cam.updateProjectionMatrix(); } // the depth buffer is coarse: keep near far out up here
     cam.position.set(SK3A.cx, H, SK3A.cz + H * .3); cam.lookAt(SK3A.cx, 0, SK3A.cz + H * .02); cam.updateMatrixWorld(); SK3D.camP = cam.position.clone(); SK3D.camT = new THREE.Vector3(SK3A.cx, 0, SK3A.cz); }
 function sk3AVisible(e) { const now = performance.now(); if (now < (e.sk3Spot || 0) || now < (e.sk3Reveal || 0)) return true; const R = 1500;
     const fr = [player].concat(allies || []).filter(function (t) { return t && !t.destroyed; }); for (const f of fr) if (Math.hypot(f.x - e.x, f.y - e.y) < R) return true;

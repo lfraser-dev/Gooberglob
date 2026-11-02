@@ -98,7 +98,7 @@ TK3.list.push({ name: 'SKIRMISH 3D', place: '', kind: '', hfov: 72, shift: [0, 0
         sk3BuildWorld(st);
         const mk = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .3, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }), 2400); mk.count = 0; mk.frustumCulled = false; TK3.scene.add(mk); st.marks = { im: mk, n: 0, max: 2400, m: new THREE.Matrix4() };
         st.flashL = tk3PL('#ffb060', 0, 40, 0, 0, 0); st.boomL = tk3PL('#ff9040', 0, 70, 0, 0, 0); st.fireL = tk3PL('#ff8030', 0, 28, 0, 0, 0);
-        TK3.cam.near = .2; TK3.cam.far = 1500; TK3.cam.updateProjectionMatrix(); },
+        TK3.cam.near = .5; TK3.cam.far = 1500; TK3.cam.updateProjectionMatrix(); },
     update: function (st, t, dt) { SK3D.now = t; const now = Date.now();
         // tanks
         const live = [player].concat(allies || [], enemies || []).filter(Boolean); SK3D.models.forEach(function (m) { m.seen = false; });
@@ -181,7 +181,7 @@ function sk3Build() { const vp = document.getElementById('canvasViewport'); if (
     if (!SK3D.hud) { SK3D.hud = document.createElement('canvas'); SK3D.hud.id = 'sk3Hud'; const sc = document.createElement('div'); sc.id = 'sk3Scope'; SK3D.scopeEl = sc; } vp.insertBefore(SK3D.hud, document.getElementById('minimapPanel')); vp.insertBefore(SK3D.scopeEl, document.getElementById('minimapPanel')); SK3D.hud.style.display = 'block';
     if (!TK3.cv.sk3Bound) { TK3.cv.sk3Bound = true; sk3Bind(TK3.cv); } SK3D.ready = true; sk3LoadMsg(false); return true; }
 function sk3LoadMsg(on) { const vp = document.getElementById('canvasViewport'); let e = document.getElementById('sk3Load'); if (!on) { if (e) e.remove(); return; } if (!e && vp) { e = document.createElement('div'); e.id = 'sk3Load'; e.textContent = 'BUILDING THE 3D BATTLEFIELD…'; vp.appendChild(e); } return e; }
-function sk3Start() { const duel = typeof DUEL !== 'undefined' && DUEL.active; if (!SK3D.want || selectedGameMode !== 'skirmish' || (duel && !DUEL.three)) return; sk3Style(); SK3D.on = true; SK3D.yaw = player ? player.angle || 0 : 0; SK3D.pitch = .3; SK3D.scope = false; SK3D.hint = performance.now(); document.body.classList.add('sk3d'); clearMovementKeys();
+function sk3Start() { const duel = typeof DUEL !== 'undefined' && DUEL.active; if (!SK3D.want || (selectedGameMode !== 'skirmish' && !(typeof M13D !== 'undefined' && M13D.on)) || (duel && !DUEL.three)) return; sk3Style(); SK3D.on = true; SK3D.yaw = player ? player.angle || 0 : 0; SK3D.pitch = .3; SK3D.scope = false; SK3D.hint = performance.now(); document.body.classList.add('sk3d'); clearMovementKeys();
     const go = function () { if (!SK3D.on || !gameRunning) return; if (!sk3Build()) { sk3Stop(); try { showRadioText('3D COULD NOT START ON THIS COMPUTER — PLAYING IN 2D.', true); } catch (e) {} } };
     if (window.THREE) { sk3LoadMsg(true); setTimeout(go, 30); } else { sk3LoadMsg(true); TK3.failed = false; tk3Load(function (ok) { if (ok) go(); else { sk3Stop(); try { showRadioText('3D COULD NOT LOAD (NO CONNECTION TO THE 3D LIBRARY) — PLAYING IN 2D.', true); } catch (e) {} } }); } }
 function sk3Stop() { sk3DropPark(); const was = SK3D.on; SK3D.on = false; SK3D.ready = false; SK3D.scope = false; document.body.classList.remove('sk3d'); sk3LoadMsg(false); if (SK3D.hud) SK3D.hud.style.display = 'none'; if (SK3D.scopeEl) SK3D.scopeEl.style.display = 'none'; try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {}

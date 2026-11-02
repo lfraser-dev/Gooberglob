@@ -9,7 +9,7 @@
 ===================================================== */
 const SK3I = { men: [], squads: [], on: false, step: 0, sid: 0, stats: { shots: 0, kills: [0, 0], runover: 0 }, fx: [] };
 const SK3I_FAC = { american: { uni: '#5a563a', pants: '#4d4a34', helm: '#454a30' }, german: { uni: '#4c534a', pants: '#42473f', helm: '#3f443d' } };
-function sk3IOn() { return !!SK3W.on && !!SK3W.gen && !(typeof DUEL !== 'undefined' && DUEL.active); }
+function sk3IOn() { return ((!!SK3W.on && !!SK3W.gen) || (typeof M13D !== 'undefined' && M13D.on)) && !(typeof DUEL !== 'undefined' && DUEL.active); }
 function sk3TT(t) { return t === player || (allies || []).indexOf(t) >= 0 ? 0 : 1; }
 function sk3IFac(team) { const pf = (player && player.faction) || selectedFaction || 'american'; return team === 0 ? pf : (pf === 'german' ? 'american' : 'german'); }
 function sk3IBlocked(x, y) { if (x < 20 || y < 20 || x > SKIRMISH_WORLD_WIDTH - 20 || y > SKIRMISH_WORLD_HEIGHT - 20) return true; return !!tankHitsObstacle({ x: x, y: y, size: 5, sk3inf: true }, x, y); }
@@ -42,11 +42,11 @@ function sk3IStep() { if (!SK3I.on || !gameRunning) return; SK3I.step++; const n
     SK3I.squads.forEach(function (sq) { const alive = sq.men.filter(function (m) { return !m.dead; }); if (!alive.length) { if (!sq.wipedAt) sq.wipedAt = now; return; }
         if (SK3I.step >= sq.re) { sq.re = SK3I.step + 90; const cx = alive.reduce(function (a, m) { return a + m.x; }, 0) / alive.length, cy = alive.reduce(function (a, m) { return a + m.y; }, 0) / alive.length; let best = null, bd = 1e9;
             tanks.forEach(function (t) { if (sk3TT(t) === sq.team) return; const d = Math.hypot(t.x - cx, t.y - cy); if (d < bd) { bd = d; best = t; } }); SK3I.men.forEach(function (m) { if (m.dead || m.team === sq.team) return; const d = Math.hypot(m.x - cx, m.y - cy) * .8; if (d < bd) { bd = d; best = m; } });
-            sq.goal = best ? { x: best.x, y: best.y } : { x: sq.team === 0 ? W - 300 : 300, y: cy }; sq.stand = 380; sq.cx = cx; sq.cy = cy;
+            sq.goal = best ? { x: best.x, y: best.y } : { x: sq.team === 0 ? W - 300 : 300, y: cy }; sq.stand = 380; sq.cx = cx; sq.cy = cy; if (sq.hold) { sq.goal = { x: sq.hold[0], y: sq.hold[1] }; sq.stand = 0; }
             // the escort squad sticks with you: it fights whatever is near you, otherwise it moves up just ahead of your tank
             if (sq.escort && player && !player.destroyed) { let eb = null, ed = 900; tanks.forEach(function (t) { if (sk3TT(t) === 0) return; const d = Math.hypot(t.x - player.x, t.y - player.y); if (d < ed) { ed = d; eb = t; } }); SK3I.men.forEach(function (o) { if (o.dead || o.team === 0) return; const d = Math.hypot(o.x - player.x, o.y - player.y); if (d < ed) { ed = d; eb = o; } });
                 if (eb) sq.goal = { x: eb.x, y: eb.y }; else { const a = player.angle || 0; sq.goal = { x: player.x + Math.cos(a) * 220, y: player.y + Math.sin(a) * 220 }; sq.stand = 70; } sq.re = SK3I.step + 40; } } });
-    for (let i = SK3I.squads.length - 1; i >= 0; i--) { const sq = SK3I.squads[i]; if (sq.wipedAt && now - sq.wipedAt > 40000) { SK3I.squads.splice(i, 1); const n = sk3ISquad(sq.team, sq.k); n.escort = sq.escort; } }
+    for (let i = SK3I.squads.length - 1; i >= 0; i--) { const sq = SK3I.squads[i]; if (sq.wipedAt && now - sq.wipedAt > 40000) { SK3I.squads.splice(i, 1); if (sq.noRespawn) continue; const n = sk3ISquad(sq.team, sq.k, sq.home); n.escort = sq.escort; n.home = sq.home; n.hold = sq.hold; } }
     SK3I.men = SK3I.men.filter(function (m) { return !m.dead || now - m.deadAt < 30000; });
     // each soldier
     SK3I.men.forEach(function (m, idx) { if (m.dead) { m.fall = Math.min(1, m.fall + .045); return; } if (m.flash > 0) m.flash--;

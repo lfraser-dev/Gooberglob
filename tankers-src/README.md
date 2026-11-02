@@ -106,3 +106,9 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   gun crew firing, and your tank's hatch view with HQ's radio order and the PUSH INLAND stamp. `drawM2Cutscene` is
   wrapped; the overlay (titles, captions, binocular mask, radio, stamp) is redrawn by `m2c3Overlay`, sounds keep the
   same cues. Falls back to the 2D cutscene.
+- `m23d.js` (build 175): campaign mission 2 (PUSH INLAND) plays in 3D. The 2D mission uses fixed 1100 x 700
+  coordinates, so the 3D view is drawn at `SK3D.S` = 0.2 m per pixel (220 x 140 m) and tank speeds get an extra
+  x0.7; `m23Stop` puts S back to 0.1. `m23Build`: farm fields and lane, the 2D hedges/copses/house/barn in 3D, the
+  two 88s (`m2c3Flak`) with crews, tracking you, wrecks when destroyed. E (naval barrage) opens the battle map
+  (`SK3A.m2sup`); the click calls the 2D `m2CallSupport` at that point. `sk3CampaignOn()` lets sk3Start run for
+  campaign missions 1 and 2.

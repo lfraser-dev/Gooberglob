@@ -61,7 +61,7 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   rain density (`sk3QPart`), applied live. AUTO steps the resolution down/up to hold ~40–57 fps. "Show frame rate"
   draws an FPS box on the HUD.
 - `sk3arty.js`: artillery. G opens the battle map (camera high over the whole field, fog thinned; W/A/S/D pan, wheel
-  zoom; you see friendly units and enemies near them or spotted). Click calls 10 heavy shells (`SK3A`, radius 9.5 m)
+  zoom; you see friendly units and enemies near them or spotted). Click calls 10 heavy shells (`SK3A`, radius 10.5 m, spread 16 m)
   that land after ~3.5 s, whistle in, damage every tank in the blast (friendly fire too), wreck cover and kill infantry.
   2 charges max, one back every 70 s. Online: `art` (guest → host) and `arts` (host → all, with a seed so everyone sees
   the same impacts); the host applies the damage.

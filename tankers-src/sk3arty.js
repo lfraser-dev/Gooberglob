@@ -6,7 +6,7 @@
    Online the host runs the damage; `art` (guest asks) and `arts` (host tells everyone) messages.
 ===================================================== */
 const SK3A = { charges: 1, max: 2, rechargeMs: 70000, nextAt: 0, mx: 550, my: 350, cx: 0, cz: 0, zoom: 1, barrages: [], fog: null, stats: { called: 0, shells: 0 } };
-const SK3A_R = 95, SK3A_DMG = 70; // splash radius (px = 9.5 m) and damage at the centre
+const SK3A_R = 105, SK3A_DMG = 70; // splash radius (px = 10.5 m) and damage at the centre
 function sk3ADuel() { return typeof DUEL !== 'undefined' && DUEL.active; }
 function sk3AAuth() { return !sk3ADuel() || DUEL.role === 'host'; }
 function sk3AOpen(on) { if (on && (!player || player.destroyed || !SK3D.ready)) return; if (!!on === !!SK3D.map) return; SK3D.map = !!on;
@@ -29,7 +29,7 @@ function sk3ACall() { const g = sk3AGround(SK3A.mx, SK3A.my); if (!g) return; if
     else { sk3AStart(g.x, g.y, seed, me); if (sk3ADuel()) duelBroadcast({ t: 'arts', x: Math.round(g.x), y: Math.round(g.y), seed: seed, s: me }); }
     setTimeout(function () { sk3AOpen(false); }, 650); }
 function sk3AStart(x, y, seed, slot) { const R = tk3Rand(seed), b = { x: x, y: y, t0: performance.now(), slot: slot | 0, shells: [] };
-    for (let i = 0; i < 10; i++) { const a = R() * Math.PI * 2, r = Math.sqrt(R()) * 210; b.shells.push({ x: x + Math.cos(a) * r, y: y + Math.sin(a) * r, at: 3500 + i * 430 + R() * 220, whist: false, done: false }); }
+    for (let i = 0; i < 10; i++) { const a = R() * Math.PI * 2, r = Math.sqrt(R()) * 160; b.shells.push({ x: x + Math.cos(a) * r, y: y + Math.sin(a) * r, at: 3500 + i * 430 + R() * 220, whist: false, done: false }); }
     SK3A.barrages.push(b);
     // warn whoever is under it
     if (player && !player.destroyed && Math.hypot(player.x - x, player.y - y) < 420 && (!sk3ADuel() || slot !== DUEL.mySlot)) setTimeout(function () { try { showRadioText('INCOMING ARTILLERY! MOVE!', true); } catch (e) {} }, 1600); }
@@ -68,10 +68,10 @@ function sk3AHud() { const c = SK3D.hud, g = c.getContext('2d'), now = performan
     if (duel) DUEL.tanks.forEach(function (t, s) { if (!t || t.destroyed) return; const mine = duelTeam(s) === myTeam; if (!mine && !sk3AVisible(t)) return; mark(t, s === DUEL.mySlot ? '#ffe070' : mine ? '#6ab4ff' : '#ff5a3a', s === DUEL.mySlot); });
     else { (allies || []).forEach(function (t) { if (t && !t.destroyed) mark(t, '#6ab4ff'); }); (enemies || []).forEach(function (t) { if (t && !t.destroyed && sk3AVisible(t)) mark(t, '#ff5a3a'); }); if (player && !player.destroyed) mark(player, '#ffe070', true); }
     // barrages in the air / landing
-    SK3A.barrages.forEach(function (b) { const p = sk3AProj(b.x, b.y), q = sk3AProj(b.x + 210, b.y); if (!p || !q) return; const r = Math.abs(q[0] - p[0]), el = now - b.t0; g.strokeStyle = 'rgba(255,150,60,' + (.5 + .4 * Math.sin(now / 120)) + ')'; g.lineWidth = 2; g.setLineDash([6, 5]); g.beginPath(); g.arc(p[0], p[1], r, 0, 6.3); g.stroke(); g.setLineDash([]);
+    SK3A.barrages.forEach(function (b) { const p = sk3AProj(b.x, b.y), q = sk3AProj(b.x + 160, b.y); if (!p || !q) return; const r = Math.abs(q[0] - p[0]), el = now - b.t0; g.strokeStyle = 'rgba(255,150,60,' + (.5 + .4 * Math.sin(now / 120)) + ')'; g.lineWidth = 2; g.setLineDash([6, 5]); g.beginPath(); g.arc(p[0], p[1], r, 0, 6.3); g.stroke(); g.setLineDash([]);
         g.font = 'bold 12px "Special Elite", monospace'; g.textAlign = 'center'; g.fillStyle = '#ffb070'; g.fillText(el < 3500 ? 'SPLASH IN ' + Math.ceil((3500 - el) / 1000) : 'IMPACT', p[0], p[1] - r - 6); });
     // the aiming ring
-    const gp = sk3AGround(SK3A.mx, SK3A.my); if (gp) { const p = [SK3A.mx, SK3A.my], q = sk3AProj(gp.x + 210, gp.y), r = q ? Math.abs(q[0] - p[0]) : 30, ok = SK3A.charges > 0;
+    const gp = sk3AGround(SK3A.mx, SK3A.my); if (gp) { const p = [SK3A.mx, SK3A.my], q = sk3AProj(gp.x + 160, gp.y), r = q ? Math.abs(q[0] - p[0]) : 30, ok = SK3A.charges > 0;
         g.strokeStyle = ok ? '#ffd27a' : 'rgba(200,200,200,.5)'; g.lineWidth = 2; g.beginPath(); g.arc(p[0], p[1], r, 0, 6.3); g.stroke(); g.beginPath(); g.moveTo(p[0] - r - 8, p[1]); g.lineTo(p[0] - 6, p[1]); g.moveTo(p[0] + 6, p[1]); g.lineTo(p[0] + r + 8, p[1]); g.moveTo(p[0], p[1] - r - 8); g.lineTo(p[0], p[1] - 6); g.moveTo(p[0], p[1] + 6); g.lineTo(p[0], p[1] + r + 8); g.stroke();
         g.font = 'bold 12px "Special Elite", monospace'; g.textAlign = 'left'; g.fillStyle = ok ? '#ffe6a8' : '#bbb'; g.fillText(Math.round(Math.hypot(gp.x - player.x, gp.y - player.y) * SK3D.S) + ' m', p[0] + r + 10, p[1] - 4); }
     // header

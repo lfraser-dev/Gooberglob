@@ -80,3 +80,9 @@ The order the files are joined in is set in `build2.py`. Running the build more 
 - Infantry visibility (build 169): soldiers drawn 1.22× larger, bigger muzzle flashes, blue/red chevrons over
   friendly soldiers and enemy soldiers you or your allies can see, dots on the minimap, and an escort squad
   (`sq.escort`) that spawns next to you and moves up just ahead of your tank.
+- `dd3d.js` (build 170): the mission 1 intro (D-Day) is now a real 3D cutscene ('D-DAY 3D' scene in `TK3.list`, index
+  `DD3.idx`). Shots: the fleet and battleship broadsides; inside a landing craft; on the sand as the ramp drops and the
+  men run in under fire; a tank landing craft beaching and your campaign tank (`campaignFaction`/`campaignTankClass`)
+  rolling off and firing at a bunker. Timed to the existing 2D cutscene (DD.dur, DD.cuts, captions, sounds, skip),
+  which still draws all text: `ddgInit`/`ddglRender` are wrapped so the 3D frame (`dd3Render`, sized to the game
+  canvas, adaptive resolution `DD3.q`) is what gets drawn. Falls back to the old picture if 3D can't start.

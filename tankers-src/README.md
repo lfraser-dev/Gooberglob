@@ -96,3 +96,8 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   German squads holding the plateau (`sq.hold`, `sq.noRespawn`). HUD: bunker names + health, PUSH INLAND marker.
   `m13Stop` restores everything when leaving. Field repairs (R) work anywhere on the 3D beach (build 172). Camera near plane is now 0.5 (and much further out in the artillery
   map view) because the render target depth buffer is 16-bit.
+- Build 173: the 3D camera follows the ground height (`h0` in `sk3Camera`), so it works on hills (the D-Day bluffs).
+  Campaign globe (`cmapglobe.js`): every visible pin is laid out with a small overlap-removal pass (leader lines back
+  to the real spot); Normandy's nine fan out on a ring when zoomed in (cluster pin below ×8, NORMANDY button flies
+  to ×26, wheel zoom to ×40); bigger pins with bigger mission emblems, labels show the mission type (`m.tag`); the
+  hover card sits in the corner so it never hides other pins.

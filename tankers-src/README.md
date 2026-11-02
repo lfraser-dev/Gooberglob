@@ -70,3 +70,13 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   (`createExplosion` hook → `sk3InfBlast`), shells passing through, artillery and machine guns kill them; AI tanks
   fire their MGs (`sk3MgFireAt`) at nearby infantry. Wiped squads come back after 40 s. Drawn with instanced meshes
   per faction (`st.inf`).
+- `sk3armor.js` (build 169): real armour and ammo in 3D. `SK3_ARM[name] = [front, side, rear, gun penetration]` in mm
+  (sloped fronts as effective thickness; `SK3_ARM_CLASS` fallback). `sk3ArFace` picks the plate a shell strikes
+  (weighted by how much of each plate faces the shooter) and the angle to it; effective armour = thickness / cos.
+  Steep angles → ricochet; pen ≥ armour → PENETRATED (×1.1 front, ×1.25 side, ×1.6 rear); else NO PENETRATION (×0.12).
+  Ammo keys 1/2/3: AP, HE (pen 30, always ×0.4 blast, splash 55 px, kills infantry in 9 m, smashes cover), SMOKE
+  (4 per battle, lands as an `abilitySmokeClouds` screen for ~25 s). Switching reloads. Shells carry `ammo` and
+  `sk3pen`. Online the guest sends `am`; the host's `calculateDamage` does the rest.
+- Infantry visibility (build 169): soldiers drawn 1.22× larger, bigger muzzle flashes, blue/red chevrons over
+  friendly soldiers and enemy soldiers you or your allies can see, dots on the minimap, and an escort squad
+  (`sq.escort`) that spawns next to you and moves up just ahead of your tank.

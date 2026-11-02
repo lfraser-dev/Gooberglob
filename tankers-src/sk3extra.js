@@ -8,7 +8,7 @@
      Night has parachute flares; rain has lightning and thunder. Visibility limits how far enemy tags show.
      Online, the host's choice is sent to everyone.
 ===================================================== */
-const SK3C = { vol: 80, sens: 1, inv: false, tod: 'day', wx: 'clear' };
+const SK3C = { vol: 80, sens: 1, inv: false, tod: 'day', wx: 'clear', gq: 'auto', fps: false };
 (function () { try { Object.assign(SK3C, JSON.parse(localStorage.getItem('tankers_sk3cfg') || '{}')); } catch (e) {} })();
 function sk3CSave() { try { localStorage.setItem('tankers_sk3cfg', JSON.stringify(SK3C)); } catch (e) {} sk3CApplyVol(); }
 
@@ -43,7 +43,7 @@ function sk3MgFireOne(t, own) { const a = (t.turretAngle || 0) + (Math.random() 
 function sk3SndMG(x, y, z, own) { const S = sk3SPlace(x, y, z, { ref: own ? 10 : 6, vol: own ? .55 : .6, nodelay: own }); if (!S) return; sk3SNoise(S, .07, 4200, 900, 'bandpass', 1.1, .7, .002); sk3STone(S, .05, 180, 80, 'square', .2, .002); }
 function sk3MgStep() { if (!SK3D.on || !gameRunning) return; const duel = typeof DUEL !== 'undefined' && DUEL.active;
     // your gun: hold Q (overheats after ~5 s of fire, cools when you let go)
-    const want = !!keys.q && player && !player.destroyed && !player.repairing && !SK3D.bino; if (SK3X.over && SK3X.heat < .35) SK3X.over = false; const on = want && !SK3X.over;
+    const want = !!keys.q && player && !player.destroyed && !player.repairing && !SK3D.bino && !SK3D.map; if (SK3X.over && SK3X.heat < .35) SK3X.over = false; const on = want && !SK3X.over;
     if (on) { SK3X.cd.me = (SK3X.cd.me || 0) - 1; if (SK3X.cd.me <= 0) { SK3X.cd.me = 6; sk3MgFireOne(player, true); SK3X.heat += .021; if (SK3X.heat >= 1) { SK3X.over = true; try { showRadioText('MACHINE GUN OVERHEATED — LET IT COOL', true); } catch (e) {} } } } else SK3X.heat = Math.max(0, SK3X.heat - .0045);
     if (duel && on !== SK3X.sentOn) { SK3X.sentOn = on; const msg = { t: 'mgf', s: DUEL.mySlot, on: on ? 1 : 0 }; if (DUEL.role === 'host') duelBroadcast(msg); else duelSend(msg); }
     // other players' guns online
@@ -52,6 +52,7 @@ function sk3MgStep() { if (!SK3D.on || !gameRunning) return; const duel = typeof
     const auth = sk3MgAuth(), st = SK3D.st, tanks = [player].concat(allies || [], enemies || []);
     for (let i = SK3X.bullets.length - 1; i >= 0; i--) { const b = SK3X.bullets[i], x2 = b.x + b.vx, y2 = b.y + b.vy; let done = false;
         const o = shellHitsObstacle(b.x, b.y, x2, y2); if (o) { done = true; sk3MgImpact(x2, y2, o); if (auth) sk3MgCover(o, x2, y2); }
+        if (!done && typeof sk3InfBulletHit === 'function' && sk3InfBulletHit(b, x2, y2)) done = true;
         if (!done) for (const t of tanks) { if (!t || t === b.o || t.destroyed) continue; if (Math.hypot(t.x - x2, t.y - y2) < (t.size || 24) * .9) { done = true; sk3MgPing(x2, y2); if (auth) { const d = String(t.className).toUpperCase() === 'LIGHT' ? 1.1 : .5; t.health = Math.min(t.health, Math.max(1, t.health - d)); } break; } }
         b.x = x2; b.y = y2; if (--b.life <= 0 && !done) { done = true; if (st) { const x = sk3X(x2), z = sk3Z(y2), h = st.hgt ? st.hgt(x, z) : 0; st.dust.emit({ x: x, y: h + .1, z: z, vy: .6, life: .6, s0: .2, s1: .6, c0: [.5, .45, .38, .4], c1: [.5, .45, .38, 0] }); } }
         if (done) SK3X.bullets.splice(i, 1); } }
@@ -77,9 +78,9 @@ function sk3BinoRange() { const cam = TK3.cam; if (!cam || !SK3D.st) return null
     if (best) return best; if (dir.y < -.002) return Math.min(999, (cam.position.y - 0) / -dir.y); return null; }
 
 /* ---------- night flares, rain, lightning ---------- */
-function sk3Weather(st, t, dt) { const cam = SK3D.camP; if (!cam) return; const r = Math.random, now = performance.now(), tod = sk3Tod(), wx = sk3Wx();
+function sk3Weather(st, t, dt) { const cam = SK3D.camP; if (!cam || SK3D.map) return; const r = Math.random, now = performance.now(), tod = sk3Tod(), wx = sk3Wx();
     if (wx === 'rain') { if (st.map === 'snow') { if (st.flakes) for (let i = 0; i < dt * 1100; i++) st.flakes.emit({ x: cam.x + (r() - .5) * 50, y: cam.y + 2 + r() * 20, z: cam.z + (r() - .5) * 50, vx: 2.4, vy: -3 - r() * 1.5, vz: .8, life: 6, len: .22, w: .06, c: [1, 1, 1, .9], fade: 1 }); }
-        else if (st.rain) { for (let i = 0; i < dt * 2600; i++) st.rain.emit({ x: cam.x + (r() - .5) * 46, y: cam.y + 4 + r() * 16, z: cam.z + (r() - .5) * 46, vx: 1.8, vy: -24 - r() * 6, vz: .6, life: 1.1, len: 1.2, w: .022, c: [.75, .78, .86, tod === 'night' ? .35 : .5], fade: 0 }); for (let i = 0; i < dt * 60; i++) { const x = cam.x + (r() - .5) * 26, z = cam.z + (r() - .5) * 26; st.dust.emit({ x: x, y: (st.hgt ? st.hgt(x, z) : 0) + .04, z: z, vy: .6, life: .25, s0: .05, s1: .35, c0: [.8, .82, .88, .35], c1: [.8, .82, .88, 0] }); } }
+        else if (st.rain) { for (let i = 0, nR = dt * 2600 * (typeof sk3QPart === 'function' ? sk3QPart() : 1); i < nR; i++) st.rain.emit({ x: cam.x + (r() - .5) * 46, y: cam.y + 4 + r() * 16, z: cam.z + (r() - .5) * 46, vx: 1.8, vy: -24 - r() * 6, vz: .6, life: 1.1, len: 1.2, w: .022, c: [.75, .78, .86, tod === 'night' ? .35 : .5], fade: 0 }); for (let i = 0; i < dt * 60; i++) { const x = cam.x + (r() - .5) * 26, z = cam.z + (r() - .5) * 26; st.dust.emit({ x: x, y: (st.hgt ? st.hgt(x, z) : 0) + .04, z: z, vy: .6, life: .25, s0: .05, s1: .35, c0: [.8, .82, .88, .35], c1: [.8, .82, .88, 0] }); } }
         if (now > SK3X.nextBolt) { SK3X.nextBolt = now + 14000 + r() * 22000; { TK3.flash = Math.max(TK3.flash || 0, 1.4); if (st.L && st.L.dir) { const L = st.L.dir, i0 = L.intensity; L.intensity = i0 + 5; setTimeout(function () { L.intensity = i0 + 2; }, 70); setTimeout(function () { L.intensity = i0; }, 180); }
                 setTimeout(function () { const S = sk3SPlace(cam.x + (r() - .5) * 600, 80, cam.z + (r() - .5) * 600, { ref: 200, vol: .8, nodelay: true, max: 3000, muf: 400 }); if (S) { sk3SNoise(S, 4, 260, 40, 'lowpass', .7, .7, .3); sk3STone(S, 2.5, 46, 22, 'sine', .5, .2); } }, 900 + r() * 3000); } }
         if (!SK3X.rainSnd) { const c = sk3SCtx(); if (c) { const out = sk3SOut(c), src = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain(); src.buffer = SK3S.noise; src.loop = true; bp.type = 'bandpass'; bp.frequency.value = st.map === 'snow' ? 600 : 2600; bp.Q.value = .5; g.gain.value = st.map === 'snow' ? .05 : .13; src.connect(bp); bp.connect(g); g.connect(out); src.start(); SK3X.rainSnd = { src: src, g: g }; } } }
@@ -108,14 +109,16 @@ function sk3CfgOpen(on) { let p = document.getElementById('sk3Cfg'); if (!on) { 
     p.innerHTML = '<div style="font:20px Stardos Stencil,Impact,sans-serif;letter-spacing:.2em;margin-bottom:6px">3D SETTINGS</div>' +
         row('MASTER VOLUME · <span id="sk3VolV">' + SK3C.vol + '%</span>', '<input id="sk3Vol" type="range" min="0" max="100" value="' + SK3C.vol + '" style="width:100%">') +
         row('MOUSE SENSITIVITY · <span id="sk3SensV">' + SK3C.sens.toFixed(2) + 'x</span>', '<input id="sk3Sens" type="range" min="0.3" max="2.5" step="0.05" value="' + SK3C.sens + '" style="width:100%">') +
+        row('GRAPHICS QUALITY', pick('gq', [['auto', 'AUTO'], ['low', 'LOW'], ['med', 'MEDIUM'], ['high', 'HIGH']]) + '<label style="cursor:pointer;display:block;margin-top:4px"><input id="sk3Fps" type="checkbox"' + (SK3C.fps ? ' checked' : '') + '> SHOW FRAME RATE</label>') +
         row('MOUSE', '<label style="cursor:pointer"><input id="sk3Inv" type="checkbox"' + (SK3C.inv ? ' checked' : '') + '> INVERT UP / DOWN</label>') +
         row('TIME OF DAY <small style="opacity:.7">(NEXT BATTLE)</small>', pick('tod', [['day', 'DAY'], ['dusk', 'DUSK'], ['night', 'NIGHT']])) +
         row('WEATHER <small style="opacity:.7">(NEXT BATTLE)</small>', pick('wx', [['clear', 'CLEAR'], ['rain', 'RAIN / SNOWSTORM']])) +
-        '<div style="font-size:11px;opacity:.7;margin-top:10px">ONLINE: THE HOST\'S TIME AND WEATHER ARE USED.<br>Q MACHINE GUN · B BINOCULARS · O SETTINGS</div><button id="sk3CfgX" style="margin-top:14px;width:100%;padding:9px;font:15px Stardos Stencil,Impact,sans-serif;letter-spacing:.2em;background:#c8a040;color:#1a1a10;border:0;cursor:pointer">DONE</button>';
+        '<div style="font-size:11px;opacity:.7;margin-top:10px">ONLINE: THE HOST\'S TIME AND WEATHER ARE USED.<br>Q MACHINE GUN · B BINOCULARS · G ARTILLERY · O SETTINGS</div><button id="sk3CfgX" style="margin-top:14px;width:100%;padding:9px;font:15px Stardos Stencil,Impact,sans-serif;letter-spacing:.2em;background:#c8a040;color:#1a1a10;border:0;cursor:pointer">DONE</button>';
     p.style.display = 'block';
     document.getElementById('sk3Vol').oninput = function () { SK3C.vol = +this.value; document.getElementById('sk3VolV').textContent = SK3C.vol + '%'; sk3CSave(); };
     document.getElementById('sk3Sens').oninput = function () { SK3C.sens = +this.value; document.getElementById('sk3SensV').textContent = SK3C.sens.toFixed(2) + 'x'; sk3CSave(); };
     document.getElementById('sk3Inv').onchange = function () { SK3C.inv = this.checked; sk3CSave(); };
+    document.getElementById('sk3Fps').onchange = function () { SK3C.fps = this.checked; sk3CSave(); };
     p.querySelectorAll('button[data-k]').forEach(function (b) { b.onclick = function () { SK3C[b.getAttribute('data-k')] = b.getAttribute('data-v'); sk3CSave(); sk3CfgOpen(true); }; });
     document.getElementById('sk3CfgX').onclick = function () { sk3CfgOpen(false); }; }
 

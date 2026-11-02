@@ -56,3 +56,17 @@ The order the files are joined in is set in `build2.py`. Running the build more 
     (wet ground, rain streaks, lightning and thunder; heavy snowfall on the snow map). `sk3TagRange` limits how far away
     enemy tags show at night or in rain unless spotted, lit by a flare or just fired. Online the host's choice is sent
     in the `start` message (`tod`, `wx`).
+- `sk3perf.js`: graphics quality (build 168). `SK3C.gq` = auto / low / med / high (O settings panel) sets render
+  resolution (`TK3.scale`, pixel cap `sk3QCap`), shadow map size (off on LOW), grass count (`st.tufts.count`) and
+  rain density (`sk3QPart`), applied live. AUTO steps the resolution down/up to hold ~40–57 fps. "Show frame rate"
+  draws an FPS box on the HUD.
+- `sk3arty.js`: artillery. G opens the battle map (camera high over the whole field, fog thinned; W/A/S/D pan, wheel
+  zoom; you see friendly units and enemies near them or spotted). Click calls 10 heavy shells (`SK3A`, radius 9.5 m)
+  that land after ~3.5 s, whistle in, damage every tank in the blast (friendly fire too), wreck cover and kill infantry.
+  2 charges max, one back every 70 s. Online: `art` (guest → host) and `arts` (host → all, with a seed so everyone sees
+  the same impacts); the host applies the damage.
+- `sk3inf.js`: infantry (skirmish only, not online). `SK3I.men` / `SK3I.squads`: 3 squads of 5 riflemen per side
+  advance on the nearest enemy, kneel and shoot (rifles kill infantry, only spark off tanks). Run-overs, shell blasts
+  (`createExplosion` hook → `sk3InfBlast`), shells passing through, artillery and machine guns kill them; AI tanks
+  fire their MGs (`sk3MgFireAt`) at nearby infantry. Wiped squads come back after 40 s. Drawn with instanced meshes
+  per faction (`st.inf`).

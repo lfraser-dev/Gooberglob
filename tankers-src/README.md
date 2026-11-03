@@ -141,3 +141,10 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   with sagging wires, poplar-lined roads, willows, a signpost. Village on the ridge built with `sk3House` /
   `sk3Church` (placed on the slope via `placeAt`), burning houses with smoke columns (`st.m33plumes`), burnt
   tank wrecks on the verges, river mist and foam at the cutwaters, re-graded dusk sky and lighting.
+- Build 179: performance. Mission 3: `m33MergeStatic` bakes every static mesh the builder made into one mesh per
+  material (bridge, lamps, piers, decals, cover, scenery wrecks); fewer background trees and hedge blobs, 15k grass
+  tufts in the play area only, coarser terrain / water grids, fewer village fires, lighter smoke columns, mist and
+  foam (draw calls ~1150 -> ~570, about level with mission 2). Engine-wide (sk3d.js): a wreck burns out after 40 s
+  (no more flames or embers, just a thin smoulder) and is then baked into one mesh per material
+  (`sk3BakeWreck`, ~120 draw calls -> ~2 per wreck); particle pools overwrite their oldest slot when full instead
+  of `shift()`ing the whole array on every emit (tk3core.js).

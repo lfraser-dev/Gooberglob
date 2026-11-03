@@ -131,3 +131,13 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   dusk + rain (lightning comes with it). `m33H` gives the deck over the bridge and the water surface over the river.
   E calls the airstrike from the battle map and three fighter-bombers (Spitfires, or Bf 109s for German crews) fly
   the strike line. 3D HUD: first-wave countdown, wave / relief banners, markers over each new wave, airstrike timer.
+- Build 178: mission 3 visual overhaul. Bridge: ashlar stone texture (`m33StoneTex`), granite-sett carriageway
+  (`m33CobbleTex`), raised pavements and kerbs, cornice, keystones, arch soffits, a balustrade (balusters, rail,
+  pillars) with two shell-blasted gaps, cast-iron lamps with additive halos (some bent and dark), scorch decals,
+  puddles and loose stones. Cover on the deck in 3D (`M33_COVER`, types m33Wreck / m33Bags, indestructible):
+  a burnt Panzer IV, a burnt truck and a sandbagged AT-gun pit. Stone quays with mooring rings either side of the
+  bridge (steep banks there in `m33HPx`), a half-sunk boat, reeds on the natural banks, 34k grass tufts, grass
+  detail texture, cratered ground with thrown clods, Czech hedgehogs and wire on the north bank, telegraph poles
+  with sagging wires, poplar-lined roads, willows, a signpost. Village on the ridge built with `sk3House` /
+  `sk3Church` (placed on the slope via `placeAt`), burning houses with smoke columns (`st.m33plumes`), burnt
+  tank wrecks on the verges, river mist and foam at the cutwaters, re-graded dusk sky and lighting.

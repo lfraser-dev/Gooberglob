@@ -100,7 +100,7 @@ function m2c3Size(w, h) { const W = Math.max(320, Math.round(Math.min(1500, w) *
 function m2c3Render(t, w, h) { const st = TK3.st, sc = TK3.list[M2C3.idx], dt = Math.min(.05, Math.max(0, t - M2C3.prev)), t0 = performance.now(); M2C3.prev = t; sc.update(st, t, dt); for (let i = 0; i < TK3.parts.length; i++) TK3.parts[i].update(dt); if (TK3.sky) { TK3.sky.position.copy(TK3.cam.position); TK3.sky.userData.u.time.value = t; TK3.sky.userData.u.flash.value = 0; }
     TK3.fade = 1; m2c3Size(w, h); tk3Render(t); const ms = performance.now() - t0; M2C3.ms = M2C3.ms * .9 + ms * .1; if (t > 2 && M2C3.ms > 45 && M2C3.q > .5) { M2C3.q = Math.max(.5, M2C3.q * .85); M2C3.ms = 30; } }
 function m2c3Begin() { M2C3.err = null; M2C3.prev = 0; M2C3.flash = 0; M2C3.q = 1; if (TK3.failed) { M2C3.state = 'off'; return; } M2C3.state = 'loading'; M2C3.loadAt = performance.now();
-    const build = function () { if (M2C3.state !== 'loading') return; try { if (!tk3Init(null)) throw new Error('no WebGL'); tk3Build(M2C3.idx); TK3.W = 0; M2C3.state = 'on'; } catch (e) { M2C3.err = e; M2C3.state = 'off'; try { tk3Clear(); TK3.cur = -1; } catch (x) {} } };
+    const build = function () { if (M2C3.state !== 'loading') return; try { if (!tk3Init(null)) throw new Error('no WebGL'); tk3Build(M2C3.idx); TK3.W = 0; M2C3.state = 'on'; campaignCutsceneStart = performance.now(); } catch (e) { M2C3.err = e; M2C3.state = 'off'; try { tk3Clear(); TK3.cur = -1; } catch (x) {} } };
     if (window.THREE) setTimeout(build, 30); else tk3Load(function (ok) { if (ok) build(); else M2C3.state = 'off'; }); }
 function m2c3End() { if (M2C3.state !== 'off') { try { if (TK3.cur === M2C3.idx) { tk3Clear(); TK3.cur = -1; } } catch (e) {} } M2C3.state = 'off'; }
 (function () {

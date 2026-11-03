@@ -148,3 +148,12 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   (no more flames or embers, just a thin smoulder) and is then baked into one mesh per material
   (`sk3BakeWreck`, ~120 draw calls -> ~2 per wreck); particle pools overwrite their oldest slot when full instead
   of `shift()`ing the whole array on every emit (tk3core.js).
+- Build 180: mission 3 intro as a 3D cutscene (`m3c3d.js`, `M3C3`, same pattern as m2c3d.js), shot on the
+  mission's own set: the scene's build calls `createMission3Map` + `m33Build` (obstacles restored after, SK3D.S
+  0.2 for the cutscene, reset to 0.1 at the end). Same timing / captions / sounds / title / radio / stamp as the
+  2D version. Shots: crane up the river at dusk (engineers hauling sandbags, lightning); from behind the sandbags,
+  the Panzers and a Tiger creeping up to the far bank, firing, splashes in the river, a hit in front of the camera;
+  the command post (map canvas redrawn as the German arrows draw in, pocket watch, oil lamp, flashes at the
+  window); from your tank's hatch as the squad rolls onto the bridge. Falls back to the 2D cutscene.
+  Fix (m2c3d.js and m3c3d.js): the cutscene clock restarts when the 3D scene finishes building, so the time the
+  build takes no longer eats the start of the cutscene.

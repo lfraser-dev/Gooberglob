@@ -123,3 +123,11 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   a tank already touching something may always move away from it. Firing a jammed or broken gun in 3D now says
   why on the radio. Shells are drawn from the muzzle on their first frame (tracer streak plus smoke) and sit a
   little higher with a bigger glow.
+- Build 177: campaign mission 3 (HOLD THE BRIDGE) in 3D — `m33d.js`, same scheme as mission 2 (`M33D`, 0.2 m per
+  pixel, 2D mission logic untouched). `m33Build` (dispatched from sk3BuildWorld): river with real water at y = 0 and
+  banks 2.4 m up, the stone bridge (cobbled deck, arched side walls, piers with cutwaters, parapets over the 14 px
+  strips the 2D map counts as water, flickering lamps), roads, the burning farm ruins, the intact farmhouse, hedges,
+  sandbag barricades, copses, reeds, craters, wrecks, and a burning village and church on the north ridge. Forced
+  dusk + rain (lightning comes with it). `m33H` gives the deck over the bridge and the water surface over the river.
+  E calls the airstrike from the battle map and three fighter-bombers (Spitfires, or Bf 109s for German crews) fly
+  the strike line. 3D HUD: first-wave countdown, wave / relief banners, markers over each new wave, airstrike timer.

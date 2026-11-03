@@ -10,7 +10,7 @@
    - HUD: AA gun names with health bars.
 ===================================================== */
 const M23D = { want: true, on: false, S: .2, err: null, st: null };
-function sk3CampaignOn() { return (typeof M13D !== 'undefined' && M13D.on) || M23D.on; }
+function sk3CampaignOn() { return (typeof M13D !== 'undefined' && M13D.on) || M23D.on || (typeof M33D !== 'undefined' && M33D.on); }
 function m23HPx(x, y) { const sm = function (a, b, v) { const k = Math.max(0, Math.min(1, (v - a) / (b - a))); return k * k * (3 - 2 * k); }; return sm(430, 140, y) * 9 + (tk3Fbm(x * .006, y * .006, 3) - .44) * 2.2 - sm(560, 900, y) * 1.5 + sm(-60, -400, y) * 4; }
 function m23H(x3, z3) { return m23HPx(x3 / SK3D.S + 550, z3 / SK3D.S + 350); }
 function m23Build(st) { const S = TK3.scene, R = tk3Rand(77), X = function (px) { return (px - 550) * SK3D.S; }, Z = function (py) { return (py - 350) * SK3D.S; };

@@ -112,3 +112,14 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   two 88s (`m2c3Flak`) with crews, tracking you, wrecks when destroyed. E (naval barrage) opens the battle map
   (`SK3A.m2sup`); the click calls the 2D `m2CallSupport` at that point. `sk3CampaignOn()` lets sk3Start run for
   campaign missions 1 and 2.
+- Build 176: online shells that hit something before the next snapshot used to never reach the other players (no
+  shell, flash or sound — "shots not firing", worst in close 2v2 fights). The host now records every shell it
+  creates (`DUEL.born`) and sends the ones that died unseen once as "ghosts" (`[..., 1, startX, startY]`), which the
+  guests show from muzzle to impact. 3D maps: everything visible is now solid (`SK3_SOLID` adds townhall, bocage
+  huts, the Santa hut, trees and boulders), and ruins (`sk3Ruin`) lose their floating floor slabs and get a low wall
+  on the open side and rubble heaped inside, so their whole (solid) footprint looks blocked.
+  `sk3col.js` (last in the 3D chain) replaces the round tank-vs-obstacle test in 3D with an oriented box the size
+  of the hull model (`sk3Footprint`, SAT in `sk3BoxHit`), so tanks no longer stop a tank-radius away from walls;
+  a tank already touching something may always move away from it. Firing a jammed or broken gun in 3D now says
+  why on the radio. Shells are drawn from the muzzle on their first frame (tracer streak plus smoke) and sit a
+  little higher with a bigger glow.

@@ -15,7 +15,7 @@ function sk3IFac(team) { const pf = (player && player.faction) || selectedFactio
 function sk3IBlocked(x, y) { if (x < 20 || y < 20 || x > SKIRMISH_WORLD_WIDTH - 20 || y > SKIRMISH_WORLD_HEIGHT - 20) return true; return !!tankHitsObstacle({ x: x, y: y, size: 5, sk3inf: true }, x, y); }
 function sk3ILos(x1, y1, x2, y2) { const n = Math.ceil(Math.hypot(x2 - x1, y2 - y1) / 22); for (let k = 1; k < n; k++) { const x = x1 + (x2 - x1) * k / n, y = y1 + (y2 - y1) * k / n; if (tankHitsObstacle({ x: x, y: y, size: 2, sk3inf: true }, x, y)) return false; } return true; }
 function sk3ISquad(team, k, at) { const W = SKIRMISH_WORLD_WIDTH, H = SKIRMISH_WORLD_HEIGHT, bx = at ? at[0] : team === 0 ? 300 : W - 300, by = at ? at[1] : H * (k + 1) / 4, sq = { id: ++SK3I.sid, team: team, men: [], goal: { x: W / 2, y: by }, re: 0, wipedAt: 0, k: k };
-    for (let i = 0; i < 5; i++) { let x = bx, y = by; for (let t = 0; t < 60; t++) { x = bx + (Math.random() - .5) * 160; y = by + (i - 2) * 34 + (Math.random() - .5) * 40; if (!sk3IBlocked(x, y)) break; }
+    for (let i = 0; i < 5; i++) { let x = bx, y = by; for (let t = 0; t < 60; t++) { x = bx + (Math.random() - .5) * 160; y = by + (i - 2) * 34 + (Math.random() - .5) * 40; if (!sk3IBlocked(x, y) && ![player].concat(allies || [], enemies || []).some(function (t) { return t && Math.hypot(t.x - x, t.y - y) < 60; })) break; }
         const m = { x: x, y: y, team: team, hp: 2, ang: team === 0 ? 0 : Math.PI, sq: sq, i: i, crouch: 0, cd: 40 + Math.random() * 120, tgt: null, look: (Math.random() * 30) | 0, dead: false, deadAt: 0, fall: 0, ph: Math.random() * 6, moved: 0, avoid: 0, avoidA: 0, stuck: 0, flash: 0 };
         sq.men.push(m); SK3I.men.push(m); }
     SK3I.squads.push(sq); return sq; }
@@ -38,6 +38,7 @@ function sk3IFire(m, t) { SK3I.stats.shots++; const isMan = t.team != null && t.
     st.fire.emit({ x: sx, y: sy, z: sz, life: .06, s0: .5, s1: .8, c0: [14, 9, 4, 1], c1: [5, 2, .4, 0], add: 1 }); st.smoke.emit({ x: sx, y: sy, z: sz, vx: Math.cos(m.ang) * .8, vy: .3, vz: Math.sin(m.ang) * .8, life: 1.2, s0: .2, s1: .9, c0: [.7, .7, .68, .35], c1: [.7, .7, .68, 0] }); SK3I.fx.push({ x: sx, y: sy, z: sz, tx: tx, ty: ty, tz: tz, k: 0, hit: hit && !isMan });
     const S = sk3SPlace(sx, sy, sz, { ref: 6, vol: .55 }); if (S) { sk3SNoise(S, .16, 3400, 600, 'bandpass', .8, .55, .001); sk3STone(S, .08, 240, 90, 'triangle', .18, .001); } }
 function sk3IStep() { if (!SK3I.on || !gameRunning) return; SK3I.step++; const now = performance.now(), W = SKIRMISH_WORLD_WIDTH, tanks = [player].concat(allies || [], enemies || []).filter(function (t) { return t && !t.destroyed; });
+    tanks.forEach(function (t) { t.sk3mv = t.sk3lx == null ? 0 : Math.hypot(t.x - t.sk3lx, t.y - t.sk3ly); t.sk3lx = t.x; t.sk3ly = t.y; }); // only a moving tank runs men over
     // squads: pick the nearest enemy to head for; replace wiped squads
     SK3I.squads.forEach(function (sq) { const alive = sq.men.filter(function (m) { return !m.dead; }); if (!alive.length) { if (!sq.wipedAt) sq.wipedAt = now; return; }
         if (SK3I.step >= sq.re) { sq.re = SK3I.step + 90; const cx = alive.reduce(function (a, m) { return a + m.x; }, 0) / alive.length, cy = alive.reduce(function (a, m) { return a + m.y; }, 0) / alive.length; let best = null, bd = 1e9;
@@ -51,7 +52,7 @@ function sk3IStep() { if (!SK3I.on || !gameRunning) return; SK3I.step++; const n
     // each soldier
     SK3I.men.forEach(function (m, idx) { if (m.dead) { m.fall = Math.min(1, m.fall + .045); return; } if (m.flash > 0) m.flash--;
         // tanks: get out of the way, or get run over
-        for (const t of tanks) { const d = Math.hypot(t.x - m.x, t.y - m.y), sz = (t.size || 26) * .8; if (d < sz) { sk3IKill(m, t, 'run'); return; } if (d < 90 && Math.abs(t.skV || t.speed || 1) > .05 && !m.avoid) { const a = Math.atan2(m.y - t.y, m.x - t.x); m.avoid = 40; m.avoidA = a + (Math.random() < .5 ? .6 : -.6); } }
+        for (const t of tanks) { const d = Math.hypot(t.x - m.x, t.y - m.y), sz = (t.size || 26) * .8; if (d < sz) { if (t.sk3mv > .15) { sk3IKill(m, t, 'run'); return; } const pa = Math.atan2(m.y - t.y, m.x - t.x), nx = t.x + Math.cos(pa) * (sz + 1), ny = t.y + Math.sin(pa) * (sz + 1); if (!sk3IBlocked(nx, ny)) { m.x = nx; m.y = ny; } } if (d < 90 && Math.abs(t.skV || t.speed || 1) > .05 && !m.avoid) { const a = Math.atan2(m.y - t.y, m.x - t.x); m.avoid = 40; m.avoidA = a + (Math.random() < .5 ? .6 : -.6); } }
         // look for something to shoot (staggered)
         if (++m.look >= 30) { m.look = 0; let best = null, bd = 650; SK3I.men.forEach(function (o) { if (o.dead || o.team === m.team) return; const d = Math.hypot(o.x - m.x, o.y - m.y); if (d < bd && sk3ILos(m.x, m.y, o.x, o.y)) { bd = d; best = o; } });
             if (!best) { bd = 650; tanks.forEach(function (t) { if (sk3TT(t) === m.team) return; const d = Math.hypot(t.x - m.x, t.y - m.y); if (d < bd && sk3ILos(m.x, m.y, t.x, t.y)) { bd = d; best = t; } }); } m.tgt = best; }

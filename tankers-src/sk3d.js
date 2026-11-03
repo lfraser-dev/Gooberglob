@@ -58,10 +58,14 @@ function sk3Sparks(x2, y2) { const st = SK3D.st; if (!st) return; const x = sk3X
 function sk3Shells(st, dt) { const L = dt + .004, seen = st.shSeen || (st.shSeen = new Map()), live = new Set();
     (shells || []).forEach(function (s) { live.add(s); const x = sk3X(s.x), z = sk3Z(s.y), sp = Math.hypot(s.vx || 0, s.vy || 0) || 1, ux = (s.vx || 0) / sp, uz = (s.vy || 0) / sp;
         const prev = seen.get(s), moved = prev ? Math.hypot(x - prev[0], z - prev[1]) : sp * SK3D.S, len = Math.max(2.4, Math.min(10, moved * 1.15 + 1.4));
-        const y = st.hgt(x, z) + 1.65, big = !!s.specialExplosion, flak = s.kind === 'flak', hot = s.enemy ? [16, 6, 2.4, 1] : [16, 11, 5, 1], glow = s.enemy ? [2.6, .6, .2, .55] : [2.6, 1.8, .6, .55];
+        const y = st.hgt(x, z) + 2.05, big = !!s.specialExplosion, flak = s.kind === 'flak', hot = s.enemy ? [16, 6, 2.4, 1] : [16, 11, 5, 1], glow = s.enemy ? [2.6, .6, .2, .55] : [2.6, 1.8, .6, .55];
         st.trac.emit({ x: x, y: y, z: z, vx: ux * .001, vy: 0, vz: uz * .001, life: L, len: len, w: big ? .17 : flak ? .06 : .1, c: hot, fade: 0 });
         st.trac.emit({ x: x, y: y, z: z, vx: ux * .001, vy: 0, vz: uz * .001, life: L, len: len * 1.7, w: big ? .55 : .32, c: glow, fade: 0 });
-        st.fire.emit({ x: x + ux * .15, y: y, z: z + uz * .15, life: L, s0: big ? 1.2 : .75, c0: hot, c1: hot, add: 1 });
+        st.fire.emit({ x: x + ux * .15, y: y, z: z + uz * .15, life: L, s0: big ? 1.4 : .95, c0: hot, c1: hot, add: 1 });
+        if (!prev) { let mz = null; const ox = s.ghost && s.oldX != null ? s.oldX : s.x - (s.vx || 0) * 2.5, oy = s.ghost && s.oldY != null ? s.oldY : s.y - (s.vy || 0) * 2.5; let own = null, od = 1e9; [player].concat(allies || [], enemies || []).forEach(function (t) { if (!t) return; const d = Math.hypot(t.x - ox, t.y - oy); if (d < od) { od = d; own = t; } });
+            const m = own && od < 120 ? SK3D.models.get(own) : null; if (m) try { mz = exMuzzle(m)[0]; } catch (e) {} if (!mz) mz = new THREE.Vector3(sk3X(ox), st.hgt(sk3X(ox), sk3Z(oy)) + 2.05, sk3Z(oy));
+            const dx = x - mz.x, dy = y - mz.y, dz = z - mz.z, dl = Math.hypot(dx, dy, dz) || 1; st.trac.emit({ x: (x + mz.x) / 2, y: (y + mz.y) / 2, z: (z + mz.z) / 2, vx: dx / dl * .001, vy: dy / dl * .001, vz: dz / dl * .001, life: .06, len: dl, w: big ? .14 : .08, c: hot, fade: 1 });
+            for (let k = 0; k < 5; k++) { const u = k / 5; st.smoke.emit({ x: mz.x + dx * u, y: mz.y + dy * u, z: mz.z + dz * u, vx: (Math.random() - .5) * .4, vy: .25, vz: (Math.random() - .5) * .4, life: 1.2 + Math.random() * .6, s0: .25, s1: 1.1, c0: [.8, .78, .74, .22], c1: [.8, .78, .74, 0], drag: 2 }); } }
         if (Math.random() < .8) st.smoke.emit({ x: x - ux * len * .6, y: y, z: z - uz * len * .6, vx: (Math.random() - .5) * .3, vy: .2, vz: (Math.random() - .5) * .3, life: 1 + Math.random() * .7, s0: .16, s1: .9, c0: [.78, .76, .72, .15], c1: [.78, .76, .72, 0], drag: 2 });
         seen.set(s, [x, z, s.life == null ? 99 : s.life]); });
     // a shell that vanished before running out of range hit something: kick up dirt where it stopped

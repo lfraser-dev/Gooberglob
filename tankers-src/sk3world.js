@@ -15,7 +15,7 @@ function sk3Big() { if (selectedGameMode !== 'skirmish') return false; if (sk3Du
 function sk3Rng(seed) { let s = (seed >>> 0) || 1; return function () { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
 function sk3Hit(r, list, pad) { pad = pad || 0; return list.some(function (o) { return r.x < o.x + o.width + pad && r.x + r.width + pad > o.x && r.y < o.y + o.height + pad && r.y + r.height + pad > o.y; }); }
 function sk3Ob(x, y, w, h, type) { addObstacle(Math.round(x), Math.round(y), Math.round(w), Math.round(h), type); return obstacles[obstacles.length - 1]; }
-const SK3_SOLID = ['sk3Forest', 'sk3Sandbag', 'sk3Fountain', 'sk3Church'];
+const SK3_SOLID = ['sk3Forest', 'sk3Sandbag', 'sk3Fountain', 'sk3Church', 'townhall', 'bocageHut', 'santaHut', 'bocageTree', 'bocageRock']; // things you can see are things you can't drive through
 
 /* ---------- TOWN: city blocks of houses, shops and ruins on a grid of avenues, a central square ---------- */
 function sk3GenTown(R) { const W = SK3W.W, H = SK3W.H, g = { roads: [], blocks: [], parks: [], plaza: null, empty: [], hog: [] };

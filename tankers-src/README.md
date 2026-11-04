@@ -157,3 +157,8 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   window); from your tank's hatch as the squad rolls onto the bridge. Falls back to the 2D cutscene.
   Fix (m2c3d.js and m3c3d.js): the cutscene clock restarts when the 3D scene finishes building, so the time the
   build takes no longer eats the start of the cutscene.
+- Build 181: online hit feedback for joiners. The host now works out the verdict on every joiner's shell too (the
+  hit-marker code in sk3fx's updateShells wrapper covers shells with `os` = another slot) and sends it to that
+  joiner only (`sk3SendMark` -> `{t:'hm'}` -> `sk3ShowMark`): PENETRATED / NO PENETRATION / RICOCHET / TARGET
+  DESTROYED. The host's hit text broadcast (`th`) now carries the verdict text (`tx`), so joiners see "PENETRATED ·
+  SIDE HIT" etc. instead of a bare HIT, and in 2D duels joiners now get the hit texts at all.

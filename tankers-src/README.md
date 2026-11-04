@@ -162,3 +162,8 @@ The order the files are joined in is set in `build2.py`. Running the build more 
   joiner only (`sk3SendMark` -> `{t:'hm'}` -> `sk3ShowMark`): PENETRATED / NO PENETRATION / RICOCHET / TARGET
   DESTROYED. The host's hit text broadcast (`th`) now carries the verdict text (`tx`), so joiners see "PENETRATED ·
   SIDE HIT" etc. instead of a bare HIT, and in 2D duels joiners now get the hit texts at all.
+- Build 182: better-looking tanks in every 3D mode (tk3exetanks.js). Stronger weathering in the shared paint shader
+  (darker lower hull, rain streaks, chipped paint to bare metal), stronger paint mottling, zimmerit on the Tiger and
+  Panzer IV. `exStow` adds field kit to every model, merged per material: bedrolls / tarps with straps, a crate, the
+  tow cable, jerrycans, sandbags on the Sherman's glacis or spare track on other Allied / Soviet glacis, a turret
+  bedroll (Allies) or track links on the turret sides (German).
